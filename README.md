@@ -84,6 +84,7 @@ Future phases will expand the system to include:
 
 ## 🏗️ System Architecture & Tech Stack
 This system separates user-specific planning data (stored locally) from academic course data (external API), enabling flexible decision logic while maintaining realistic data integration.
+
 Frontend: HTML/CSS  
 Backend: Python (Flask)  
 Database: SQLite  
