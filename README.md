@@ -1,43 +1,99 @@
-# Course Registration
-This project is a demo course registration application, designed with UC Irvine–style course registration constraints in mind. The application is a simulation of real-world course registration in universities, where students can view and organize their schedules in an efficient, user-friendly, and organized manner.
-
-The objective of this project is to illustrate important constraints of academic registration systems like student registration limits, waiting lists, or scheduling, as well as basic web application concepts like user interactions, data validation, and state management on the server.
-
-This repository acts as a functional prototype; it is not a production-ready system.
+# 🧠 Academic Success Planner
+An AI-powered course scheduling & workload optimization system
 
 
-## Tech Stack
-Frontend: HTML/CSS  
-Backend: Python (Flask)  
-Database: SQLite  
+## 📌 Problem
+Students often build course schedules based on availability — not outcomes. They lack insight into:
+- Workload balance
+- Burnout risk
+- Impact on academic performance
+- Tradeoffs between different course combinations
+
+As a result, students may unintentionally create schedules that lead to overload, poor performance, or burnout.
 
 
-## Key Features
-Through this platform, users can:
-* Browse available courses and view detailed course information
-* Filter courses based on specified criteria (e.g., department or availability)
-* Register for and drop classes in real time
-* Join waitlists for courses that have reached capacity
+## 💡 Solution
+The Academic Success Planner is a decision-support system that helps students:
+- Build course schedules
+- Evaluate workload and difficulty
+- Predict academic performance risk
+- Compare alternative schedules
+- Make informed, optimized decisisons
+
+This project evolves a traditional schedule planning app into an intelligent academic planning platform.
 
 
-## Backend Logic & Constraints
-The backend enforces core registration rules, including:
+## ⚙️ What This Project Does
+- Enables students to create and manage course schedules
+- Applies real-world constraints (capacity, prerequisites, waitlists)
+- Estimates workload and schedule difficulty
+- Identifies high-risk (oveloaded) schedules
+- Recommends improved course combinations
+- Explains why certain schedules are better
+
+
+## 🧩 Key Features
+
+### 🧱 Core System
+The current platform supports core course registration workflows, including:
+- Browse available courses and view detailed course information
+- Filter courses based on criteria such as department or availability
+- Register for and drop classes in real time
+- Join waitlists for courses that have reached capacity
+
+### ⚙️ Backend Logic & Constraints
+The backend enforces key registration rules to maintain a consistent system state, including:
 - Enrollment caps per course
 - Automatic waitlisting when courses reach capacity
 - Prevention of duplicate enrollments
 - Server-side validation of schedule updates
+- Prerequisite validation and registration rule enforcement
 
-These constraints are handled at the application and database level to ensure
-consistent system state regardless of frontend behavior.
+These constraints are handled through application logic and database-backed validation to ensure reliability regardless of frontend behavior.
+
+### 🧠 Intelligence Layer (In Progress)
+The next phase of development expands the system from registration into academic planning and decision support:
+- Workload estimation using course difficulty modeling
+- Burnout risk detection for overloaded schedules
+- GPA / performance prediction (planned)
+- Schedule optimization and personalized recommendations
+
+### 🔄 Decision Engine (Planned)
+To support better academic decision-making, future versions will include:
+- Comparison of multiple schedule options
+- Alternative course combination suggestions
+- Tradeoff analysis across workload, difficulty, and expected performance
+
+### 📊 Explainability (Planned)
+To make recommendations more transparent, the system will explain:
+- Why a schedule is recommended
+- Why a schedule may lead to overload
+- What tradeoffs exist between different schedule choices
 
 
-## Screenshots
-<img src="screenshots/course-schedule.png" alt="Course Schedule page" width=500> <img src="screenshots/final-schedule.png" alt="Final Schedule page" width=500>
-<img src="screenshots/quarter-calendar.png" alt="Quarter Calendar page" width=500> <img src="screenshots/waitlist.png" alt="Waitlist page" width=500>
-<img src="screenshots/filter-courses.png" alt="Filter Courses page" width=500> <img src="screenshots/course-listing.png" alt="Course Listing page" width=500>
+## 🎯 Scope
+This project is being developed in phases, evolving from a course registration system into an academic decision-support platform.
+The current phase emphasizes correctness, consistency, and core scheduling workflows.
+Future phases will expand the system to include:
+- User authentication and personalization
+- Deployment for live access
+- Enhanced UI/UX for improved usability
+- Intelligent planning and decision-support capabilities
 
 
-## Running Locally
+## 🏗️ System Architecture & Tech Stack
+Frontend: HTML/CSS  
+Backend: Python (Flask)  
+Database: SQLite  
+External Source: AnteaterAPI  
+Concepts:
+- RESTful routing
+- Server-side validation
+- Relational data modeling
+- Constraint-based logic
+
+
+## ⚙️ Running Locally
 To run this project locally:
 1. Ensure Python (3.9+) and SQLite are installed on your machine.
 2. Clone the repository and navigate to the project directory.
@@ -48,18 +104,47 @@ To run this project locally:
 7. Open the application in your browser at http://127.0.0.1:5000.
 8. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
 
-### Database Setup
+### 📊 Database Setup
 - The application uses a relational database with tables representing courses, departments, instructors, etc.
 - Create a SQLite database for the application.
 - Database tables are created manually during development.
 - A formal schema or migration setup is planned as a future improvement.
 
 
-## Scope
-This project focuses on backend constraint enforcement and data modeling. Authentication, deployment, and UI optimization were intentionally out of scope.
+## 🎯 Example Use Case
+A student selects 4 technical courses
+The system:
+- Flags high workload
+- Estimates elevated burnout risk
+- Suggests replacing one course
+- Explains the tradeoff (e.g., "Replacing CS 143 with CS 122 reduces workload by 25% and improves expected performance")
 
 
-## Future Improvements
-* Improve overall UI/UX and visual design
-* Prevent students from registering for multiple courses in the same time slot
-* Add authentication and student-specific dashboards
+## 🚧 Project Status
+This project is under active development.  
+Phase 1: Course planning system  
+Phase 2: Workload modeling & risk detection  
+Phase 3: Recommendation engine & schedule optimization  
+Phase 4: Explainability & user insights  
+
+
+## 🚀 Future Enhancements
+- Personalized course recommendations based on academic goals
+- Workload estimation and burnout risk analysis
+- Schedule optimization and alternative course suggestions
+- Time allocation and study planning support
+- Historical performance tracking
+- Advanced scheduling constraints (e.g., time conflicts, instructor preferences)
+
+
+## 🧠 What I Learned
+- Designing systems with real-world constraints
+- Building relational data models for complex workflows
+- Balancing backend logic with user experience
+- Thinking beyond functionality toward decision-support systems
+
+
+## 📷 Demo / Screenshots
+<img src="screenshots/course-schedule.png" alt="Course Schedule page" width=500> <img src="screenshots/final-schedule.png" alt="Final Schedule page" width=500>
+<img src="screenshots/quarter-calendar.png" alt="Quarter Calendar page" width=500> <img src="screenshots/waitlist.png" alt="Waitlist page" width=500>
+<img src="screenshots/filter-courses.png" alt="Filter Courses page" width=500> <img src="screenshots/course-listing.png" alt="Course Listing page" width=500>
