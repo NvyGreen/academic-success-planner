@@ -1,3 +1,5 @@
 *.db
 .flaskenv
 .env
+.venv
+.CourseRegProject
