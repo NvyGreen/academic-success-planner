@@ -83,12 +83,11 @@ Future phases will expand the system to include:
 
 
 ## 🏗️ System Architecture & Tech Stack
-This system separates user-specific planning data (stored locally) from academic course data (external API), enabling flexible decision logic while maintaining realistic data integration.
+The system separates user-specific planning data from academic course data within a structured relational database, enabling consistent constraint enforcement and a foundation for future integration with external data sources.
 
 Frontend: HTML/CSS  
 Backend: Python (Flask)  
 Database: SQLite  
-External Source: AnteaterAPI  
 Concepts:
 - RESTful routing
 - Server-side validation
