@@ -47,7 +47,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     # General Education Category
     if filters.ge_cat - 1:
         first_condition = False
-        query += modifier + """ge_category = :ge_category"""
+        query += modifier + """category_id = :ge_category"""
         values["ge_category"] = filters.ge_cat
     
     # Department
@@ -57,7 +57,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
         else:
             query += add_condition
 
-        query += modifier + """department = :department"""
+        query += modifier + """department_id = :department"""
         values["department"] = filters.department
     
     # Course Number
@@ -129,7 +129,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     # General Education Category
     if filters.ge_cat - 1:
         first_condition = False
-        query += modifier + """ge_category = :ge_category"""
+        query += modifier + """category_id = :ge_category"""
         values["ge_category"] = filters.ge_cat
     
     # Department
@@ -139,7 +139,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         else:
             query += add_condition
 
-        query += modifier + """department = :department"""
+        query += modifier + """department_id = :department"""
         values["department"] = filters.department
     
     # Course Number

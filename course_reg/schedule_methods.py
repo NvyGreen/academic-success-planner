@@ -7,7 +7,7 @@ def get_short_courses(course_codes):
     if len(course_codes) == 0:
         return []
     
-    query = """SELECT course.course_code, course.course_name, course.department, course.course_number, course.type, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.cancelled, course.num_enrolled, course.capacity, course.waitlist, course.days, course.start_time, course.end_time FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    query = """SELECT course.course_code, course.course_name, course.department_id, course.course_number, course.type, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.cancelled, course.num_enrolled, course.capacity, course.waitlist, course.days, course.start_time, course.end_time FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
 
     for i in range(len(course_codes)):
         if i == 0:
@@ -75,7 +75,7 @@ def get_short_courses_final(course_codes):
     if len(course_codes) == 0:
         return []
     
-    query = """SELECT course.course_code, course.course_name, course.department, course.course_number, course.type, instructor.first_name, instructor.last_name, course.final, course.is_online, course.building_code, course.room, course.cancelled, course.num_enrolled, course.capacity, course.waitlist FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    query = """SELECT course.course_code, course.course_name, course.department_id, course.course_number, course.type, instructor.first_name, instructor.last_name, course.final_id, course.is_online, course.building_code, course.room, course.cancelled, course.num_enrolled, course.capacity, course.waitlist FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
 
     for i in range(len(course_codes)):
         if i == 0:
