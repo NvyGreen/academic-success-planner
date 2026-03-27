@@ -468,7 +468,7 @@ def clean_course(raw_course, has_instructor: bool, added: bool, waitlisted: bool
     course.append(raw_course[1])    # course_name
 
     # Abbreviation
-    cursor = current_app.db.execute("SELECT abbreviation, school FROM department WHERE department_id = :department_id;", {"department_id": raw_course[6]})
+    cursor = current_app.db.execute("SELECT abbreviation, school_id FROM department WHERE department_id = :department_id;", {"department_id": raw_course[6]})
     dep_data = cursor.fetchone()
     course.append(dep_data[0] + " " + str(raw_course[2]))    # department + course_number
 
