@@ -1,122 +1,157 @@
-# Staffing Dashboard
-This project is a demo dashboard built for a staffing and workforce management company. The application is designed to streamline day-to-day operations by providing managers with a centralized interface to manage clients, job requests, employees, and financial workflows.
-
-The goal of this project is to demonstrate how a single, intuitive system can support the full staffing lifecycle—from client intake and employee assignment to invoicing and payment tracking—while improving visibility and operational efficiency.
-
-This repository serves as a functional prototype and proof of concept rather than a production-ready system.
+# 🧠 Academic Success Planner
+A Smart academic decision-support system for course scheduling and workload optimization.
 
 
-## Client Context &amp; Confidentiality
-This project was developed in a client-based setting for a small staffing and workforce management firm.
+## 📌 Problem
+Students often build course schedules based on availability — not outcomes. They lack insight into:
+- Workload balance
+- Burnout risk
+- Impact on academic performance
+- Tradeoffs between different course combinations
 
-To respect client confidentiality:
-- Full commit history is not publicly available
-- Certain modules and configurations are omitted
-- All data shown is either anonymized or representative
-
-This repository focuses on illustrating the system architecture, workflows, and my individual contributions rather than serving as a complete codebase.
-
-
-## My Contributions
-I primarily contributed to the backend portion of this prototype, including:
-- Implementing and debugging Flask routes to support staffing workflows
-- Supporting database schema usage and writing SQL queries for operational and financial data
-- Integrating backend logic with HTML templates and form handling
-- Debugging edge cases and refining workflows during iteration
-- Participating in testing and incremental feature refinement
-
-Because this was built in a client environment, not all development artifacts are publicly visible.
+As a result, students may unintentionally create schedules that lead to overload, poor performance, or burnout.
 
 
-## Problem Context
-Small staffing firms often manage candidates, job requests, placements, and billing using disconnected tools such as spreadsheets, email, and accounting software.
+## 💡 Solution
+The Academic Success Planner is a decision-support system that helps students:
+- Build course schedules
+- Evaluate workload and difficulty
+- Predict academic performance risk
+- Compare alternative schedules
+- Make informed, optimized decisisons
 
-This project explores how those workflows can be centralized into a single dashboard that supports operational visibility while remaining simple enough to iterate on quickly as business needs evolve.
-
-
-## Key Features
-Through this platform, users can:
-- Manage candidate profiles and job requests
-- Track candidate-to-job placements and placement status
-- View operational and basic financial information in one dashboard
-- Backend-driven workflows built around real staffing processes
+This system aims to help students make better academic decisions by transforming course selection from a trial-and-error process into a data-informed planning experience.
 
 
-## Screenshots
-<img src="screenshots/clients.png" alt="Clients page" width=500> <img src="screenshots/new-client.png" alt="New Client page" width=500>
-<img src="screenshots/see-invoice.png" alt="See Invoice page" width=500>
+## ⚙️ What This Project Does
+This system goes beyond traditional course registration by helping students evaluate and optimize their schedules based on workload, risk, and academic outcomes.
+- Enables students to create and manage course schedules
+- Applies real-world constraints (capacity, prerequisites, waitlists)
+- Estimates workload and schedule difficulty
+- Identifies high-risk (oveloaded) schedules
+- Recommends improved course combinations
+- Explains why certain schedules are better
 
 
-## Architecture Overview
-The application follows a lightweight full-stack architecture:
-- **Frontend:** HTML/CSS templates rendered by Flask
-- **Backend:** Python (Flask) with REST-style routes
-- **Database:** SQLite for relational data storage
+## 🧩 Key Features
 
-The system was designed to prioritize clarity of backend workflows and data
-relationships over frontend complexity or production scalability.
+### 🧱 Core System
+The current platform supports core course registration workflows, including:
+- Browse available courses and view detailed course information
+- Filter courses based on criteria such as department or availability
+- Register for and drop classes in real time
+- Join waitlists for courses that have reached capacity
+
+### ⚙️ Backend Logic & Constraints
+The backend enforces key registration rules to maintain a consistent system state, including:
+- Enrollment caps per course
+- Automatic waitlisting when courses reach capacity
+- Prevention of duplicate enrollments
+- Server-side validation of schedule updates
+- Prerequisite validation and registration rule enforcement
+
+These constraints are handled through application logic and database-backed validation to ensure reliability regardless of frontend behavior.
+
+### 🧠 Intelligence Layer (In Progress)
+The next phase of development expands the system from registration into academic planning and decision support:
+- Workload estimation using course difficulty modeling
+- Burnout risk detection for overloaded schedules
+- GPA / performance prediction (planned)
+- Schedule optimization and personalized recommendations
+
+### 🔄 Decision Engine (Planned)
+To support better academic decision-making, future versions will include:
+- Comparison of multiple schedule options
+- Alternative course combination suggestions
+- Tradeoff analysis across workload, difficulty, and expected performance
+
+### 📊 Explainability (Planned)
+To make recommendations more transparent, the system will explain:
+- Why a schedule is recommended
+- Why a schedule may lead to overload
+- What tradeoffs exist between different schedule choices
 
 
-## Database Design & SQL
-The relational schema was designed to reflect real staffing relationships:
-- Candidates can be associated with multiple job requests over time
-- Placements link candidates, jobs, and billing records
-- Financial data is stored separately to avoid coupling operational and
-  accounting logic
+## 🏗️ System Architecture & Tech Stack
+The system separates user-specific planning data from academic course data within a structured relational database, enabling consistent constraint enforcement and a foundation for future integration with external data sources.
 
-SQLite was selected to keep the prototype easy to run locally while still
-supporting relational integrity and SQL-based queries.
-
-
-## Tech Stack
-- **Backend:** Python, Flask
-- **Database:** SQLite
-- **Frontend:** HTML, CSS
-- **Tools:** Git, GitHub  
+Frontend: HTML/CSS  
+Backend: Python (Flask)  
+Database: SQLite  
+Concepts:
+- RESTful routing
+- Server-side validation
+- Relational data modeling
+- Constraint-based logic
 
 
-## Running Locally
+## ⚙️ Running Locally
 To run this project locally:
 1. Ensure Python (3.9+) and SQLite are installed on your machine.
 2. Clone the repository and navigate to the project directory.
-3. Create and activate a virtual environment, then install the required dependencies by running `pip install -r requirements.txt` in your terminal.
-4. Create .env and .flaskenv files in the root directory to store environment variables such as the Flask configuration, secret key, and database connection details.
-5. .env.example and .flaskenv.example files are provided to show the required environment variables and expected format.
-6. Start the Flask development server by running `flask run` in your terminal.
+3. Create and activate a virtual environment, then install the required dependencies.
+4. Create a .env file in the root directory to store environment variables such as the Flask configuration, secret key, and database connection details.
+5. An .env.example file is provided to show the required environment variables and expected format.
+6. Start the Flask development server.
 7. Open the application in your browser at http://127.0.0.1:5000.
-8. You should now be able to use the dashboard locally to manage clients, jobs, candidates, placements, and invoices.
+8. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
 
-### Database Setup
-- The application uses a relational database with tables representing clients, job postings, candidates, placements, and invoices.
+### 📊 Database Setup
+- The application uses a relational database with tables representing courses, departments, instructors, etc.
 - Create a SQLite database for the application.
 - Database tables are created manually during development.
 - A formal schema or migration setup is planned as a future improvement.
 
 
-## What I Learned & Design Decisions
-- Translating business workflows into backend data models
-- Designing routes around business actions rather than UI pages
-- Balancing simplicity with extensibility in early-stage prototypes
-- Using relational databases to enforce real-world constraints
+## Data Architecture
+The system is built on a normalized relational schema that models both academic structures and student planning workflows.
+
+<img src="screenshots/schema_1.png" alt="1st screenshot of schema" width=500>
+<img src="screenshots/schema_2.png" alt="2nd screenshot of schema" width=500>
+
+### Key Design Highlights
+- Core academic entities (courses, departments, instructors)
+- Enrollment and waitlist modeling
+- Prerequisite and corequisite relationships
+- Many-to-many instructor mapping
+- Extensible structure for intelligent scheduling and planning
 
 
-## Scope & Limitations
-This project is intentionally a prototype rather than a production system.
-
-Out of scope for this prototype:
-- Authentication and role-based access control
-- Advanced analytics and reporting
-- Payment processing
-- Production deployment and scaling
-
-The focus was on correctness of workflows and data relationships rather than
-completeness or security hardening.
+## 🎯 Example Use Case
+A student selects 4 technical courses
+The system:
+- Flags high workload
+- Estimates elevated burnout risk
+- Suggests replacing one course
+- Explains the tradeoff (e.g., "Replacing CS 143 with CS 122 reduces workload by 25% and improves expected performance")
 
 
-## Future Improvements
-If this prototype were extended toward a production system, potential next steps
-would include:
+## 🚧 Project Status
+This project is under active development.  
+Current Phase: Core system complete. Intelligence layer in progress. (Phase 2)  
+Phase 1: Course planning system  
+Phase 2: Workload modeling & risk detection  
+Phase 3: Recommendation engine & schedule optimization  
+Phase 4: Explainability & user insights  
 
-- Implementing employee payment processing and payroll functionality
-- Adding role-based access control for different user types
-- Improving UI/UX, validation, and error handling
+
+## 🚀 Future Enhancements
+- Personalized course recommendations based on academic goals
+- Workload estimation and burnout risk analysis
+- Schedule optimization and alternative course suggestions
+- Time allocation and study planning support
+- Historical performance tracking
+- Advanced scheduling constraints (e.g., time conflicts, instructor preferences)
+
+
+## 🧠 What I Learned
+- Designing systems with real-world constraints
+- Building relational data models for complex workflows
+- Balancing backend logic with user experience
+- Thinking beyond functionality toward decision-support systems
+
+
+## 📷 Demo / Screenshots
+<img src="screenshots/course-schedule.png" alt="Course Schedule page" width=500> <img src="screenshots/final-schedule.png" alt="Final Schedule page" width=500>
+<img src="screenshots/quarter-calendar.png" alt="Quarter Calendar page" width=500> <img src="screenshots/waitlist.png" alt="Waitlist page" width=500>
+<img src="screenshots/filter-courses.png" alt="Filter Courses page" width=500> <img src="screenshots/course-listing.png" alt="Course Listing page" width=500>
