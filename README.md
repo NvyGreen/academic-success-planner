@@ -1,5 +1,5 @@
 # 🧠 Academic Success Planner
-An AI-powered course scheduling & workload optimization system
+A Smart academic decision-support system for course scheduling and workload optimization.
 
 
 ## 📌 Problem
