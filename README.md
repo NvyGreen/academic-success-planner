@@ -72,16 +72,6 @@ To make recommendations more transparent, the system will explain:
 - What tradeoffs exist between different schedule choices
 
 
-## 🎯 Scope
-This project is being developed in phases, evolving from a course registration system into an academic decision-support platform.
-The current phase emphasizes correctness, consistency, and core scheduling workflows.
-Future phases will expand the system to include:
-- User authentication and personalization
-- Deployment for live access
-- Enhanced UI/UX for improved usability
-- Intelligent planning and decision-support capabilities
-
-
 ## 🏗️ System Architecture & Tech Stack
 The system separates user-specific planning data from academic course data within a structured relational database, enabling consistent constraint enforcement and a foundation for future integration with external data sources.
 
@@ -113,6 +103,20 @@ To run this project locally:
 - A formal schema or migration setup is planned as a future improvement.
 
 
+## Data Architecture
+The system is built on a normalized relational schema that models both academic structures and student planning workflows.
+
+<img src="screenshots/schema_1.png" alt="1st screenshot of schema" width=500>
+<img src="screenshots/schema_2.png" alt="2nd screenshot of schema" width=500>
+
+### Key Design Highlights
+- Core academic entities (courses, departments, instructors)
+- Enrollment and waitlist modeling
+- Prerequisite and corequisite relationships
+- Many-to-many instructor mapping
+- Extensible structure for intelligent scheduling and planning
+
+
 ## 🎯 Example Use Case
 A student selects 4 technical courses
 The system:
@@ -124,6 +128,7 @@ The system:
 
 ## 🚧 Project Status
 This project is under active development.  
+Current Phase: Core system complete. Intelligence layer in progress. (Phase 2)  
 Phase 1: Course planning system  
 Phase 2: Workload modeling & risk detection  
 Phase 3: Recommendation engine & schedule optimization  
