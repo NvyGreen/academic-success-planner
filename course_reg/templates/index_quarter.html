@@ -1,0 +1,35 @@
+{% from "macros/short_courses.html" import courses_short %}
+
+{% extends "layout.html" %}
+
+{% block head_content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}" />
+{% endblock %}
+
+{% block main_content %}
+    <div class="schedule__container">
+        <div class="schedule__half">
+            <div class="schedule__nav">
+                <a href="{{ url_for('pages.user_courses') }}" class="schedule__link">Weekly Schedule</a>
+                <a href="{{ url_for('pages.user_finals') }}" class="schedule__link">Final Schedule</a>
+                <a href="{{ url_for('pages.user_quarter') }}" class="schedule__link">Quarterly Calendar</a>
+            </div>
+
+            <img src="{{ url_for('static', filename='Fall-2024.png') }}" class="schedule__quarter" />
+        </div>
+
+        <hr />
+
+        <div class="schedule__half">
+            <h1 class="schedule__title">Selected Courses</h1>
+
+            {{ courses_short(courses) }}
+
+            <div class="schedule__nav">
+                <a href="{{ url_for('pages.filter_courses') }}" class="schedule__link">Add Courses</a>
+                <a href="{{ url_for('pages.drop_courses') }}" class="schedule__link">Drop Courses</a>
+                <a href="{{ url_for('pages.user_waitlists') }}" class="schedule__link">See Waitlist</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

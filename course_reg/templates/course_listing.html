@@ -1,0 +1,86 @@
+{% from "macros/nav.html" import header %}
+
+{% extends "layout.html" %}
+
+{% block head_content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/listing.css') }}" />
+{% endblock %}
+
+{% block header_content %}
+    {{ header() }}
+{% endblock %}
+
+{% block main_content %}
+    <h1 class="listing__title">Course Listings</h1>
+
+    <div class="criteria">
+        <p class="criteria__heading">Criteria:</p>
+        <ul class="criteria__list">
+            {% for criterion in criteria %}
+                <li>{{ criterion }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="table__header">Add / Drop</th>
+                <th class="table__header">Course Code</th>
+                <th class="table__header">Course Name</th>
+                <th class="table__header">Abbreviation</th>
+                <th class="table__header">School</th>
+                <th class="table__header">Type</th>
+                <th class="table__header">Credits</th>
+                <th class="table__header">Instructor</th>
+                <th class="table__header">Modality</th>
+                <th class="table__header">Days</th>
+                <th class="table__header">Time</th>
+                <th class="table__header">Location</th>
+                <th class="table__header">Final</th>
+                <th class="table__header">Status</th>
+                <th class="table__header">Seats Taken</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for course in courses %}
+                <tr>
+                    {% for item in course %}
+                        {% if loop.first %}
+                            {% if item == "Registered" %}
+                                <td class="table__item"><a href="{{ url_for('pages.drop_course', code=course[1], current_page=request.path) }}" class="table__link">Drop</a></td>
+                            {% elif item == "Waitlisted" %}
+                                <td class="table__item"><a href="{{ url_for('pages.drop_wait', code=course[1], current_page=request.path) }}" class="table__link">DropW</a></td>
+                            {% else %}
+                                {% if course[-2] == "Waitlist" %}
+                                    <td class="table__item"><a href="{{ url_for('pages.wait_course', code=course[1], current_page=request.path) }}" class="table__link">Wait</a></td>
+                                {% elif course[-2] == "Open" %}
+                                    <td class="table__item"><a href="{{ url_for('pages.add_course', code=course[1], current_page=request.path) }}" class="table__link">Add</a></td>
+                                {% else %}
+                                    <td class="table__item">Full</td>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <td class="table__item">{{ item }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="listing__nav">
+        <a href="{{ url_for('pages.cancel_select') }}" class="listing__nav--button">
+            <p class="listing__nav--text">Cancel</p>
+        </a>
+
+        <a href="{{ url_for('pages.filter_courses') }}" class="listing__nav--button">
+            <p class="listing__nav--text">Add More Courses</p>
+        </a>
+
+        <a href="{{ url_for('pages.preview_courses') }}" class="listing__nav--button">
+            <p class="listing__nav--text">View Schedule</p>
+        </a>
+    </div>
+{% endblock %}

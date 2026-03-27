@@ -1,0 +1,65 @@
+{% from "macros/nav.html" import header %}
+{% from "macros/fields.html" import render_text_field %}
+
+{% extends "layout.html" %}
+
+<!-- Basics: Department, number, code, instructor, GE category -->
+<!-- Advanced: Days, Start time, end time, credits -->
+
+{% block head_content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/filter.css') }}" />
+{% endblock %}
+
+{% block header_content %}
+    {{ header() }}
+{% endblock %}
+
+{% block main_content %}
+    <h1 class="form__title">Courses Search & Registration Portal</h1>
+
+    <form name="course-filter" method="post" class="form">
+        <div class="form__container">
+            {{ form.hidden_tag() }}
+
+            <div class="form__half">
+                {{ render_text_field(form.gen_cat) }}
+                {{ render_text_field(form.course_num) }}
+                {{ render_text_field(form.course_level) }}
+            </div>
+
+            <div class="form__half">
+                {{ render_text_field(form.department) }}
+                {{ render_text_field(form.course_code) }}
+                {{ render_text_field(form.instructor) }}
+            </div>
+        </div>
+
+        <div class="form__showhide form__hide">
+            <a href="{{ url_for('pages.filter_courses') }}" class="form__showhide--text">- Advanced Search Options</a>
+        </div>
+
+        <div class="form__container">
+            {{ form.hidden_tag() }}
+
+            <div class="form__half">
+                {{ render_text_field(form.modality) }}
+                {{ render_text_field(form.starts_after) }}
+                {{ render_text_field(form.course_full_option) }}
+                {{ render_text_field(form.building_code) }}
+                {{ render_text_field(form.credits) }}
+            </div>
+
+            <div class="form__half">
+                {{ render_text_field(form.days) }}
+                {{ render_text_field(form.ends_before) }}
+                {{ render_text_field(form.cancel_option) }}
+                {{ render_text_field(form.room_no) }}
+
+                <div style="padding-top: 21%;">
+                    {{ form.submit(class_="button button--adv-filter") }}
+                </div>
+            </div>
+        </div>
+        
+    </form>
+{% endblock %}

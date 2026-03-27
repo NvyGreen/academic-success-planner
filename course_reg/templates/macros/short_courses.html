@@ -1,0 +1,60 @@
+{% macro courses_short(courses) %}
+<table class="schedule__courses">
+    <thead>
+        <tr>
+            <th class="schedule__courses--header">Code</th>
+            <th class="schedule__courses--header">Name</th>
+            <th class="schedule__courses--header">Abbreviation</th>
+            <th class="schedule__courses--header">Type</th>
+            <th class="schedule__courses--header">Instructor</th>
+            <th class="schedule__courses--header">Starts</th>
+            <th class="schedule__courses--header">Ends</th>
+            <th class="schedule__courses--header">Location</th>
+            <th class="schedule__courses--header">Status</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for course in courses %}
+            <tr>
+                {% for item in course %}
+                    {% if not(loop.last) %}
+                        <td class="schedule__courses--item">{{ item }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro finals_short(courses) %}
+<table class="schedule__courses">
+    <thead>
+        <tr>
+            <th class="schedule__courses--header">Code</th>
+            <th class="schedule__courses--header">Name</th>
+            <th class="schedule__courses--header">Abbreviation</th>
+            <th class="schedule__courses--header">Type</th>
+            <th class="schedule__courses--header">Instructor</th>
+            <!-- Skip Days -->
+            <th class="schedule__courses--header">Final Starts</th>
+            <th class="schedule__courses--header">Final Ends</th>
+            <th class="schedule__courses--header">Location</th>
+            <th class="schedule__courses--header">Status</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for course in courses %}
+            <tr>
+                {% for item in course %}
+                    {% if loop.index0 != 5 %}
+                        <td class="schedule__courses--item">{{ item }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}

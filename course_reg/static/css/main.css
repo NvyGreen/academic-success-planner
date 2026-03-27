@@ -1,0 +1,95 @@
+html {
+  /* Sets global font size on small devices */
+  font-size: 12px;
+}
+
+/* When the screen width hits 960px, we increase the global font size to 14px. This changes
+   the scale of all of our relative units (the rems), keeping everything in proportion */
+@media screen and (min-width: 60em) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* When the screen width hits 1200px, we once again increase the global font size, this time to 16px */
+@media screen and (min-width: 75em) {
+  html {
+    font-size: 18px;
+  }
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  /* Sets the shared font characteristics, so that that they can be inherited globally */
+  font-family: "Public Sans", sans-serif;
+  /* color: var(--text-dark);
+  background-color: var(--background-color); */
+  line-height: 1.45;
+}
+
+.main {
+  flex-grow: 1;
+  padding: 2rem 1.5rem 2rem 1.5rem;
+}
+
+/* @media screen and (min-width: 30em) {
+  .main {
+    padding-top: 3rem;
+  }
+} */
+
+.button {
+  /* In order to easily position our buttons, we're making them block level elements */
+  display: block;
+
+  /* Removes any outlines added when the button is in focus */
+  outline: none;
+
+  /* Setting the cursor to pointer indicates to a user that the button is a clickable element */
+  cursor: pointer;
+
+  /* Again, with buttons we have to be explicit about inheriting font properties */
+  font-size: inherit;
+  font-family: inherit;
+
+  /* Slows the background colour change effect when we hover over the button, making
+       it take 0.1s with an accelerating colour change */
+  transition: background 0.1s ease-in;
+}
+
+
+.header {
+  padding-top: 2rem;
+}
+
+.nav-container {
+  margin: auto;
+  width: 75%;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20rem;
+  margin: auto;
+  text-decoration: none;
+  background-color: #1154ad;
+  color: white;
+}
+
+.nav__link:hover {
+  text-decoration: underline;
+}
+
+.nav__item {
+  font-weight: 600;
+  text-align: center;
+}

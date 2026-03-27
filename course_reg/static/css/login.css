@@ -1,0 +1,58 @@
+.form {
+    margin: 0 auto;
+    max-width: 30rem;
+    font-size: 1.2rem;
+
+    background: #0f9ed5;
+}
+
+.form__title {
+    padding-top: 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.form__container {
+    margin: auto;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    width: 75%;
+}
+
+.form__group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.form__label {
+    margin-bottom: 0.5rem;
+}
+
+.form__field {
+    outline: none;
+    border: none;
+
+    font-size: inherit;
+    font-family: inherit;
+
+    padding: 0.75rem 0.5rem;
+}
+
+.button--form {
+    margin: auto;
+    width: 30%;
+    height: 3rem;
+    border: none;
+}
+
+.form__flash {
+    display: block;
+    padding: 0.5rem;
+    color: white;
+    margin: 0.5rem;
+}
+
+.form__flash--danger {
+    background: red;
+}

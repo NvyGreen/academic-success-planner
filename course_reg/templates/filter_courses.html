@@ -1,0 +1,45 @@
+{% from "macros/nav.html" import header %}
+{% from "macros/fields.html" import render_text_field %}
+
+{% extends "layout.html" %}
+
+<!-- Basics: Department, number, code, instructor, GE category -->
+<!-- Advanced: Days, Start time, end time, credits -->
+
+{% block head_content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/filter.css') }}" />
+{% endblock %}
+
+{% block header_content %}
+    {{ header() }}
+{% endblock %}
+
+{% block main_content %}
+    <h1 class="form__title">Courses Search & Registration Portal</h1>
+
+    <form name="course-filter" method="post" class="form">
+        <div class="form__container">
+            {{ form.hidden_tag() }}
+
+            <div class="form__half">
+                {{ render_text_field(form.gen_cat) }}
+                {{ render_text_field(form.course_num) }}
+                {{ render_text_field(form.course_level) }}
+
+                <div class="form__showhide form__show">
+                    <a href="{{ url_for('pages.filter_courses_advanced') }}" class="form__showhide--text">+ Advanced Search Options</a>
+                </div>
+            </div>
+
+            <div class="form__half">
+                {{ render_text_field(form.department) }}
+                {{ render_text_field(form.course_code) }}
+                {{ render_text_field(form.instructor) }}
+
+                <div>
+                    {{ form.submit(class_="button button--basic-filter") }}
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

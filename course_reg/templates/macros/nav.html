@@ -1,0 +1,15 @@
+{% macro header() %}
+<header class="header">
+    <div class="nav-container">
+        <nav class="nav">
+            <a href="{{ url_for('pages.cancel_filter') }}" class="nav__link">
+                <p class="nav__item">See My Registered Courses</p>
+            </a>
+
+            <a href="{{ url_for('pages.cancel_waitlist') }}" class="nav__link">
+                <p class="nav__item">See My Waitlist</p>
+            </a>
+        </nav>
+    </div>
+</header>
+{% endmacro %}

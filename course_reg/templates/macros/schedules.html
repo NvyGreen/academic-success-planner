@@ -1,0 +1,116 @@
+{% macro courses_schedule(calendar) %}
+<table class="schedule__week">
+    <thead>
+        <tr>
+            {% for day in calendar[0] %}
+                {% if loop.first %}
+                    <th class="schedule__week--header"></th>
+                {% else %}
+                    <th class="schedule__week--day schedule__week--header">{{ day }}</th>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for row in calendar %}
+            {% if not(loop.first) %}    <!-- Skip days row -->
+                <tr>
+                    {% for cell in row %}
+                        {% if loop.first %}
+                            <th class="schedule__week--time">{{ cell }}</th>    <!-- Label a time -->
+                        {% else %}
+                            {% if not(cell) %}    <!-- If time slot not taken up -->
+                                <td></td>
+                            {% else %}
+                                {% if cell[1] == 0.0 %}
+                                    {% if cell[2] == 0.83 %}
+                                        <td>
+                                            <p class="schedule__week--slot schedule__week--on-hour">
+                                                {{ cell[0] }}
+                                            </p>
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            <p class="schedule__week--slot schedule__week--on-hourhalf">
+                                                {{ cell[0] }}
+                                            </p>
+                                        </td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if cell[2] == 0.83 %}
+                                        <td>
+                                            <p class="schedule__week--slot schedule__week--half-hour">
+                                                {{ cell[0] }}
+                                            </p>
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            <p class="schedule__week--slot schedule__week--half-hourhalf">
+                                                {{ cell[0] }}
+                                            </p>
+                                        </td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+                
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+
+{% macro finals_schedule(calendar) %}
+<table class="schedule__week">
+    <thead>
+        <tr>
+            {% for day in calendar[0] %}
+                {% if loop.first %}
+                    <th class="schedule__week--header"></th>
+                {% else %}
+                    <th class="schedule__week--day schedule__week--header">{{ day }}</th>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for row in calendar %}
+            {% if not(loop.first) %}    <!-- Skip days row -->
+                <tr>
+                    {% for cell in row %}
+                        {% if loop.first %}
+                            <th class="schedule__week--time">{{ cell }}</th>    <!-- Label a time -->
+                        {% else %}
+                            {% if not(cell) %}    <!-- If time slot not taken up -->
+                                <td></td>
+                            {% else %}
+                                {% if cell[1] == 0.0 %}
+                                    <td>
+                                        <p class="schedule__week--slot schedule__week--final-on">
+                                            {{ cell[0] }}
+                                        </p>
+                                    </td>
+                                {% else %}
+                                    <td>
+                                        <p class="schedule__week--slot schedule__week--final-half">
+                                            {{ cell[0] }}
+                                        </p>
+                                    </td>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+                
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}

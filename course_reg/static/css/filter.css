@@ -1,0 +1,79 @@
+.form__title {
+    text-align: center;
+    color: #1154ad;
+}
+
+.form {
+    margin: 0 auto;
+    max-width: 75%;
+    font-size: 1.2rem;
+}
+
+.form__container {
+    padding-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.form__half {
+    margin: auto;
+}
+
+.form__group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.form__label {
+    margin-bottom: 0.5rem;
+}
+
+.form__field {
+    font-size: inherit;
+    font-family: inherit;
+    width: 106%;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.form__showhide {
+    margin: auto;
+    display: flex;
+}
+
+.form__show {
+    width: 75%;
+}
+
+.form__hide {
+    width: 70%;
+}
+
+.form__showhide--text {
+    text-decoration: none;
+    color: #1154ad;
+    text-align: center;
+}
+
+.form__showhide--text:hover {
+    text-decoration: underline;
+}
+
+.button--basic-filter {
+    margin: auto;
+    width: 65%;
+    height: 3rem;
+    border: none;
+    background-color: #1154ad;
+    color: white;
+}
+
+.button--adv-filter {
+    margin: auto;
+    width: 65%;
+    height: 3rem;
+    border: none;
+    background-color: #1154ad;
+    color: white;
+}

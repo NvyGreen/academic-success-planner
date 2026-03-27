@@ -1,0 +1,137 @@
+.main {
+    padding-left: 0;
+    padding-bottom: 0
+}
+
+.schedule__container {
+    display: flex;
+    height: 100%;
+}
+
+.schedule__half {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+hr {
+    border-right: 1px solid black;
+}
+
+.schedule__nav {
+    width: 100%;
+    display: flex;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.schedule__link {
+    text-align: center;
+    width: 10rem;
+    margin: auto;
+    text-decoration: none;
+    background-color: #1154ad;
+    color: white;
+}
+
+.schedule__link:hover {
+    text-decoration: underline;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.schedule__quarter {
+    width: 90%;
+    height: auto;
+}
+
+.schedule__week {
+    width: 99%;
+    height: 86%;
+}
+
+.schedule__week--header,
+.schedule__week--time,
+.schedule__courses--header {
+    background-color: #0f9ed5;
+    color: white;
+}
+
+.schedule__week--time {
+    width: 10%;
+}
+
+.schedule__week--day {
+    width: 18%;
+}
+
+.schedule__week--slot {
+    width: 90%;
+    background-color: #1154ad;
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-size: 85%;
+    color: white;
+}
+
+.schedule__week--on-hour {
+    height: 83%;
+    top: -8%;
+}
+
+.schedule__week--on-hourhalf {
+    height: 133%;
+    top: 17%;
+}
+
+.schedule__week--half-hour {
+    height: 83%;
+    top: 16%;
+}
+
+.schedule__week--half-hourhalf {
+    height: 133%;
+    top: 70%;
+}
+
+.schedule__week--final-on {
+    height: 200%;
+    top: 50%;
+}
+
+.schedule__week--final-half {
+    height: 200%;
+    top: 100%;
+}
+
+.schedule__title {
+    text-align: center;
+    color: #1154ad;
+    padding-bottom: 1rem;
+}
+
+.schedule__courses {
+    width: 99%;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.schedule__courses--item {
+    text-align: center;
+}
+
+.schedule__messages {
+    min-height: 5%;
+    width: 90%;
+}
+
+.schedule__flash {
+    background-color: #0f9ed5;
+    color: white;
+    text-align: center;
+}
