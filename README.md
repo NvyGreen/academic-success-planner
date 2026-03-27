@@ -20,10 +20,11 @@ The Academic Success Planner is a decision-support system that helps students:
 - Compare alternative schedules
 - Make informed, optimized decisisons
 
-This project evolves a traditional schedule planning app into an intelligent academic planning platform.
+This system aims to help students make better academic decisions by transforming course selection from a trial-and-error process into a data-informed planning experience.
 
 
 ## ⚙️ What This Project Does
+This system goes beyond traditional course registration by helping students evaluate and optimize their schedules based on workload, risk, and academic outcomes.
 - Enables students to create and manage course schedules
 - Applies real-world constraints (capacity, prerequisites, waitlists)
 - Estimates workload and schedule difficulty
@@ -82,6 +83,7 @@ Future phases will expand the system to include:
 
 
 ## 🏗️ System Architecture & Tech Stack
+This system separates user-specific planning data (stored locally) from academic course data (external API), enabling flexible decision logic while maintaining realistic data integration.
 Frontend: HTML/CSS  
 Backend: Python (Flask)  
 Database: SQLite  
