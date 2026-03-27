@@ -10,9 +10,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get(
-        "SECRET_KEY", "AAqZw6rPZxqbCT27jOBp-9yn32MNRUS-kI_OMgU2u2s"
-    )
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
     app.config["SQLITE3_DB"] = os.environ.get("SQLITE3_DB")
 
     app.db = sqlite3.connect(app.config["SQLITE3_DB"], check_same_thread=False)
