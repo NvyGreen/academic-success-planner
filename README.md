@@ -102,10 +102,14 @@ To run this project locally:
 9. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
 
 ### 📊 Database Setup
-- The application uses a relational SQLite database with tables for courses, departments, instructors, and student schedules.
-- The database file is defined using the SQLITE3_DB variable in .env.
-- Tables were created manually during development.
-- When the app is first started up, tables with mock data will be created if the database is empty
+The application uses a relational SQLite database with tables for courses, departments, instructors, and student schedules.  
+The database file is defined using the SQLITE3_DB variable in .env.  
+On application startup, if the specified database file is empty, the system will automatically:
+- Initialize all required tables
+- Populate the database with mock data for testing
+
+This ensures a fresh clone of the project can be set up and run without any manual database configuration.  
+Note: An empty SQLite database file must exist at the path specified in .env. The application will handle schema creation and data seeding automatically.
 
 
 ## Data Architecture
