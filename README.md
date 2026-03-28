@@ -105,11 +105,7 @@ To run this project locally:
 - The application uses a relational SQLite database with tables for courses, departments, instructors, and student schedules.
 - The database file is defined using the SQLITE3_DB variable in .env.
 - Tables were created manually during development.
-
-Note:  
-This project currently does not include an automated schema or migration setup.  
-You may need an existing database file with tables for full functionality.  
-Adding a schema initialization script is planned as a future improvement.
+- When the app is first started up, tables with mock data will be created if the database is empty
 
 
 ## Data Architecture
