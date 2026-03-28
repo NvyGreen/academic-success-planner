@@ -61,25 +61,17 @@
                 <tr>
                     {% for cell in row %}
                         {% if loop.first %}
-                            <th class="schedule__week--time">{{ cell }}</th>    <!-- Label a time -->
+                            <th class="schedule__week--time">{{ cell }}</th>
+                        {% elif cell == "SKIP" %}
+                        {% elif not cell %}
+                            <td></td>
                         {% else %}
-                            {% if not(cell) %}    <!-- If time slot not taken up -->
-                                <td></td>
-                            {% else %}
-                                {% if cell[1] == 0.0 %}
-                                    <td>
-                                        <p class="schedule__week--slot schedule__week--final-on">
-                                            {{ cell[0] }}
-                                        </p>
-                                    </td>
-                                {% else %}
-                                    <td>
-                                        <p class="schedule__week--slot schedule__week--final-half">
-                                            {{ cell[0] }}
-                                        </p>
-                                    </td>
-                                {% endif %}
-                            {% endif %}
+                            <td rowspan="{{ cell[1] }}" class="schedule__week--cell">
+                                <div class="schedule__week--slot"
+                                        style="top: {{ cell[2] }}%; height: {{ cell[3] }}%;">
+                                    {{ cell[0] }}
+                                </div>
+                            </td>
                         {% endif %}
                     {% endfor %}
                 </tr>

@@ -194,16 +194,6 @@ table, th, td {
     position: relative;
 }
 
-.schedule__week--final-on {
-    height: 200%;
-    top: 50%;
-}
-
-.schedule__week--final-half {
-    height: 200%;
-    top: 100%;
-}
-
 .schedule__title {
     text-align: center;
     color: #1154ad;
