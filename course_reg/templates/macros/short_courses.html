@@ -2,15 +2,12 @@
 <table class="schedule__courses">
     <thead>
         <tr>
-            <th class="schedule__courses--header">Code</th>
-            <th class="schedule__courses--header">Name</th>
-            <th class="schedule__courses--header">Abbreviation</th>
-            <th class="schedule__courses--header">Type</th>
+            <th class="schedule__courses--header">Course</th>
+            <th class="schedule__courses--header">Title</th>
+            <th class="schedule__courses--header">Days</th>
+            <th class="schedule__courses--header">Time</th>
             <th class="schedule__courses--header">Instructor</th>
-            <th class="schedule__courses--header">Starts</th>
-            <th class="schedule__courses--header">Ends</th>
             <th class="schedule__courses--header">Location</th>
-            <th class="schedule__courses--header">Status</th>
         </tr>
     </thead>
 
@@ -18,7 +15,11 @@
         {% for course in courses %}
             <tr>
                 {% for item in course %}
-                    {% if not(loop.last) %}
+                    {% if loop.first %}
+                        <td class="schedule__courses--item schedule__courses--code">
+                            <a href="#">{{ item }}</a>
+                        </td>
+                    {% else %}
                         <td class="schedule__courses--item">{{ item }}</td>
                     {% endif %}
                 {% endfor %}
