@@ -11,7 +11,6 @@ load_dotenv()
 
 def init_db(db):
     existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='final'""").fetchone()
-
     db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (
             "final_id" INTEGER,
@@ -38,8 +37,8 @@ def init_db(db):
             VALUES (?, ?);
         """, data)
 
-    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='ge_category'""").fetchone()
 
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='ge_category'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "ge_category" (
             "category_id" INTEGER,
@@ -71,7 +70,6 @@ def init_db(db):
 
 
     existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='instructor'""").fetchone()
-
     db.execute("""
         CREATE TABLE IF NOT EXISTS "instructor" (
             "instructor_id" INTEGER,
@@ -81,6 +79,32 @@ def init_db(db):
         );
     """)
 
+    if not existing:
+        data = [
+            ("Candice", "Yacono"),
+            ("Michael", "Green"),
+            ("Shannon", "Alfaro"),
+            ("Alex", "Thornton"),
+            ("Andromache", "Karanika"),
+            ("Irene", "Gassko"),
+            ("Joel", "Veenstra"),
+            ("Brian", "Sato"),
+            ("Sarah", "Pressman"),
+            ("Jianan", "Zhu"),
+            ("Lillian", "Jones"),
+            ("Raymond", "Klefstad"),
+            ("Iris", "Morell"),
+            ("Gaelle", "Sehi"),
+            ("Charles", "Smith")
+        ]
+
+        db.executemany("""
+            INSERT INTO "instructor" ("first_name", "last_name")
+            VALUES (?, ?);
+        """, data)
+
+
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='school'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "school" (
             "school_id" INTEGER,
@@ -89,6 +113,23 @@ def init_db(db):
         );
     """)
 
+    if not existing:
+        data = [
+            ("Unaffiliated"),
+            ("School of Humanities"),
+            ("School of Physical Sciences"),
+            ("Donald Bren School of Information and Computer Sciences"),
+            ("Joe C. Wen School of Population and Public Health"),
+            ("School of Social Sciences")
+        ]
+
+        db.executemany("""
+            INSERT INTO "school" ("name")
+            VALUES (?);
+        """, data)
+
+
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='student'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "student" (
             "student_id" INTEGER,
@@ -100,6 +141,14 @@ def init_db(db):
         );
     """)
 
+    if not existing:
+        db.execute("""
+            INSERT INTO "student" ("first_name", "last_name", "email", "password"),
+            VALUES (?, ?, ?, ?)
+        """, ("John", "Doe", "jdoe@uci.edu", "$pbkdf2-sha256$29000$Pee8l5IyZqw15rxX6p1zLg$nAFBakv3V4wPhfjqY21TJkVLv2YCEab6x4u5DPmeDpY"))
+
+
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='department'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "department" (
             "department_id" INTEGER,
@@ -111,9 +160,27 @@ def init_db(db):
         );
     """)
 
+    if not existing:
+        data = [
+            ("UNI STU", "University Studies", 1),
+            ("WRITING", "Writing", 2),
+            ("CHEM", "Chemistry", 3),
+            ("I&C SCI", "Information and Computer Sciences", 4),
+            ("POL SCI", "Political Science", 6),
+            ("PUBHLTH", "Public Health", 5),
+            ("CLASSIC", "Classics", 2),
+            ("MATH", "Mathematics", 3),
+            ("SPANISH", "Spanish", 2),
+            ("COM LIT", "Comparative Literature", 2)
+        ]
 
-    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='instructor'""").fetchone()
+        db.executemany("""
+            INSERT INTO "department" ("abbreviation", "name", "school_id")
+            VALUES (?, ?, ?)
+        """, data)
 
+
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='course'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "course" (
             "course_id" INTEGER,
@@ -162,11 +229,11 @@ def init_db(db):
             ("AI for Human Good", "3", 87413, 1, 1, 1, "lower", "Sem", "Tu", "2024-10-01T09:00:00.000Z", "2024-10-01T09:50:00.000Z", 0, 1, 0, 8, 15, 0, "CAC", "3100B"),
             ("Directed Studies in Undergraduate Education", "196", 87760, 1, 1, 1, "upper", "Res", None, None, None, 1, 1, 0, 516, 950, -1, None, None),
             ("Foundations for Success", "87", 87610, 1, 1, 1, "lower", "Sem", None, None, None, 1, 1, 0, 49, 120, -1, None, None),
-            ("Single-Variable Calculus I", "2A", 44020, 4, 8, 9, "lower", "Lec", "MWF", "2024-09-30T16:00:00.000Z", "2024-09-30T16:50:00.000Z", 0, 7, 0, 94, 195, 0, "PSLH", "100"),
-            ("Single-Variable Calculus I", "2A", 44021, 0, 1, 9, "lower", "Dis", "TuTh", "2024-09-26T12:00:00.000Z", "2024-09-26T12:50:00.000Z", 0, 1, 0, 21, 49, 0, "DBH", "1300"),
-            ("Fundamentals of Spanish", "1A", 31300, 4, 1, 10, "lower", "Lec", "TuWTh", "2024-09-26T08:00:00.000Z", "2024-09-26T08:50:00.000Z", 0, 8, 0, 18, 23, 0, "HH", "108"),
+            ("Single-Variable Calculus I", "2A", 44020, 4, 8, 8, "lower", "Lec", "MWF", "2024-09-30T16:00:00.000Z", "2024-09-30T16:50:00.000Z", 0, 7, 0, 94, 195, 0, "PSLH", "100"),
+            ("Single-Variable Calculus I", "2A", 44021, 0, 1, 8, "lower", "Dis", "TuTh", "2024-09-26T12:00:00.000Z", "2024-09-26T12:50:00.000Z", 0, 1, 0, 21, 49, 0, "DBH", "1300"),
+            ("Fundamentals of Spanish", "1A", 31300, 4, 1, 9, "lower", "Lec", "TuWTh", "2024-09-26T08:00:00.000Z", "2024-09-26T08:50:00.000Z", 0, 8, 0, 18, 23, 0, "HH", "108"),
             ("Invitation to Computing", "20", 36350, 1, 1, 4, "lower", "Sem", None, None, None, 1, 1, 0, 14, 50, 0, None, None),
-            ("Love", "10", 22720, 4, 11, 11, "lower", "Lec", None, None, None, 1, 1, 0, 19, 35, 0, None, None),
+            ("Love", "10", 22720, 4, 11, 10, "lower", "Lec", None, None, None, 1, 1, 0, 19, 35, 0, None, None),
             ("Introduction to Public Health", "1", 81010, 4, 5, 6, "lower", "Lec", None, None, None, 1, 1, 0, 95, 100, 0, None, None),
             ("Introduction to Law", "71A", 67110, 4, 5, 5, "lower", "Lec", None, None, None, 1, 1, 0, 36, 40, 0, None, None)
         ]
@@ -177,6 +244,7 @@ def init_db(db):
         """, data)
     
 
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='prerequisite'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "prerequisite" (
             "id" INTEGER,
@@ -188,6 +256,20 @@ def init_db(db):
         );
     """)
 
+    if not existing:
+        data = [
+            (2, 1),
+            (3, 18),
+            (7, 5),
+        ]
+
+        db.executemany("""
+            INSERT INTO "prerequisite" ("course_id", "prereq_id")
+            VALUES (?, ?);
+        """, data)
+
+
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='corequisite'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "corequisite" (
             "id" INTEGER,
@@ -198,6 +280,28 @@ def init_db(db):
             FOREIGN KEY("coreq_id") REFERENCES "course"("course_id")
         );
     """)
+
+    if not existing:
+        data = [
+            (3, 4),
+            (4, 3),
+            (5, 6),
+            (6, 5),
+            (7, 8),
+            (8, 7),
+            (9, 10),
+            (10, 9),
+            (12, 13),
+            (13, 12),
+            (18, 19),
+            (19, 18)
+        ]
+
+        db.executemany("""
+            INSERT INTO "prerequisite" ("course_id", "coreq_id")
+            VALUES (?, ?);
+        """, data)
+
 
     db.execute("""
         CREATE TABLE IF NOT EXISTS "course_instructor" (

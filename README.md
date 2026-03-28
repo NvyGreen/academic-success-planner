@@ -90,17 +90,26 @@ To run this project locally:
 1. Ensure Python (3.9+) and SQLite are installed on your machine.
 2. Clone the repository and navigate to the project directory.
 3. Create and activate a virtual environment, then install the required dependencies by running `pip install -r requirements.txt` in your terminal.
-4. Create .env and .flaskenv files in the root directory to store environment variables such as the Flask configuration, secret key, and database connection details.
-5. An .env.example file is provided to show the required environment variables and expected format.
-6. Start the Flask development server by running `flask run` in your terminal.
-7. Open the application in your browser at http://127.0.0.1:5000.
-8. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
+4. Create a .env file in the root directory by copying from .env.example and update the following values:  
+   a. SQLITE3_DB = name of your local database file (e.g., academic_success_planner.db)  
+   b. SECRET_KEY = any random secure string
+5. Create a .flaskenv file in the root directory by copying from .flaskenv.example and update the following values:  
+   a. FLASK_APP = name of the app (e.g., course_reg)  
+   b. SECRET_KEY = any random secure string (e.g., development)  
+6. Create an empty SQLite database file in the project root using the name specified in .env.
+7. Start the Flask development server by running `flask run` in your terminal.
+8. Open the application in your browser at http://127.0.0.1:5000.
+9. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
 
 ### 📊 Database Setup
-- The application uses a relational database with tables representing courses, departments, instructors, etc.
-- Create a SQLite database for the application.
-- Database tables are created manually during development.
-- A formal schema or migration setup is planned as a future improvement.
+- The application uses a relational SQLite database with tables for courses, departments, instructors, and student schedules.
+- The database file is defined using the SQLITE3_DB variable in .env.
+- Tables were created manually during development.
+
+Note:  
+This project currently does not include an automated schema or migration setup.  
+You may need an existing database file with tables for full functionality.  
+Adding a schema initialization script is planned as a future improvement.
 
 
 ## Data Architecture
