@@ -115,12 +115,12 @@ def init_db(db):
 
     if not existing:
         data = [
-            ("Unaffiliated"),
-            ("School of Humanities"),
-            ("School of Physical Sciences"),
-            ("Donald Bren School of Information and Computer Sciences"),
-            ("Joe C. Wen School of Population and Public Health"),
-            ("School of Social Sciences")
+            ("Unaffiliated",),
+            ("School of Humanities",),
+            ("School of Physical Sciences",),
+            ("Donald Bren School of Information and Computer Sciences",),
+            ("Joe C. Wen School of Population and Public Health",),
+            ("School of Social Sciences",)
         ]
 
         db.executemany("""
@@ -143,7 +143,7 @@ def init_db(db):
 
     if not existing:
         db.execute("""
-            INSERT INTO "student" ("first_name", "last_name", "email", "password"),
+            INSERT INTO "student" ("first_name", "last_name", "email", "password")
             VALUES (?, ?, ?, ?)
         """, ("John", "Doe", "jdoe@uci.edu", "$pbkdf2-sha256$29000$Pee8l5IyZqw15rxX6p1zLg$nAFBakv3V4wPhfjqY21TJkVLv2YCEab6x4u5DPmeDpY"))
 
@@ -240,7 +240,7 @@ def init_db(db):
 
         db.executemany("""
             INSERT INTO "course" ("course_name", "course_number", "course_code", "credits", "category_id", "department_id", "course_level", "type", "days", "start_time", "end_time", "is_online", "final_id", "cancelled", "num_enrolled", "capacity", "waitlist", "building_code", "room")
-            VALUES (?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """, data)
     
 
@@ -298,11 +298,12 @@ def init_db(db):
         ]
 
         db.executemany("""
-            INSERT INTO "prerequisite" ("course_id", "coreq_id")
+            INSERT INTO "corequisite" ("course_id", "coreq_id")
             VALUES (?, ?);
         """, data)
 
 
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='course_instructor'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "course_instructor" (
             "id" INTEGER,
@@ -313,6 +314,40 @@ def init_db(db):
             FOREIGN KEY("instructor_id") REFERENCES "instructor"("instructor_id")
         );
     """)
+
+    if not existing:
+        data = [
+            (1, 1),
+            (2, 1),
+            (3, 2),
+            (4, 2),
+            (5, 3),
+            (6, 3),
+            (7, 3),
+            (8, 3),
+            (9, 4),
+            (10, 4),
+            (11, 5),
+            (12, 6),
+            (13, 6),
+            (14, 2),
+            (15, 7),
+            (16, 8),
+            (17, 9),
+            (18, 10),
+            (19, 10),
+            (20, 11),
+            (21, 12),
+            (22, 13),
+            (23, 14),
+            (24, 15)
+        ]
+
+        db.executemany("""
+            INSERT INTO "course_instructor" ("course_id", "instructor_id")
+            VALUES (?, ?);
+        """, data)
+
 
     db.execute("""
         CREATE TABLE IF NOT EXISTS "enrollment" (
@@ -325,6 +360,7 @@ def init_db(db):
         );
     """)
 
+    existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='prev_enrollment'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "prev_enrollment" (
             "enrollment_id" INTEGER,
@@ -336,13 +372,36 @@ def init_db(db):
         );
     """)
 
+    if not existing:
+        data = [
+            (1, 1),
+            (1, 3),
+            (1, 4),
+            (1, 5),
+            (1, 6),
+            (1, 7),
+            (1, 8),
+            (1, 11),
+            (1, 17),
+            (1, 18),
+            (1, 19),
+            (1, 20),
+            (1, 21)
+        ]
+
+        db.executemany("""
+            INSERT INTO "prev_enrollment" ("student_id", "course_id")
+            VALUES (?, ?);
+        """, data)
+
+
     db.execute("""
         CREATE TABLE IF NOT EXISTS "student_waitlist" (
             "waitlist_id" INTEGER,
             "student_id" INTEGER,
             "course_id" INTEGER,
             "position" INTEGER,
-            PRIMARY KEY("enrollment_id"),
+            PRIMARY KEY("waitlist_id"),
             FOREIGN KEY("course_id") REFERENCES "course"("course_id"),
             FOREIGN KEY("student_id") REFERENCES "student"("student_id")
         );
@@ -356,6 +415,7 @@ def create_app():
     app.config["SQLITE3_DB"] = os.environ.get("SQLITE3_DB")
 
     app.db = sqlite3.connect(app.config["SQLITE3_DB"], check_same_thread=False)
+    init_db(app.db)
 
     app.register_blueprint(pages)
 
