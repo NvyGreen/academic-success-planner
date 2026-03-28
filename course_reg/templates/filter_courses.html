@@ -15,7 +15,8 @@
 {% endblock %}
 
 {% block main_content %}
-    <h1 class="form__title">Courses Search & Registration Portal</h1>
+    <h1 class="form__title">Course Search & Registration Portal</h1>
+    <p class="form__subtitle">Search for courses to add to your schedule.</p>
 
     <form name="course-filter" method="post" class="form">
         <div class="form__container">
@@ -36,7 +37,7 @@
                 {{ render_text_field(form.course_code) }}
                 {{ render_text_field(form.instructor) }}
 
-                <div>
+                <div class="form__submit">
                     {{ form.submit(class_="button button--basic-filter") }}
                 </div>
             </div>
