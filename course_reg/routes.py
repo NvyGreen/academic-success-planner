@@ -407,13 +407,3 @@ def confirm_schedule():
     session["load_bearing"] = False
 
     return redirect(url_for(".user_courses"))
-from flask import (
-    Blueprint,
-    render_template,
-    url_for,
-    session,
-    redirect,
-    current_app,
-    flash,
-    request
-)

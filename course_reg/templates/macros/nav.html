@@ -9,15 +9,15 @@
 
         <nav class="nav">
             <a href="{{ url_for('pages.filter_courses') }}"
-               class="nav__link {% if request.endpoint == 'pages.filter_courses' %}nav__link--active{% endif %}">
+               class="nav__link {% if request.endpoint == 'pages.filter_courses' or request.endpoint == 'pages.filter_courses_advanced' or request.endpoint == 'pages.course_listing' or request.endpoint == 'pages.preview_courses' or request.endpoint == 'pages.preview_finals' or request.endpoint == 'pages.preview_quarter' %}nav__link--active{% endif %}">
                 Search Courses
             </a>
             <a href="{{ url_for('pages.cancel_filter') }}"
-               class="nav__link {% if request.endpoint == 'pages.cancel_filter' %}nav__link--active{% endif %}">
+               class="nav__link {% if request.endpoint == 'pages.user_courses' or request.endpoint == 'pages.user_finals' or request.endpoint == 'pages.user_quarter' or request.endpoint == 'pages.drop_courses' %}nav__link--active{% endif %}">
                 My Courses
             </a>
             <a href="{{ url_for('pages.cancel_waitlist') }}"
-               class="nav__link {% if request.endpoint == 'pages.cancel_waitlist' %}nav__link--active{% endif %}">
+               class="nav__link {% if request.endpoint == 'pages.user_waitlists' %}nav__link--active{% endif %}">
                 My Waitlist
             </a>
         </nav>
