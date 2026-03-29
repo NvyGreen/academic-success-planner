@@ -8,11 +8,12 @@
 
 {% block main_content %}
     <div class="schedule__container">
+
         <div class="schedule__half">
             <div class="schedule__nav">
-                <a href="{{ url_for('pages.user_courses') }}" class="schedule__link">Weekly Schedule</a>
-                <a href="{{ url_for('pages.user_finals') }}" class="schedule__link">Final Schedule</a>
-                <a href="{{ url_for('pages.user_quarter') }}" class="schedule__link">Quarterly Calendar</a>
+                <a href="{{ url_for('pages.user_courses') }}" class="schedule__link schedule__link--outline">&#9670; Weekly</a>
+                <a href="{{ url_for('pages.user_finals') }}" class="schedule__link schedule__link--outline">&#8862; Finals</a>
+                <a href="{{ url_for('pages.user_quarter') }}" class="schedule__link schedule__link--active">Quarter</a>
             </div>
 
             <img src="{{ url_for('static', filename='Fall-2024.png') }}" class="schedule__quarter" />
@@ -20,16 +21,16 @@
 
         <hr />
 
-        <div class="schedule__half">
-            <h1 class="schedule__title">Selected Courses</h1>
+        <div class="schedule__courses-section">
+            <div class="schedule__courses-header-row">
+                <h2 class="schedule__courses-heading">My Courses</h2>
+                <div class="schedule__courses-actions">
+                    <a href="{{ url_for('pages.user_courses') }}" class="schedule__btn--outline">Back to Weekly</a>
+                </div>
+            </div>
 
             {{ courses_short(courses) }}
-
-            <div class="schedule__nav">
-                <a href="{{ url_for('pages.filter_courses') }}" class="schedule__link">Add Courses</a>
-                <a href="{{ url_for('pages.drop_courses') }}" class="schedule__link">Drop Courses</a>
-                <a href="{{ url_for('pages.user_waitlists') }}" class="schedule__link">See Waitlist</a>
-            </div>
         </div>
+
     </div>
 {% endblock %}

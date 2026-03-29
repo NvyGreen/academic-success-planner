@@ -10,9 +10,9 @@
     <div class="schedule__container">
         <div class="schedule__half">
             <div class="schedule__nav">
-                <a href="{{ url_for('pages.preview_courses') }}" class="schedule__link">Weekly Schedule</a>
-                <a href="{{ url_for('pages.preview_finals') }}" class="schedule__link">Final Schedule</a>
-                <a href="{{ url_for('pages.preview_quarter') }}" class="schedule__link">Quarterly Calendar</a>
+                <a href="{{ url_for('pages.preview_courses') }}" class="schedule__link schedule__link--outline">Weekly Schedule</a>
+                <a href="{{ url_for('pages.preview_finals') }}" class="schedule__link schedule__link--outline">Final Schedule</a>
+                <a href="{{ url_for('pages.preview_quarter') }}" class="schedule__link schedule__link--active">Quarterly Calendar</a>
             </div>
 
             <img src="{{ url_for('static', filename='Fall-2024.png') }}" class="schedule__quarter" />
@@ -26,9 +26,9 @@
             {{ courses_short(courses) }}
 
             <div class="schedule__nav">
-                <a href="{{ url_for('pages.cancel_select') }}" class="schedule__link">Cancel</a>
-                <a href="{{ url_for('pages.filter_courses') }}" class="schedule__link">Add More Courses</a>
-                <a href="{{ url_for('pages.confirm_schedule') }}" class="schedule__link">Confirm Schedule</a>
+                <a href="{{ url_for('pages.cancel_select') }}" class="schedule__link schedule__link--outline">Cancel</a>
+                <a href="{{ url_for('pages.filter_courses') }}" class="schedule__link schedule__link--outline">Add More Courses</a>
+                <a href="{{ url_for('pages.confirm_schedule') }}" class="schedule__link schedule__link--active">Confirm Schedule</a>
             </div>
         </div>
     </div>

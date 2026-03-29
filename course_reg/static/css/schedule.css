@@ -106,8 +106,12 @@ table, th, td {
 }
 
 .schedule__quarter {
-    width: 90%;
+    width: 99%;
     height: auto;
+    max-height: 380px;     /* same as the calendar container */
+    object-fit: contain;   /* keeps the image proportions intact */
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
 }
 
 .schedule__week-container {
