@@ -33,12 +33,8 @@ def prep_departments():
 
 
 def get_courses(filters, temp_courses, reg_courses, waitlist):
-    if filters.instructor:
-        query = """SELECT course.*, instructor.first_name, instructor.last_name FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
-        modifier = "course."
-    else:
-        query = """SELECT * FROM course WHERE """
-        modifier = ""
+    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    modifier = "course."
     
     values = dict()
     add_condition = """ AND """
@@ -108,19 +104,15 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
 
     courses = []
     for raw_course in courses_raw:
-        added = (raw_course[3] in temp_courses) or (raw_course[3] in reg_courses)
-        waitlisted = raw_course[3] in waitlist
-        courses.append(clean_course(raw_course, bool(filters.instructor), added, waitlisted))
+        added = (raw_course[len(raw_course) - 1] in temp_courses) or (raw_course[len(raw_course) - 1] in reg_courses)
+        waitlisted = raw_course[len(raw_course) - 1] in waitlist
+        courses.append(clean_course(raw_course, added, waitlisted))
     return courses
 
 
 def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
-    if filters.instructor:
-        query = """SELECT course.*, instructor.first_name, instructor.last_name FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
-        modifier = "course."
-    else:
-        query = """SELECT * FROM course WHERE """
-        modifier = ""
+    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    modifier = "course."
     
     values = dict()
     add_condition = """ AND """
@@ -270,9 +262,9 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
 
     courses = []
     for raw_course in courses_raw:
-        added = (raw_course[3] in temp_courses) or (raw_course[3] in reg_courses)
-        waitlisted = raw_course[3] in waitlist
-        courses.append(clean_course(raw_course, bool(filters.instructor), added, waitlisted))
+        added = (raw_course[len(raw_course) - 1] in temp_courses) or (raw_course[len(raw_course) - 1] in reg_courses)
+        waitlisted = raw_course[len(raw_course) - 1] in waitlist
+        courses.append(clean_course(raw_course, added, waitlisted))
     return courses
 
 
@@ -280,7 +272,7 @@ def get_courses_from_codes(course_codes):
     if len(course_codes) == 0:
         return []
     
-    query = """SELECT course.*, instructor.first_name, instructor.last_name FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
 
     for i in range(len(course_codes)):
         if i == 0:
@@ -296,7 +288,7 @@ def get_courses_from_codes(course_codes):
 
     courses = []
     for raw_course in courses_raw:
-        courses.append(clean_course(raw_course, True, True, False))
+        courses.append(clean_course(raw_course, True, False))
     return courses
 
 
@@ -304,7 +296,7 @@ def get_user_waitlist(user_id, course_codes):
     if len(course_codes) == 0:
         return []
     
-    query = """SELECT course.*, instructor.first_name, instructor.last_name FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
 
     for i in range(len(course_codes)):
         if i == 0:
@@ -319,11 +311,11 @@ def get_user_waitlist(user_id, course_codes):
 
     courses = []
     for raw_course in courses_raw:
-        courses.append(clean_course(raw_course, True, False, True))
+        courses.append(clean_course(raw_course, False, True))
     
     for i in range(len(courses)):
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
-        cursor = current_app.db.execute(query, {"course_code": courses[i][1]})
+        cursor = current_app.db.execute(query, {"course_code": course_codes[i]})
         course_id = cursor.fetchone()[0]
 
         query = """SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
@@ -453,8 +445,10 @@ def get_criteria_adv(filters):
     return criteria
 
 
-def clean_course(raw_course, has_instructor: bool, added: bool, waitlisted: bool):
+def clean_course(raw_course, added: bool, waitlisted: bool):
     course = []
+
+    # (department_id, course_number, course_name, type, days, start_time, end_time, final_id, first_name, last_name, is_online, building_code, room, credits, num_enrolled, capacity, waitlist, cancelled)
 
     # Add/Drop/Wait
     if added:
@@ -463,61 +457,28 @@ def clean_course(raw_course, has_instructor: bool, added: bool, waitlisted: bool
         course.append("Waitlisted")
     else:
         course.append("Neither")
-
-    course.append(raw_course[3])    # course_code
-    course.append(raw_course[1])    # course_name
-
-    # Abbreviation
-    cursor = current_app.db.execute("SELECT abbreviation, school_id FROM department WHERE department_id = :department_id;", {"department_id": raw_course[6]})
-    dep_data = cursor.fetchone()
-    course.append(dep_data[0] + " " + str(raw_course[2]))    # department + course_number
-
-    # School
-    cursor = current_app.db.execute("SELECT name FROM school WHERE school_id = :school_id;", {"school_id": dep_data[1]})
-    school = cursor.fetchone()[0]
-    course.append(school)
-
-    course.append(raw_course[8])    # type
-    course.append(raw_course[4])    # credits
-
-    # Instructor
-    if has_instructor:
-        course.append(raw_course[21] + ", " + raw_course[20][0] + ".")    # instructor.first_name, instructor.first_initial.
-    else:
-        cursor = current_app.db.execute("""SELECT instructor.first_name, instructor.last_name
-                                        FROM course_instructor
-                                        JOIN course ON course_instructor.course_id = course.course_id
-                                        JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id
-                                        WHERE course.course_id = :course_id;""", {"course_id": raw_course[0]})
-        instructor = cursor.fetchone()
-        course.append(instructor[1] + ", " + instructor[0][0] + ".")
-
-    # Modality
-    if raw_course[12]:              # if is_online
-        course.append("Online")
-    else:
-        course.append("In-person")
     
-    course.append(raw_course[9])    # days
+    # Abbreviation
+    cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
+    department = cursor.fetchone()[0]
+    course.append(department + " " + raw_course[1])    # department + course_number
+
+    course.append(raw_course[2])    # course_name
+    course.append(raw_course[3])    # type
+    course.append(raw_course[4])    # days
 
     # Times
-    if raw_course[10] is None or raw_course[11] is None:
+    if raw_course[5] is None or raw_course[6] is None:
         course.append(None)
     else:
-        start_time_raw = str(datetime.fromisoformat(raw_course[10]).hour) + ":" + str(datetime.fromisoformat(raw_course[10]).minute)
-        end_time_raw = str(datetime.fromisoformat(raw_course[11]).hour) + ":" + str(datetime.fromisoformat(raw_course[11]).minute)
+        start_time_raw = str(datetime.fromisoformat(raw_course[5]).hour) + ":" + str(datetime.fromisoformat(raw_course[5]).minute)
+        end_time_raw = str(datetime.fromisoformat(raw_course[6]).hour) + ":" + str(datetime.fromisoformat(raw_course[6]).minute)
         start_time = datetime.strptime(start_time_raw, "%H:%M").strftime("%I:%M %p")
         end_time = datetime.strptime(end_time_raw, "%H:%M").strftime("%I:%M %p")
         course.append(start_time + "-" + end_time)
-
-    # Location
-    if raw_course[18] is None or raw_course[19] is None:
-        course.append(None)
-    else:
-        course.append(raw_course[18] + " " + raw_course[19])    # building_code + room
-
+    
     # Final
-    cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[13]})
+    cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[7]})
     final_data = cursor.fetchone()
 
     if (final_data[0] == "No Final"):
@@ -533,19 +494,31 @@ def clean_course(raw_course, has_instructor: bool, added: bool, waitlisted: bool
 
         course.append(final_day + ", " + final_date + ", " + final_start + "-" + final_end)
 
+    # Instructor
+    course.append(raw_course[8] + ", " + raw_course[9][0] + ".")    # instructor.first_name, instructor.first_initial.
+
+    # Location
+    if (raw_course[10] == 1):
+            course.append("Online")
+    else:
+        course.append(raw_course[11] + " " + raw_course[12])    # building_code room
+    
+    course.append(raw_course[13])    # credits
+    course.append(str(raw_course[14]) + " / " + str(raw_course[15]))    # num_enrolled / capacity
+
     # Status
-    if raw_course[14] == 1:
+    if raw_course[17] == 1:
         course.append("CANCELLED")
-    elif raw_course[15] < raw_course[16]:      # num_enrolled < capacity?
+    elif raw_course[14] < raw_course[15]:      # num_enrolled < capacity?
         course.append("Open")
-    elif raw_course[17] >= 0:                # waitlist >= 0?
+    elif raw_course[16] >= 0:                  # waitlist >= 0?
         course.append("Waitlist")
-    elif raw_course[15] > raw_course[16]:    # num_enrolled > capacity
+    elif raw_course[14] > raw_course[15]:      # num_enrolled > capacity
         course.append("OVER")
     else:
         course.append("FULL")
     
-    course.append(str(raw_course[15]) + " / " + str(raw_course[16]))    # num_enrolled / capacity
+    course.append(raw_course[18])
     
     cursor.close()
     return course

@@ -34,7 +34,7 @@
                     {% for item in course %}
                         {% if loop.first %}
                             {% if item == "Registered" %}
-                                <td class="table__item"><a href="{{ url_for('pages.drop_course', code=course[1], current_page=request.path) }}" class="table__link">Drop</a></td>
+                                <td class="table__item"><a href="{{ url_for('pages.drop_course', code=course[12], current_page=request.path) }}" class="table__link">Drop</a></td>
                             {% else %}
                                 <td class="table__item">Dropped</td>
                             {% endif %}
@@ -89,7 +89,7 @@
                     {% for item in course %}
                         {% if loop.first %}
                             {% if item == "Registered" %}
-                                <td class="table__item"><a href="{{ url_for('pages.drop_course', code=course[1], current_page=request.path) }}" class="table__link">Drop</a></td>
+                                <td class="table__item"><a href="{{ url_for('pages.drop_course', code=course[12], current_page=request.path) }}" class="table__link">Drop</a></td>
                             {% else %}
                                 <td class="table__item">Dropped</td>
                             {% endif %}

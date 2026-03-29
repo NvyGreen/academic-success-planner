@@ -1,77 +1,181 @@
+.listing__header {
+    margin-bottom: 1rem;
+}
+
 .listing__title {
-    text-align: center;
+    text-align: left;
     color: #1154ad;
+    font-size: 1.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.listing__subtitle {
+    color: #555;
+    font-size: 0.88rem;
+    margin: 0;
 }
 
 .criteria {
-    padding-top: 2rem;
-    padding-bottom: 5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.6rem 0.75rem;
+    background-color: #f5f7fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 1.25rem;
 }
 
-.criteria__list {
-    margin-left: 1.5rem;
+.criteria__label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #333;
+    margin-right: 0.25rem;
+}
+
+.criteria__pill {
+    font-size: 0.78rem;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 0.2rem 0.55rem;
+    color: #333;
+}
+
+.criteria__clear {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: #1154ad;
+    text-decoration: none;
+}
+
+.criteria__clear:hover {
+    text-decoration: underline;
 }
 
 .table {
     width: 100%;
-}
-
-.table,
-.table__header,
-.table__item {
     border-collapse: collapse;
-}
-
-.table__header,
-.table__item {
-    padding-left: 0.1rem;
-    padding-right: 0.1rem;
 }
 
 .table__header {
     background-color: #1154ad;
     color: white;
-    border: 1px solid #1154ad;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid #0e4a9a;
+    text-align: left;
 }
 
 .table__item {
-    text-align: center;
-    border: 1px solid black;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+    vertical-align: middle;
 }
 
-.table__link {
-    color: blue;
+.table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.table__action {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    font-weight: 600;
     text-decoration: none;
+    text-align: center;
+    cursor: pointer;
 }
 
-.table__link:hover {
-    text-decoration: underline;
+.table__action--add {
+    background-color: #1154ad;
+    color: white;
+}
+
+.table__action--add:hover {
+    background-color: #0d429a;
+}
+
+.table__action--drop {
+    background-color: #c0392b;
+    color: white;
+}
+
+.table__action--drop:hover {
+    background-color: #a93226;
+}
+
+.table__action--wait {
+    background-color: #e67e22;
+    color: white;
+}
+
+.table__action--wait:hover {
+    background-color: #ca6f1e;
+}
+
+.table__action--full {
+    color: #888;
+    font-size: 0.78rem;
+}
+
+.table__badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.table__badge--open {
+    background-color: #d4edda;
+    color: #1a6e30;
+}
+
+.table__badge--waitlist {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.table__badge--full,
+.table__badge--over {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.table__badge--cancelled {
+    background-color: #e2e3e5;
+    color: #444;
 }
 
 .listing__nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding-top: 2rem;
 }
 
 .listing__nav--button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 10.5rem;
-  height: 2.7rem;
-  margin: auto;
-  text-decoration: none;
-  background-color: #1154ad;
-  color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1.75rem;
+    border-radius: 4px;
+    background-color: #1154ad;
+    color: white;
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .listing__nav--button:hover {
-  text-decoration: underline;
-}
-
-.listing__nav--text {
-  font-weight: 600;
-  text-align: center;
+    background-color: #0d429a;
+    text-decoration: none;
 }
