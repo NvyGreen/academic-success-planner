@@ -1,15 +1,31 @@
 {% macro header() %}
 <header class="header">
     <div class="nav-container">
-        <nav class="nav">
-            <a href="{{ url_for('pages.cancel_filter') }}" class="nav__link">
-                <p class="nav__item">See My Registered Courses</p>
-            </a>
 
-            <a href="{{ url_for('pages.cancel_waitlist') }}" class="nav__link">
-                <p class="nav__item">See My Waitlist</p>
+        <div class="nav__brand">
+            <span class="nav__logo">🎓</span>
+            <span class="nav__brand-text"><strong>Academic Success</strong> Planner</span>
+        </div>
+
+        <nav class="nav">
+            <a href="{{ url_for('pages.filter_courses') }}"
+               class="nav__link {% if request.endpoint == 'pages.filter_courses' %}nav__link--active{% endif %}">
+                Search Courses
+            </a>
+            <a href="{{ url_for('pages.cancel_filter') }}"
+               class="nav__link {% if request.endpoint == 'pages.cancel_filter' %}nav__link--active{% endif %}">
+                My Courses
+            </a>
+            <a href="{{ url_for('pages.cancel_waitlist') }}"
+               class="nav__link {% if request.endpoint == 'pages.cancel_waitlist' %}nav__link--active{% endif %}">
+                My Waitlist
             </a>
         </nav>
+
+        <div class="nav__profile">
+            <!-- Profile image goes here later -->
+        </div>
+
     </div>
 </header>
 {% endmacro %}

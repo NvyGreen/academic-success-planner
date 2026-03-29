@@ -60,36 +60,71 @@ body {
 
 
 .header {
-  padding-top: 2rem;
+    padding: 0;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .nav-container {
-  margin: auto;
-  width: 75%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto;
+    width: 90%;
+    height: 3.5rem;
+}
+
+.nav__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.nav__logo {
+    font-size: 1.1rem;
+}
+
+.nav__brand-text {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.nav__brand-text strong {
+    color: #1154ad;
+    font-weight: 700;
 }
 
 .nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
 }
 
 .nav__link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20rem;
-  margin: auto;
-  text-decoration: none;
-  background-color: #1154ad;
-  color: white;
+    font-size: 0.88rem;
+    color: #333;
+    text-decoration: none;
+    padding-bottom: 0.2rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.1s ease, border-color 0.1s ease;
 }
 
 .nav__link:hover {
-  text-decoration: underline;
+    color: #1154ad;
+    text-decoration: none;
 }
 
-.nav__item {
-  font-weight: 600;
-  text-align: center;
+.nav__link--active {
+    color: #1154ad;
+    font-weight: 600;
+    border-bottom: 2px solid #1154ad;
+}
+
+.nav__profile {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    flex-shrink: 0;
 }
