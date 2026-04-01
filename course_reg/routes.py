@@ -73,11 +73,11 @@ def user_courses():
     calendar = course_reg.schedule_methods.create_calendar(courses)
 
     if len(session["unreged_courses"]) > 0:
-        flash("Could not register these courses, check if all requirements satisfied:")
-        unreged = ""
-        for course in session["unreged_courses"]:
-            unreged += str(course) + ", "
-        flash(unreged[:-2])
+        unreged = ", ".join(str(code) for code in session["unreged_courses"])
+        flash(
+            f"Could not register the following courses — check that all requirements are satisfied: {unreged}",
+            "error"
+        )
         session["unreged_courses"] = []
 
     return render_template(
