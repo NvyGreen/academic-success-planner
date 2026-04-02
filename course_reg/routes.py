@@ -308,9 +308,11 @@ def add_course(code):
         session["temp_courses"].append(code)
 
         for course in session["filter_courses"]:
-            if course[1] == code:
+            if course[-1] == code:
                 course[0] = "Registered"
                 break
+        
+        session.modified = True
     
     return redirect(request.args.get("current_page"))
 
@@ -324,20 +326,23 @@ def drop_course(code):
         session["temp_courses"].remove(code)
 
         for course in session["filter_courses"]:
-            if course[1] == code:
+            if course[-1] == code:
                 course[0] = "Neither"
                 break
+        
+        session.modified = True
     
     if code in session["user_courses"]:
         session["load_bearing"] = False
         session["user_courses"].remove(code)
 
         for course in session["filter_courses"]:
-            if course[1] == code:
+            if course[-1] == code:
                 course[0] = "Neither"
                 break
 
         course_reg.register_methods.drop_course(session["user_id"], code)
+        session.modified = True
 
     return redirect(request.args.get("current_page"))
 
@@ -352,9 +357,11 @@ def wait_course(code):
         session["user_waitlist"].append(code)
 
         for course in session["filter_courses"]:
-            if course[1] == code:
+            if course[-1] == code:
                 course[0] = "Waitlisted"
                 break
+
+        session.modified = True
 
     return redirect(request.args.get("current_page"))
 
@@ -369,9 +376,11 @@ def drop_wait(code):
         session["user_waitlist"].remove(code)
 
         for course in session["filter_courses"]:
-            if course[1] == code:
+            if course[-1] == code:
                 course[0] = "Neither"
                 break
+        
+        session.modified = True
     
     return redirect(request.args.get("current_page"))
 
