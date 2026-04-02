@@ -17,7 +17,9 @@
     </head>
 
     <body>
-        {{ header() }}
+        {% if session.get("email") %}
+            {{ header() }}
+        {% endif %}
         
         <main class="main">
             {% block main_content %}
