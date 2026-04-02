@@ -161,6 +161,5 @@ Phase 4: Explainability & user insights
 
 
 ## 📷 Demo / Screenshots
-<img src="screenshots/course-schedule.png" alt="Course Schedule page" width=500> <img src="screenshots/final-schedule.png" alt="Final Schedule page" width=500>
-<img src="screenshots/quarter-calendar.png" alt="Quarter Calendar page" width=500> <img src="screenshots/waitlist.png" alt="Waitlist page" width=500>
+<img src="screenshots/course-schedule.png" alt="Course Schedule page" width=500> <img src="screenshots/waitlist.png" alt="Waitlist page" width=500>
 <img src="screenshots/filter-courses.png" alt="Filter Courses page" width=500> <img src="screenshots/course-listing.png" alt="Course Listing page" width=500>
