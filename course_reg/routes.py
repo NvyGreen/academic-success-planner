@@ -56,7 +56,7 @@ def check_window(route):
 def index():
     course_reg.register_methods.enroll_from_waitlist()
     session["user_courses"] = course_reg.schedule_methods.get_registered_courses(session["user_id"])
-    session["unreged_courses"] = []
+    session["unreged_courses"] = {}
     session["user_waitlist"] = course_reg.schedule_methods.get_waitlist(session["user_id"])
     session["temp_courses"] = []
     session["load_bearing"] = False
@@ -72,13 +72,10 @@ def user_courses():
     courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
     calendar = course_reg.schedule_methods.create_calendar(courses)
 
-    if len(session["unreged_courses"]) > 0:
-        unreged = ", ".join(str(code) for code in session["unreged_courses"])
-        flash(
-            f"Could not register the following courses — check that all requirements are satisfied: {unreged}",
-            "error"
-        )
-        session["unreged_courses"] = []
+    for course, reqs in session["unreged_courses"].items():
+        flash(f"Could not join {course} - {reqs}", "error")
+
+    session["unreged_courses"] = {}
 
     return render_template(
         "index.html",

@@ -30,10 +30,34 @@ def register_courses(user_id, course_codes):
 
     cursor = current_app.db.execute(query)
     course_ids = cursor.fetchall()
-    unreged_courses = []
+    unreged_courses = {}
 
     for course_id in course_ids:
-        if check_prereqs(user_id, course_id[0]) and check_coreqs(course_id[0], course_ids):
+        prereqs_check = check_prereqs(user_id, course_id[0])
+        coreqs_check = check_coreqs(user_id, course_id[0])
+        if len(prereqs_check) > 0:
+            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
+            cursor = current_app.db.execute(query, {"course_id": course_id[0]})
+            dept_info = cursor.fetchone()
+
+            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
+            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
+
+            course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
+            prereqs = "Following prerequisites not satisfied: " + ", ".join(prereqs_check)
+            unreged_courses[course_desc] = prereqs
+        elif len(coreqs_check) > 0:
+            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
+            cursor = current_app.db.execute(query, {"course_id": course_id[0]})
+            dept_info = cursor.fetchone()
+
+            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
+            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
+
+            course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
+            coreqs = "Following corequisites not satisfied: " + ", ".join(coreqs_check)
+            unreged_courses[course_desc] = coreqs
+        else:
             query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
             cursor = current_app.db.execute(query, {"student_id": user_id, "course_id": course_id[0]})
 
@@ -41,18 +65,6 @@ def register_courses(user_id, course_codes):
             cursor = current_app.db.execute(query, {"course_id": course_id[0]})
 
             current_app.db.commit()
-        else:
-            query = """SELECT department_id, course_number FROM course WHERE course_id = :course_id;"""
-            cursor = current_app.db.execute(query, {"course_id": course_id[0]})
-            dept_info = cursor.fetchone()
-
-            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
-            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
-            unreged_courses.append(cursor.fetchone()[0] + " " + dept_info[1])
-
-            # query = """SELECT course_code FROM course WHERE course_id = :course_id;"""
-            # cursor = current_app.db.execute(query, {"course_id": course_id[0]})
-            # unreged_courses.append(cursor.fetchone()[0])
     
     cursor.close()
     return unreged_courses
@@ -65,34 +77,50 @@ def check_coreqs(course_id, all_ids):
     cursor.close()
 
     if len(coreqs) == 0:
-        return True
-    
+        return []
+
+    unfilled_coreqs = []    
     for coreq in coreqs:
-        if (coreq not in all_ids):
-            return False
+        if coreq not in all_ids:
+            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
+            cursor = current_app.db.execute(query, {"course_id": coreq[0]})
+            dept_info = cursor.fetchone()
+
+            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
+            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
+            unfilled_coreqs.append(cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")")
+            cursor.close()
     
-    return True
+    return unfilled_coreqs
 
 
 def check_prereqs(user_id, course_id):
     query = """SELECT prereq_id FROM prerequisite WHERE course_id = :course_id;"""
     cursor = current_app.db.execute(query, {"course_id": course_id})
     prereqs = cursor.fetchall()
+    cursor.close()
     
     if len(prereqs) == 0:
-        cursor.close()
-        return True
+        return []
     
+    unfilled_prereqs = []
     query = """SELECT course_id FROM prev_enrollment WHERE student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
     prev_courses = cursor.fetchall()
     cursor.close()
 
     for prereq in prereqs:
-        if (prereq not in prev_courses):
-            return False
+        if prereq not in prev_courses:
+            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
+            cursor = current_app.db.execute(query, {"course_id": prereq[0]})
+            dept_info = cursor.fetchone()
+
+            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
+            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
+            unfilled_prereqs.append(cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")")
+            cursor.close()
     
-    return True
+    return unfilled_prereqs
 
 
 def drop_course(user_id, course_code):
