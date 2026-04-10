@@ -67,6 +67,9 @@ def register_courses(user_id, course_codes):
             current_app.db.commit()
     
     cursor.close()
+    if len(unreged_courses) == 0:
+        unreged_courses["Success"] = "Success"
+
     return unreged_courses
 
 

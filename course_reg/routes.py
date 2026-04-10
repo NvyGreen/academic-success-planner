@@ -72,8 +72,11 @@ def user_courses():
     courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
     calendar = course_reg.schedule_methods.create_calendar(courses)
 
-    for course, reqs in session["unreged_courses"].items():
-        flash(f"Could not join {course} - {reqs}", "error")
+    if "Success" in session["unreged_courses"]:
+        flash("All courses successfully registered", "success")
+    else:
+        for course, reqs in session["unreged_courses"].items():
+            flash(f"Could not join {course} - {reqs}", "error")
 
     session["unreged_courses"] = {}
 
