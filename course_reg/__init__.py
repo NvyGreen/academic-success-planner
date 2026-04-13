@@ -221,8 +221,8 @@ def init_db(db):
             AFTER INSERT ON course
             BEGIN
                 UPDATE course
-                SET estimated_hours_per_week = NEW.credits * 3
-                WHERE course_id = NEW.course_id
+                SET estimated_hours_per_week = NEW.credits * 1.5
+                WHERE course_id = NEW.course_id;
             END;
         """)
 
@@ -231,8 +231,8 @@ def init_db(db):
             AFTER UPDATE OF credits ON course
             BEGIN
                 UPDATE course
-                SET estimated_hours_per_week = NEW.credits * 3
-                WHERE course_id = NEW.course_id
+                SET estimated_hours_per_week = NEW.credits * 1.5
+                WHERE course_id = NEW.course_id;
             END;
         """)
 
