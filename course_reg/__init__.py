@@ -137,6 +137,8 @@ def init_db(db):
             "last_name" TEXT,
             "email" TEXT UNIQUE,
             "password" TEXT,
+            "gpa" REAL,
+            "schedule_preference" TEXT,
             PRIMARY KEY("student_id")
         );
     """)
@@ -145,7 +147,8 @@ def init_db(db):
         db.execute("""
             INSERT INTO "student" ("first_name", "last_name", "email", "password")
             VALUES (?, ?, ?, ?)
-        """, ("John", "Doe", "jdoe@uci.edu", "$pbkdf2-sha256$29000$Pee8l5IyZqw15rxX6p1zLg$nAFBakv3V4wPhfjqY21TJkVLv2YCEab6x4u5DPmeDpY"))
+        """, ("John", "Doe", "jdoe@uci.edu", "$pbkdf2-sha256$29000$Pee8l5IyZqw15rxX6p1zLg$nAFBakv3V4wPhfjqY21TJkVLv2YCEab6x4u5DPmeDpY", 3.5, "balanced"))
+        # password is 12345 in plaintext
 
 
     existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='department'""").fetchone()
@@ -186,6 +189,8 @@ def init_db(db):
             "course_id" INTEGER,
             "course_name" TEXT,
             "course_number" TEXT,
+            "difficulty_score" INTEGER NOT NULL,
+            "estimated_hours_per_week" REAL NOT NULL,
             "course_code" INTEGER UNIQUE,
             "credits" INTEGER,
             "category_id" INTEGER,
@@ -211,36 +216,56 @@ def init_db(db):
     """)
 
     if not existing:
+        db.execute("""
+            CREATE TRIGGER sync_estimated_hours
+            AFTER INSERT ON course
+            BEGIN
+                UPDATE course
+                SET estimated_hours_per_week = NEW.credits * 3
+                WHERE course_id = NEW.course_id
+            END;
+        """)
+
+        db.execute("""
+            CREATE TRIGGER sync_estimated_hours_on_update
+            AFTER UPDATE OF credits ON course
+            BEGIN
+                UPDATE course
+                SET estimated_hours_per_week = NEW.credits * 3
+                WHERE course_id = NEW.course_id
+            END;
+        """)
+
         data = [
-            ("Critical Reading and Rhetoric", "50", 33201, 4, 2, 2, "lower", "Sem", "MWF", "2024-09-30T11:00:00.000Z", "2024-09-30T11:50:00.000Z", 0, 1, 0, 23, 23, 0, "HH", "230"),
-            ("Argument and Research", "60", 33314, 4, 2, 2, "lower", "Sem", "TuTh", "2024-09-26T12:30:00.000Z", "2024-09-26T13:50:00.000Z", 0, 1, 0, 17, 23, 0, "PSCB", "220"),
-            ("General Chemistry", "1A", 40000, 4, 4, 3, "lower", "Lec", "TuTh", "2024-09-26T09:30:00.000Z", "2024-09-26T10:50:00.000Z", 0, 2, 0, 225, 400, 0, "PSLH", "100"),
-            ("General Chemistry", "1A", 40001, 0, 1, 3, "lower", "Dis", "W", "2024-10-02T16:00:00.000Z", "2024-10-02T16:50:00.000Z", 0, 1, 0, 24, 40, 0, "HICF", "100K"),
-            ("Introduction to Programming", "31", 36040, 4, 4, 4, "lower", "Lec", "TuTh", "2024-09-26T11:00:00.000Z", "2024-09-26T12:30:00.000Z", 0, 3, 0, 87, 212, 0, "ALP", "2300"),
-            ("Introduction to Programming", "31", 36051, 0, 1, 4, "lower", "Lab", "MWF", "2024-09-27T08:00:00.000Z", "2024-09-27T09:20:00.000Z", 0, 1, 0, 42, 42, 0, "ICS", "183"),
-            ("Programming with Software Libraries", "32", 36080, 4, 4, 4, "lower", "Lec", "TuTh", "2024-09-26T09:30:00.000Z", "2024-09-26T10:50:00.000Z", 0, 4, 0, 43, 150, 0, "PCB", "1100"),
-            ("Programming with Software Libraries", "32", 36081, 0, 1, 4, "lower", "Lab", "MWF", "2024-09-27T12:30:00.000Z", "2024-09-27T13:50:00.000Z", 0, 1, 0, 16, 37, 0, "ICS", "192"),
-            ("Python Programming and Libraries (Accelerated)", "H32", 36100, 4, 4, 4, "lower", "Lec", "TuTh", "2024-09-26T17:00:00.000Z", "2024-09-26T18:20:00.000Z", 0, 5, 0, 259, 325, 0, "BS3", "1200"),
-            ("Python Programming and Libraries (Accelerated)", "H32", 36101, 0, 1, 4, "lower", "Lab", "MWF", "2024-09-27T17:00:00.000Z", "2024-09-27T18:20:00.000Z", 0, 1, 0, 46, 46, 0, "ICS", "364A"),
-            ("Classical Mythology: The Heroes", "45B", 22230, 4, 6, 7, "lower", "Lec", None, None, None, 1, 1, 0, 118, 210, 0, None, None),
-            ("Boolean Logic and Discrete Structures", "6B", 35920, 4, 8, 4, "lower", "Lec", "MWF", "2024-09-30T12:00:00.000Z", "2024-09-30T12:50:00.000Z", 0, 6, 0, 214, 325, 0, "HSLH", "100A"),
-            ("Boolean Logic and Discrete Structures", "6B", 35931, 0, 1, 4, "lower", "Dis", "MW", "2024-09-30T15:00:00.000Z", "2024-09-30T15:50:00.000Z", 0, 1, 0, 206, 325, 0, "SSLH", "100"),
-            ("New Students Seminar", "90", 36240, 1, 1, 4, "lower", "Lec", "Th", "2024-09-26T15:30:00.000Z", "2024-09-26T16:50:00.000Z", 0, 1, 0, 6, 50, 0, "HG", "1800"),
-            ("AI for Human Good", "3", 87413, 1, 1, 1, "lower", "Sem", "Tu", "2024-10-01T09:00:00.000Z", "2024-10-01T09:50:00.000Z", 0, 1, 0, 8, 15, 0, "CAC", "3100B"),
-            ("Directed Studies in Undergraduate Education", "196", 87760, 1, 1, 1, "upper", "Res", None, None, None, 1, 1, 0, 516, 950, -1, None, None),
-            ("Foundations for Success", "87", 87610, 1, 1, 1, "lower", "Sem", None, None, None, 1, 1, 0, 49, 120, -1, None, None),
-            ("Single-Variable Calculus I", "2A", 44020, 4, 8, 8, "lower", "Lec", "MWF", "2024-09-30T16:00:00.000Z", "2024-09-30T16:50:00.000Z", 0, 7, 0, 94, 195, 0, "PSLH", "100"),
-            ("Single-Variable Calculus I", "2A", 44021, 0, 1, 8, "lower", "Dis", "TuTh", "2024-09-26T12:00:00.000Z", "2024-09-26T12:50:00.000Z", 0, 1, 0, 21, 49, 0, "DBH", "1300"),
-            ("Fundamentals of Spanish", "1A", 31300, 4, 1, 9, "lower", "Lec", "TuWTh", "2024-09-26T08:00:00.000Z", "2024-09-26T08:50:00.000Z", 0, 8, 0, 18, 23, 0, "HH", "108"),
-            ("Invitation to Computing", "20", 36350, 1, 1, 4, "lower", "Sem", None, None, None, 1, 1, 0, 14, 50, 0, None, None),
-            ("Love", "10", 22720, 4, 11, 10, "lower", "Lec", None, None, None, 1, 1, 0, 19, 35, 0, None, None),
-            ("Introduction to Public Health", "1", 81010, 4, 5, 6, "lower", "Lec", None, None, None, 1, 1, 0, 95, 100, 0, None, None),
-            ("Introduction to Law", "71A", 67110, 4, 5, 5, "lower", "Lec", None, None, None, 1, 1, 0, 36, 40, 0, None, None)
+            ("Critical Reading and Rhetoric", "50", 2, 33201, 4, 2, 2, "lower", "Sem", "MWF", "2024-09-30T11:00:00.000Z", "2024-09-30T11:50:00.000Z", 0, 1, 0, 23, 23, 0, "HH", "230"),
+            ("Argument and Research", "60", 2, 33314, 4, 2, 2, "lower", "Sem", "TuTh", "2024-09-26T12:30:00.000Z", "2024-09-26T13:50:00.000Z", 0, 1, 0, 17, 23, 0, "PSCB", "220"),
+            ("General Chemistry", "1A", 3, 40000, 4, 4, 3, "lower", "Lec", "TuTh", "2024-09-26T09:30:00.000Z", "2024-09-26T10:50:00.000Z", 0, 2, 0, 225, 400, 0, "PSLH", "100"),
+            ("General Chemistry", "1A", 3, 40001, 0, 1, 3, "lower", "Dis", "W", "2024-10-02T16:00:00.000Z", "2024-10-02T16:50:00.000Z", 0, 1, 0, 24, 40, 0, "HICF", "100K"),
+            ("Introduction to Programming", "31", 2, 36040, 4, 4, 4, "lower", "Lec", "TuTh", "2024-09-26T11:00:00.000Z", "2024-09-26T12:30:00.000Z", 0, 3, 0, 87, 212, 0, "ALP", "2300"),
+            ("Introduction to Programming", "31", 2, 36051, 0, 1, 4, "lower", "Lab", "MWF", "2024-09-27T08:00:00.000Z", "2024-09-27T09:20:00.000Z", 0, 1, 0, 42, 42, 0, "ICS", "183"),
+            ("Programming with Software Libraries", "32", 3, 36080, 4, 4, 4, "lower", "Lec", "TuTh", "2024-09-26T09:30:00.000Z", "2024-09-26T10:50:00.000Z", 0, 4, 0, 43, 150, 0, "PCB", "1100"),
+            ("Programming with Software Libraries", "32", 3, 36081, 0, 1, 4, "lower", "Lab", "MWF", "2024-09-27T12:30:00.000Z", "2024-09-27T13:50:00.000Z", 0, 1, 0, 16, 37, 0, "ICS", "192"),
+            ("Python Programming and Libraries (Accelerated)", "H32", 2, 36100, 4, 4, 4, "lower", "Lec", "TuTh", "2024-09-26T17:00:00.000Z", "2024-09-26T18:20:00.000Z", 0, 5, 0, 259, 325, 0, "BS3", "1200"),
+            ("Python Programming and Libraries (Accelerated)", "H32", 2, 36101, 0, 1, 4, "lower", "Lab", "MWF", "2024-09-27T17:00:00.000Z", "2024-09-27T18:20:00.000Z", 0, 1, 0, 46, 46, 0, "ICS", "364A"),
+            ("Classical Mythology: The Heroes", "45B", 2, 22230, 4, 6, 7, "lower", "Lec", None, None, None, 1, 1, 0, 118, 210, 0, None, None),
+            ("Boolean Logic and Discrete Structures", "6B", 2, 35920, 4, 8, 4, "lower", "Lec", "MWF", "2024-09-30T12:00:00.000Z", "2024-09-30T12:50:00.000Z", 0, 6, 0, 214, 325, 0, "HSLH", "100A"),
+            ("Boolean Logic and Discrete Structures", "6B", 2, 35931, 0, 1, 4, "lower", "Dis", "MW", "2024-09-30T15:00:00.000Z", "2024-09-30T15:50:00.000Z", 0, 1, 0, 206, 325, 0, "SSLH", "100"),
+            ("New Students Seminar", "90", 1, 36240, 1, 1, 4, "lower", "Lec", "Th", "2024-09-26T15:30:00.000Z", "2024-09-26T16:50:00.000Z", 0, 1, 0, 6, 50, 0, "HG", "1800"),
+            ("AI for Human Good", "3", 1, 87413, 1, 1, 1, "lower", "Sem", "Tu", "2024-10-01T09:00:00.000Z", "2024-10-01T09:50:00.000Z", 0, 1, 0, 8, 15, 0, "CAC", "3100B"),
+            ("Directed Studies in Undergraduate Education", "196", 1, 87760, 1, 1, 1, "upper", "Res", None, None, None, 1, 1, 0, 516, 950, -1, None, None),
+            ("Foundations for Success", "87", 1, 87610, 1, 1, 1, "lower", "Sem", None, None, None, 1, 1, 0, 49, 120, -1, None, None),
+            ("Single-Variable Calculus I", "2A", 3, 44020, 4, 8, 8, "lower", "Lec", "MWF", "2024-09-30T16:00:00.000Z", "2024-09-30T16:50:00.000Z", 0, 7, 0, 94, 195, 0, "PSLH", "100"),
+            ("Single-Variable Calculus I", "2A", 3, 44021, 0, 1, 8, "lower", "Dis", "TuTh", "2024-09-26T12:00:00.000Z", "2024-09-26T12:50:00.000Z", 0, 1, 0, 21, 49, 0, "DBH", "1300"),
+            ("Fundamentals of Spanish", "1A", 2, 31300, 4, 1, 9, "lower", "Lec", "TuWTh", "2024-09-26T08:00:00.000Z", "2024-09-26T08:50:00.000Z", 0, 8, 0, 18, 23, 0, "HH", "108"),
+            ("Invitation to Computing", "20", 1, 36350, 1, 1, 4, "lower", "Sem", None, None, None, 1, 1, 0, 14, 50, 0, None, None),
+            ("Love", "10", 2, 22720, 4, 11, 10, "lower", "Lec", None, None, None, 1, 1, 0, 19, 35, 0, None, None),
+            ("Introduction to Public Health", "1", 2, 81010, 4, 5, 6, "lower", "Lec", None, None, None, 1, 1, 0, 95, 100, 0, None, None),
+            ("Introduction to Law", "71A", 2, 67110, 4, 5, 5, "lower", "Lec", None, None, None, 1, 1, 0, 36, 40, 0, None, None)
         ]
 
         db.executemany("""
-            INSERT INTO "course" ("course_name", "course_number", "course_code", "credits", "category_id", "department_id", "course_level", "type", "days", "start_time", "end_time", "is_online", "final_id", "cancelled", "num_enrolled", "capacity", "waitlist", "building_code", "room")
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO "course" ("course_name", "course_number", "difficulty_score", "course_code", "credits", "category_id", "department_id", "course_level", "type", "days", "start_time", "end_time", "is_online", "final_id", "cancelled", "num_enrolled", "capacity", "waitlist", "building_code", "room")
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """, data)
     
 
