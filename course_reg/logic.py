@@ -34,3 +34,13 @@ def calculate_workload(courses, user_id):
     
     cursor.close()
     return workload_score
+
+def classify_workload(final_score):
+    if final_score <= 15:
+        return "Light"
+    elif final_score <= 25:
+        return "Balanced"
+    elif final_score <= 35:
+        return "Heavy"
+    else:
+        return "Overloaded"
