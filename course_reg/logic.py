@@ -44,3 +44,25 @@ def classify_workload(final_score):
         return "Heavy"
     else:
         return "Overloaded"
+
+def total_hours_per_week(courses):
+    course_ids = []
+    for course in courses:
+        course_ids.append(course[-1])
+    
+    query = """SELECT estimated_hours_per_week FROM course WHERE """
+    for i in range(len(course_ids)):
+        if i == 0:
+            query += """course_id = """ + str(course_ids[i])
+        else:
+            query += """ OR course_id = """ + str(course_ids[i])
+    query += """;"""
+
+    cursor = current_app.db.execute(query)
+    raw_hours = cursor.fetchall()
+
+    total_hours = 0
+    for datum in raw_hours:
+        total_hours += datum[0]
+    
+    return total_hours
