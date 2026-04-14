@@ -7,7 +7,7 @@ def get_short_courses(course_codes):
     if len(course_codes) == 0:
         return []
 
-    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
 
     for i in range(len(course_codes)):
         if i == 0:
@@ -51,6 +51,8 @@ def get_short_courses(course_codes):
         else:
             course.append(raw_course[10] + " " + raw_course[11])    # building_code room
         
+        course.append(raw_course[12])
+
         courses.append(course)
     
     cursor.close()
