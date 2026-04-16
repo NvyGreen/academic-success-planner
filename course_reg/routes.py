@@ -13,6 +13,7 @@ from course_reg.models import Filters, AdvancedFilters
 import course_reg.filter_methods
 import course_reg.schedule_methods
 import course_reg.register_methods
+import course_reg.logic
 from passlib.hash import pbkdf2_sha256
 import functools
 from datetime import datetime, timezone
@@ -80,11 +81,18 @@ def user_courses():
 
     session["unreged_courses"] = {}
 
+    workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
+    classification = course_reg.logic.classify_workload(workload_score)
+    avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
+
     return render_template(
         "index.html",
         title="Course Registration - My Courses",
         courses=courses,
-        calendar=calendar
+        calendar=calendar,
+        workload_score=workload_score,
+        classification=classification,
+        avg_hours=avg_hours
     )
 
 

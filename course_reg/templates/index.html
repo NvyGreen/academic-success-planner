@@ -61,5 +61,28 @@
 
         {{ courses_short(courses) }}
     </div>
+
+    <hr />
+
+    <!-- Workload Summary Section -->
+    <div class="schedule__courses-section">
+        <div class="schedule__courses-header-row">
+            <h2 class="schedule__courses-heading">Workload Summary</h2>
+        </div>
+        <div class="workload__cards">
+            <div class="workload__card">
+                <span class="workload__card-label">Workload Score</span>
+                <span class="workload__card-value">{{ "%.1f" | format(workload_score) }}</span>
+            </div>
+            <div class="workload__card">
+                <span class="workload__card-label">Classification</span>
+                <span class="workload__badge workload__badge--{{ classification | lower }}">{{ classification }}</span>
+            </div>
+            <div class="workload__card">
+                <span class="workload__card-label">Est. Hours / Week</span>
+                <span class="workload__card-value">{{ avg_hours }} hrs</span>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

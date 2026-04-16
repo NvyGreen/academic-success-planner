@@ -277,3 +277,65 @@ table, th, td {
 .schedule__flash-text {
     line-height: 1.4;
 }
+
+.workload__cards {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.workload__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.85rem 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+    min-width: 8rem;
+}
+
+.workload__card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.workload__card-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #222;
+}
+
+/* Classification badge — reuses the same color conventions as the table badges */
+.workload__badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.workload__badge--light {
+    background-color: #d4edda;
+    color: #1a6e30;
+}
+
+.workload__badge--balanced {
+    background-color: #dce8f8;
+    color: #1154ad;
+}
+
+.workload__badge--heavy {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.workload__badge--overloaded {
+    background-color: #f8d7da;
+    color: #842029;
+}

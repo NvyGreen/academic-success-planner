@@ -4,17 +4,13 @@ def calculate_workload(courses, user_id):
     query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
     gpa = cursor.fetchone()[0]
-
-    course_ids = []
-    for course in courses:
-        course_ids.append(course[-1])
     
     query = """SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE """
-    for i in range(len(course_ids)):
+    for i in range(len(courses)):
         if i == 0:
-            query += """course_id = """ + str(course_ids[i])
+            query += """course_code = """ + str(courses[i])
         else:
-            query += """ OR course_id = """ + str(course_ids[i])
+            query += """ OR course_code = """ + str(courses[i])
     query += """;"""
 
     cursor = current_app.db.execute(query)
@@ -45,17 +41,13 @@ def classify_workload(final_score):
     else:
         return "Overloaded"
 
-def total_hours_per_week(courses):
-    course_ids = []
-    for course in courses:
-        course_ids.append(course[-1])
-    
+def total_hours_per_week(courses):    
     query = """SELECT estimated_hours_per_week FROM course WHERE """
-    for i in range(len(course_ids)):
+    for i in range(len(courses)):
         if i == 0:
-            query += """course_id = """ + str(course_ids[i])
+            query += """course_code = """ + str(courses[i])
         else:
-            query += """ OR course_id = """ + str(course_ids[i])
+            query += """ OR course_code = """ + str(courses[i])
     query += """;"""
 
     cursor = current_app.db.execute(query)
