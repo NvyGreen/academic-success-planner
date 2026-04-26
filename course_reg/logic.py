@@ -1,5 +1,8 @@
 from flask import current_app
 
+
+# Workload methods
+
 def calculate_workload(courses, user_id):
     query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
@@ -59,6 +62,8 @@ def total_hours_per_week(courses):
     
     return total_hours
 
+
+# Burnout methods
 
 def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
