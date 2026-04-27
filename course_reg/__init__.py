@@ -145,8 +145,8 @@ def init_db(db):
 
     if not existing:
         db.execute("""
-            INSERT INTO "student" ("first_name", "last_name", "email", "password")
-            VALUES (?, ?, ?, ?)
+            INSERT INTO "student" ("first_name", "last_name", "email", "password", "gpa", "schedule_preference")
+            VALUES (?, ?, ?, ?, ?, ?)
         """, ("John", "Doe", "jdoe@uci.edu", "$pbkdf2-sha256$29000$Pee8l5IyZqw15rxX6p1zLg$nAFBakv3V4wPhfjqY21TJkVLv2YCEab6x4u5DPmeDpY", 3.5, "balanced"))
         # password is 12345 in plaintext
 

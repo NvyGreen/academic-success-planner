@@ -1,7 +1,7 @@
 from flask import current_app
 
 
-# Workload methods
+# Workload Estimation
 
 def calculate_workload(courses, user_id):
     query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
@@ -18,6 +18,7 @@ def calculate_workload(courses, user_id):
 
     cursor = current_app.db.execute(query)
     workload_data = cursor.fetchall()
+    cursor.close()
 
     workload_score = 0
     total_credits = 0
@@ -45,7 +46,7 @@ def classify_workload(final_score):
         return "Overloaded"
 
 def total_hours_per_week(courses):    
-    query = """SELECT estimated_hours_per_week FROM course WHERE """
+    query = """SELECT difficulty_score, estimated_hours_per_week FROM course WHERE """
     for i in range(len(courses)):
         if i == 0:
             query += """course_code = """ + str(courses[i])
@@ -55,15 +56,26 @@ def total_hours_per_week(courses):
 
     cursor = current_app.db.execute(query)
     raw_hours = cursor.fetchall()
+    cursor.close()
 
     total_hours = 0
     for datum in raw_hours:
-        total_hours += datum[0]
+        difficulty_score = datum[0]
+        if difficulty_score == 1:
+            total_hours += 0.5 * datum[1]
+        elif difficulty_score == 2:
+            total_hours += 0.8 * datum[1]
+        elif difficulty_score == 3:
+            total_hours += datum[1]
+        elif difficulty_score == 4:
+            total_hours += 1.3 * datum[1]
+        else:
+            total_hours += 1.6 * datum[1]
     
-    return total_hours
+    return round(total_hours, 2)
 
 
-# Burnout methods
+# Burnout Estimation
 
 def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
@@ -119,7 +131,7 @@ def calculate_burnout_risk(courses, user_id):
     else:
         return ("Low", factors)
 
-def generate_explanation(factors):
+def generate_burnout_explanation(factors):
     explanations = []
 
     if factors[0] == 4:
@@ -148,3 +160,17 @@ def generate_explanation(factors):
         explanations.append("It looks like you aren't taking a lot of difficult courses, consider adding another!")
 
     return explanations
+
+
+# GPA / Academic Impact Estimation
+
+def estimate_academic_impact(courses, user_id):
+    query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
+    cursor = current_app.db.execute(query, {"student_id": user_id})
+    gpa = cursor.fetchone()[0]
+
+    estimate = total_hours_per_week(courses) / 16
+    if gpa:
+        estimate *= 1 / (gpa / 4.0)
+    
+    return estimate
