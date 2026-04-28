@@ -164,7 +164,7 @@ def generate_burnout_explanation(factors):
 
 # GPA / Academic Impact Estimation
 
-def estimate_academic_impact(courses, user_id):
+def score_academic_impact(courses, user_id):
     query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
     gpa = cursor.fetchone()[0]
@@ -174,3 +174,24 @@ def estimate_academic_impact(courses, user_id):
         estimate *= 1 / (gpa / 4.0)
     
     return estimate
+
+def estimate_academic_impact(score):
+    if score < 0.8:
+        return "Low"
+    elif score >= 0.8 and score < 1.1:
+        return "Medium"
+    elif score >= 1.1 and score < 1.4:
+        return "High"
+    else:
+        return "Very High"
+
+
+def generate_impact_explanation(desc):
+    if desc == "Low":
+        return "You probably got this score because you aren't taking a lot of classes, or you're taking easier classes. If your workload is rated as light and your burnout risk is low, consider taking some harder classes. As of right now though, this schedule shouldn't negatively impact your GPA."
+    elif desc == "Medium":
+        return "You probably got this score because you have a good mix of easier and challenging classes. If your workload is rated as balanced and your burnout risk is medium, you have a good schedule to make the most of this term! As long as you put effort into studying, your GPA will be fine."
+    elif desc == "High":
+        return "You probably got this score because you're taking quite a few hard classes, or you're taking a lot of units in general. If your workload is rated as heavy but your burnout score is medium, you should be able to maintain or improve your GPA as long as you maintain good discipline. If your burnout score is high, however, you might want to replace some of your courses with easier ones, so your GPA isn't negatively impacted."
+    else:
+        return "You probably got this score because you're taking a ton of difficult classes. If your workload is rated as overloaded and your burnout score is high, you should take less units or swap out some challenging classes for easier ones. As of right now, this schedule is highly likely to negatively affect your GPA."
