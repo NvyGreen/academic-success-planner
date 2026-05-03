@@ -16,7 +16,7 @@ def get_enrollment_window(user_id):
 
 def register_courses(user_id, course_codes):
     if len(course_codes) == 0:
-        return []
+        return {}
     
     query = """SELECT course_id FROM course WHERE """
 
