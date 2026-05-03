@@ -76,7 +76,6 @@ def total_hours_per_week(courses):
 
 
 # Burnout Estimation
-
 def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
     factors = []
@@ -124,12 +123,15 @@ def calculate_burnout_risk(courses, user_id):
     
     factors.append(num_difficult)
     
-    if burnout_score >= 4:
-        return ("High", factors)
-    elif burnout_score >= 2:
-        return ("Medium", factors)
+    return (burnout_score, factors)
+
+def estimate_burnout_risk(score):
+    if score >= 4:
+        return "High"
+    elif score >= 2:
+        return "Medium"
     else:
-        return ("Low", factors)
+        return "Low"
 
 def generate_burnout_explanation(factors):
     explanations = []
@@ -178,13 +180,12 @@ def score_academic_impact(courses, user_id):
 def estimate_academic_impact(score):
     if score < 0.8:
         return "Low"
-    elif score >= 0.8 and score < 1.1:
+    elif score >= 0.8 and score < 1.2:
         return "Medium"
-    elif score >= 1.1 and score < 1.4:
+    elif score >= 1.2 and score < 1.4:
         return "High"
     else:
         return "Very High"
-
 
 def generate_impact_explanation(desc):
     if desc == "Low":
@@ -195,3 +196,31 @@ def generate_impact_explanation(desc):
         return "You probably got this score because you're taking quite a few hard classes, or you're taking a lot of units in general. If your workload is rated as heavy but your burnout score is medium, you should be able to maintain or improve your GPA as long as you maintain good discipline. If your burnout score is high, however, you might want to replace some of your courses with easier ones, so your GPA isn't negatively impacted."
     else:
         return "You probably got this score because you're taking a ton of difficult classes. If your workload is rated as overloaded and your burnout score is high, you should take less units or swap out some challenging classes for easier ones. As of right now, this schedule is highly likely to negatively affect your GPA."
+
+
+# Recommendation generation
+def generate_recommendation(workload_score, burnout_score, academic_impact):
+    # Overloaded
+    if workload_score > 35 or burnout_score >= 4 or academic_impact >= 1.4:
+        if workload_score > 35:
+            return "Overall, this is a very overloaded scheudle. Consider dropping some of your courses."
+        elif burnout_score >= 4:
+            return "Overall, this is a very overloaded scheudle. Consider swapping out some of your harder courses for easier ones."
+        else:
+            return "Overall, this is a very overloaded scheudle. Consider dropping some of your courses or swapping them for easier ones."
+    
+    # Heavy
+    if (workload_score > 25 and burnout_score >= 2) or (workload_score > 25 and academic_impact >= 1.2) or (burnout_score >= 2 and academic_impact >= 1.2):
+        if workload_score > 25:
+            return "Overall, this is a pretty heavy schedule. Consider dropping a course."
+        elif burnout_score >= 3:
+            return "Overall, this is a pretty heavy scheudle. Consider swapping out a harder course for an easier one."
+        else:
+            return "Overall, this is a pretty heavy scheudle. Consider dropping a course or swapping it ouse for an easier one."
+
+    # Balanced
+    if workload_score > 15 or academic_impact >= 0.8:
+        return "Overall, this seems like a very manageable schedule. Make sure to stay on top of your classes and pace yourself."
+
+    # Light
+    return "Overall, this seems like a pretty light schedule. Consider adding another course, or swapping out one of your courses for a harder one."
