@@ -18,17 +18,10 @@ def register_courses(user_id, course_codes):
     if len(course_codes) == 0:
         return {}
     
-    query = """SELECT course_id FROM course WHERE """
-
-    for i in range(len(course_codes)):
-        if i == 0:
-            query += """course.course_code = """ + str(course_codes[i])
-        else:
-            query += """ OR course.course_code = """ + str(course_codes[i])
-    
-    query += """;"""
-
-    cursor = current_app.db.execute(query)
+    placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
+    query = f"SELECT course_id FROM course WHERE course_code IN ({placeholders})"
+    values = {f"code_{i}": code for i, code in enumerate(course_codes)}
+    cursor = current_app.db.execute(query, values)
     course_ids = cursor.fetchall()
     unreged_courses = {}
 

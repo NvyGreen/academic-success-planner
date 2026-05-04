@@ -7,16 +7,11 @@ def calculate_workload(courses, user_id):
     query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
     gpa = cursor.fetchone()[0]
-    
-    query = """SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE """
-    for i in range(len(courses)):
-        if i == 0:
-            query += """course_code = """ + str(courses[i])
-        else:
-            query += """ OR course_code = """ + str(courses[i])
-    query += """;"""
 
-    cursor = current_app.db.execute(query)
+    placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+    query = f"SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE course_code IN ({placeholders})"
+    values = {f"code_{i}": code for i, code in enumerate(courses)}
+    cursor = current_app.db.execute(query, values)
     workload_data = cursor.fetchall()
     cursor.close()
 
@@ -46,15 +41,10 @@ def classify_workload(final_score):
         return "Overloaded"
 
 def total_hours_per_week(courses):    
-    query = """SELECT difficulty_score, estimated_hours_per_week FROM course WHERE """
-    for i in range(len(courses)):
-        if i == 0:
-            query += """course_code = """ + str(courses[i])
-        else:
-            query += """ OR course_code = """ + str(courses[i])
-    query += """;"""
-
-    cursor = current_app.db.execute(query)
+    placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+    query = f"SELECT difficulty_score, estimated_hours_per_week FROM course WHERE course_code IN ({placeholders})"
+    values = {f"code_{i}": code for i, code in enumerate(courses)}
+    cursor = current_app.db.execute(query, values)
     raw_hours = cursor.fetchall()
     cursor.close()
 
@@ -80,15 +70,10 @@ def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
     factors = []
 
-    query = """SELECT credits, difficulty_score FROM course WHERE """
-    for i in range(len(courses)):
-        if i == 0:
-            query += """course_code = """ + str(courses[i])
-        else:
-            query += """ OR course_code = """ + str(courses[i])
-    query += """;"""
-
-    cursor = current_app.db.execute(query)
+    placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+    query = f"SELECT credits, difficulty_score FROM course WHERE course_code IN ({placeholders})"
+    values = {f"code_{i}": code for i, code in enumerate(courses)}
+    cursor = current_app.db.execute(query, values)
     course_data = cursor.fetchall()
     cursor.close()
 

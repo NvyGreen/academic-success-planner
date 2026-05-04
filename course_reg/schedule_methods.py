@@ -7,20 +7,13 @@ def get_short_courses(course_codes):
     if len(course_codes) == 0:
         return []
 
-    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
-
-    for i in range(len(course_codes)):
-        if i == 0:
-            query += """course.course_code = """ + str(course_codes[i])
-        else:
-            query += """ OR course.course_code = """ + str(course_codes[i])
-    
-    query += """;"""
-
-    cursor = current_app.db.execute(query)
+    placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
+    query = f"SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE course_code IN ({placeholders})"
+    values = {f"code_{i}": code for i, code in enumerate(course_codes)}
+    cursor = current_app.db.execute(query, values)
     raw_courses = cursor.fetchall()
-    courses = []
 
+    courses = []
     # (department_id, number, name, days, start_time, end_time, teach_first, teach_last, is_online, building_code, room)
     for raw_course in raw_courses:
         course = []
@@ -63,17 +56,10 @@ def get_short_courses_final(course_codes):
     if len(course_codes) == 0:
         return []
 
-    query = """SELECT course.department_id, course.course_number, course.course_name, course.type, course.final_id, course.is_online, course.building_code, course.room FROM course JOIN final ON course.final_id = final.final_id WHERE """
-
-    for i in range(len(course_codes)):
-        if i == 0:
-            query += """course.course_code = """ + str(course_codes[i])
-        else:
-            query += """ OR course.course_code = """ + str(course_codes[i])
-    
-    query += """;"""
-
-    cursor = current_app.db.execute(query)
+    placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
+    query = f"SELECT course.department_id, course.course_number, course.course_name, course.type, course.final_id, course.is_online, course.building_code, course.room FROM course JOIN final ON course.final_id = final.final_id WHERE course_code IN ({placeholders})"
+    values = {f"code_{i}": code for i, code in enumerate(course_codes)}
+    cursor = current_app.db.execute(query, values)
     raw_courses = cursor.fetchall()
     courses = []
 
