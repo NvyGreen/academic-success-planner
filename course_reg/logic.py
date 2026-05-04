@@ -27,7 +27,6 @@ def calculate_workload(courses, user_id):
     else:
         workload_score /= total_credits
     
-    cursor.close()
     return workload_score
 
 def classify_workload(final_score):
@@ -155,6 +154,7 @@ def score_academic_impact(courses, user_id):
     query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
     gpa = cursor.fetchone()[0]
+    cursor.close()
 
     estimate = total_hours_per_week(courses) / 16
     if gpa:
