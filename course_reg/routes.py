@@ -35,21 +35,21 @@ def login_required(route):
     return route_wrapper
 
 
-def check_window(route):
-    @functools.wraps(route)
-    def route_wrapper(*args, **kwargs):
-        if session["start_window"] > datetime.now(timezone.utc) or session["end_window"] < datetime.now(timezone.utc):
-            standard_start = datetime.strptime("07:00", "%H:%M").time()
-            standard_end = datetime.strptime("19:00", "%H:%M").time()
-            test_now = datetime.strptime("01:00", "%H:%M").time()
+# def check_window(route):
+#     @functools.wraps(route)
+#     def route_wrapper(*args, **kwargs):
+#         if session["start_window"] > datetime.now(timezone.utc) or session["end_window"] < datetime.now(timezone.utc):
+#             standard_start = datetime.strptime("07:00", "%H:%M").time()
+#             standard_end = datetime.strptime("19:00", "%H:%M").time()
+#             test_now = datetime.strptime("01:00", "%H:%M").time()
 
-            if standard_start <= test_now and standard_end >= test_now:
-                return redirect(url_for(".user_courses"))
-            # return redirect(url_for(".user_courses"))
+#             if standard_start <= test_now and standard_end >= test_now:
+#                 return redirect(url_for(".user_courses"))
+#             # return redirect(url_for(".user_courses"))
 
-        return route(*args, **kwargs)
+#         return route(*args, **kwargs)
     
-    return route_wrapper
+#     return route_wrapper
 
 
 @pages.route("/")
@@ -176,7 +176,7 @@ def login():
 
 @pages.route("/drop-courses")
 @login_required
-@check_window
+# @check_window
 def drop_courses():
     courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
 
@@ -190,7 +190,7 @@ def drop_courses():
 @pages.route("/filter-courses", methods=["GET", "POST"])
 @login_required
 def filter_courses():
-    if session["cancel"] == True:
+    if session["cancel"]:
         session["temp_courses"] = []
         session["cancel"] = False
     
@@ -309,7 +309,7 @@ def preview_quarter():
 
 @pages.get("/add-course/<int:code>")
 @login_required
-@check_window
+# @check_window
 def add_course(code):
     if code not in session["temp_courses"]:
         session["load_bearing"] = True
@@ -327,7 +327,7 @@ def add_course(code):
 
 @pages.get("/drop-course/<int:code>")
 @login_required
-@check_window
+# @check_window
 def drop_course(code):
     if code in session["temp_courses"]:
         session["load_bearing"] = False
@@ -357,7 +357,7 @@ def drop_course(code):
 
 @pages.get("/wait-course/<int:code>")
 @login_required
-@check_window
+# @check_window
 def wait_course(code):
     if code not in session["user_waitlist"]:
         course_reg.register_methods.waitlist_course(session["user_id"], code)
@@ -376,7 +376,7 @@ def wait_course(code):
 
 @pages.get("/drop-wait/<int:code>")
 @login_required
-@check_window
+# @check_window
 def drop_wait(code):
     if code in session["user_waitlist"]:
         course_reg.register_methods.drop_waitlist(session["user_id"], code)
@@ -416,7 +416,7 @@ def cancel_select():
 
 @pages.get("/confirm-schedule")
 @login_required
-@check_window
+# @check_window
 def confirm_schedule():
     session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
     session["user_courses"] = course_reg.schedule_methods.get_registered_courses(session["user_id"])

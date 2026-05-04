@@ -52,7 +52,7 @@ def init_db(db):
         data = [
             ("0", "No GE Category"),
             ("Ia", "Lower Division Writing"),
-            ("Ib", "Upper Divison Writing"),
+            ("Ib", "Upper Division Writing"),
             ("II", "Science and Technology"),
             ("III", "Social and Behavioral Sciences"),
             ("IV", "Arts and Humanities"),
