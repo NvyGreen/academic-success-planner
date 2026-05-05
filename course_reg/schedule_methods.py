@@ -100,7 +100,7 @@ def get_short_courses_final(course_codes):
     return courses
 
 
-def create_calendar(courses):
+def create_calendar(courses, cal_type):
     calendar = [["", "Mon", "Tue", "Wed", "Thu", "Fri"]]
     times = [
         "7 AM",
@@ -126,9 +126,13 @@ def create_calendar(courses):
     
     # 6 across, 17 down
 
-    for course in courses:
-        add_course_to_calendar(course, calendar)
-
+    if cal_type == "courses":
+        for course in courses:
+            add_course_to_calendar(course, calendar)
+    elif cal_type == "final":
+        for course in courses:
+            add_final_to_calendar(course, calendar)
+    
     return calendar
 
 
@@ -174,38 +178,6 @@ def add_course_to_calendar(course, calendar):
         for r in range(1, rowspan):
             if start_slot + r < len(calendar):
                 calendar[start_slot + r][col] = "SKIP"
-
-
-def create_final_calendar(courses):
-    calendar = [["", "Mon", "Tue", "Wed", "Thu", "Fri"]]
-    times = [
-        "7 AM",
-        "8 AM",
-        "9 AM",
-        "10 AM",
-        "11 AM",
-        "12 PM",
-        "1 PM",
-        "2 PM",
-        "3 PM",
-        "4 PM",
-        "5 PM",
-        "6 PM",
-        "7 PM",
-        "8 PM",
-        "9 PM",
-        "10 PM"
-    ]
-
-    for time in times:
-        calendar.append([time] + ([None] * 5))
-    
-    # 6 across, 17 down
-
-    for course in courses:
-        add_final_to_calendar(course, calendar)
-    
-    return calendar
 
 
 def add_final_to_calendar(course, calendar):

@@ -70,7 +70,7 @@ def index():
 @login_required
 def user_courses():
     courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
-    calendar = course_reg.schedule_methods.create_calendar(courses)
+    calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
     if "Success" in session["unreged_courses"]:
         flash("All courses successfully registered", "success")
@@ -99,7 +99,7 @@ def user_courses():
 @login_required
 def user_finals():
     courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
-    calendar = course_reg.schedule_methods.create_final_calendar(courses)
+    calendar = course_reg.schedule_methods.create_calendar(courses, "final")
 
     return render_template(
         "index_finals.html",
@@ -269,7 +269,7 @@ def course_listing():
 @login_required
 def preview_courses():
     courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
-    calendar = course_reg.schedule_methods.create_calendar(courses)
+    calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
     return render_template(
         "preview_courses.html",
@@ -283,7 +283,7 @@ def preview_courses():
 @login_required
 def preview_finals():
     courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
-    calendar = course_reg.schedule_methods.create_final_calendar(courses)
+    calendar = course_reg.schedule_methods.create_calendar(courses, "final")
 
     return render_template(
         "preview_finals.html",
