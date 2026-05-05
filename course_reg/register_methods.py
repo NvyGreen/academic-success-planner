@@ -13,6 +13,18 @@ def get_enrollment_window(user_id):
     return (start, end)
 
 
+def get_course_description(course_id):
+    query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
+    cursor = current_app.db.execute(query, {"course_id": course_id})
+    dept_info = cursor.fetchone()
+
+    query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
+    cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
+
+    course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
+    return course_desc
+
+
 def register_courses(user_id, course_codes):
     if len(course_codes) == 0:
         return {}
@@ -28,25 +40,11 @@ def register_courses(user_id, course_codes):
         prereqs_check = check_prereqs(user_id, course_id[0])
         coreqs_check = check_coreqs(user_id, course_id[0])
         if len(prereqs_check) > 0:
-            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
-            cursor = current_app.db.execute(query, {"course_id": course_id[0]})
-            dept_info = cursor.fetchone()
-
-            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
-            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
-
-            course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
+            course_desc = get_course_description(course_id[0])
             prereqs = "Following prerequisites not satisfied: " + ", ".join(prereqs_check)
             unreged_courses[course_desc] = prereqs
         elif len(coreqs_check) > 0:
-            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
-            cursor = current_app.db.execute(query, {"course_id": course_id[0]})
-            dept_info = cursor.fetchone()
-
-            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
-            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
-
-            course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
+            course_desc = get_course_description(course_id[0])
             coreqs = "Following corequisites not satisfied: " + ", ".join(coreqs_check)
             unreged_courses[course_desc] = coreqs
         else:
@@ -77,13 +75,8 @@ def check_coreqs(course_id, all_ids):
     unfilled_coreqs = []    
     for coreq in coreqs:
         if coreq not in all_ids:
-            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
-            cursor = current_app.db.execute(query, {"course_id": coreq[0]})
-            dept_info = cursor.fetchone()
-
-            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
-            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
-            unfilled_coreqs.append(cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")")
+            course_desc = get_course_description(coreq[0])
+            unfilled_coreqs.append(course_desc)
             cursor.close()
     
     return unfilled_coreqs
@@ -106,13 +99,8 @@ def check_prereqs(user_id, course_id):
 
     for prereq in prereqs:
         if prereq not in prev_courses:
-            query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
-            cursor = current_app.db.execute(query, {"course_id": prereq[0]})
-            dept_info = cursor.fetchone()
-
-            query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
-            cursor = current_app.db.execute(query, {"department_id": dept_info[0]})
-            unfilled_prereqs.append(cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")")
+            course_desc = get_course_description(prereq[0])
+            unfilled_prereqs.append(course_desc)
             cursor.close()
     
     return unfilled_prereqs
