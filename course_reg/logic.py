@@ -1,5 +1,27 @@
 from flask import current_app
 
+WORKLOAD_LIGHT_THRESHOLD = 15
+WORKLOAD_BALANCED_THRESHOLD = 25
+WORKLOAD_HEAVY_THRESHOLD = 35
+
+BURNOUT_MEDIUM_THRESHOLD = 2
+BURNOUT_HIGH_THRESHOLD = 4
+
+BURNOUT_COURSES_MEDIUM_THRESHOLD = 0.5
+BURNOUT_COURSES_HIGH_THRESHOLD = 0.75
+BURNOUT_COURSES_VHIGH_THRESHOLD = 1
+
+IMPACT_MEDIUM_THRESHOLD = 0.8
+IMPACT_HIGH_THRESHOLD = 1.2
+IMPACT_VHIGH_THRESHOLD = 1.4
+
+EASY_MULTIPLIER = 0.5
+MEDIUM_MULTIPLER = 0.8
+HARD_MULTIPLIER = 1.3
+VHARD_MULTIPLIER = 1.6
+
+AVG_COURSES = 4
+
 
 # Workload Estimation
 
@@ -30,11 +52,11 @@ def calculate_workload(courses, user_id):
     return workload_score
 
 def classify_workload(final_score):
-    if final_score <= 15:
+    if final_score <= WORKLOAD_LIGHT_THRESHOLD:
         return "Light"
-    elif final_score <= 25:
+    elif final_score <= WORKLOAD_BALANCED_THRESHOLD:
         return "Balanced"
-    elif final_score <= 35:
+    elif final_score <= WORKLOAD_HEAVY_THRESHOLD:
         return "Heavy"
     else:
         return "Overloaded"
@@ -51,15 +73,15 @@ def total_hours_per_week(courses):
     for datum in raw_hours:
         difficulty_score = datum[0]
         if difficulty_score == 1:
-            total_hours += 0.5 * datum[1]
+            total_hours += EASY_MULTIPLIER * datum[1]
         elif difficulty_score == 2:
-            total_hours += 0.8 * datum[1]
+            total_hours += MEDIUM_MULTIPLER * datum[1]
         elif difficulty_score == 3:
             total_hours += datum[1]
         elif difficulty_score == 4:
-            total_hours += 1.3 * datum[1]
+            total_hours += HARD_MULTIPLIER * datum[1]
         else:
-            total_hours += 1.6 * datum[1]
+            total_hours += VHARD_MULTIPLIER * datum[1]
     
     return round(total_hours, 2)
 
@@ -87,13 +109,13 @@ def calculate_burnout_risk(courses, user_id):
     factors.append(len(courses))
     
     workload = calculate_workload(courses, user_id)
-    if workload >= 36:
+    if workload > WORKLOAD_HEAVY_THRESHOLD:
         burnout_score += 3
         factors.append("Overloaded")
-    elif workload >= 26:
+    elif workload > WORKLOAD_BALANCED_THRESHOLD:
         burnout_score += 2
         factors.append("Heavy")
-    elif workload >= 16:
+    elif workload > WORKLOAD_LIGHT_THRESHOLD:
         burnout_score += 1
         factors.append("Balanced")
     else:
@@ -110,9 +132,9 @@ def calculate_burnout_risk(courses, user_id):
     return (burnout_score, factors)
 
 def estimate_burnout_risk(score):
-    if score >= 4:
+    if score >= BURNOUT_HIGH_THRESHOLD:
         return "High"
-    elif score >= 2:
+    elif score >= BURNOUT_MEDIUM_THRESHOLD:
         return "Medium"
     else:
         return "Low"
@@ -120,8 +142,12 @@ def estimate_burnout_risk(score):
 def generate_burnout_explanation(factors):
     explanations = []
 
+    if factors[0] == 0:
+        explanations.append("You're not taking any classes at all! Add some courses to your schedule to get a proper recommendation.")
+        return explanations
+
     if factors[0] == 4:
-        explanations.append("You're taking 4 courses, which is the average amount of courses a UCI student takes, but you should still pace yourself.")
+        explanations.append(f"You're taking {AVG_COURSES} courses, which is the average amount of courses a UCI student takes, but you should still pace yourself.")
     elif factors[0] > 4:
         explanations.append(f"You're taking {factors[0]} courses, which is more than what the average UCI student takes. Make sure to pace yourself, and consider taking out some classes if you think it might be too much.")
     else:
@@ -136,11 +162,11 @@ def generate_burnout_explanation(factors):
     else:
         explanations.append("You're schedule looks pretty light, consider adding some more difficult courses.")
     
-    if (factors[2] / factors[0]) == 1:
+    if (factors[2] / factors[0]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
         explanations.append("You're only taking hard courses! It's best to replace a few with easier courses.")
-    elif (factors[2] / factors[0]) >= 0.75:
+    elif (factors[2] / factors[0]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
         explanations.append("You're taking a lot of hard courses, consider taking out one.")
-    elif (factors[2] / factors[0]) >= 0.5:
+    elif (factors[2] / factors[0]) >= BURNOUT_COURSES_MEDIUM_THRESHOLD:
         explanations.append("At least half of your schedule is hard courses, make sure to pace yourself!")
     else:
         explanations.append("It looks like you aren't taking a lot of difficult courses, consider adding another!")
@@ -163,11 +189,11 @@ def score_academic_impact(courses, user_id):
     return estimate
 
 def estimate_academic_impact(score):
-    if score < 0.8:
+    if score < IMPACT_MEDIUM_THRESHOLD:
         return "Low"
-    elif score >= 0.8 and score < 1.2:
+    elif score >= IMPACT_MEDIUM_THRESHOLD and score < IMPACT_HIGH_THRESHOLD:
         return "Medium"
-    elif score >= 1.2 and score < 1.4:
+    elif score >= IMPACT_HIGH_THRESHOLD and score < IMPACT_VHIGH_THRESHOLD:
         return "High"
     else:
         return "Very High"
@@ -186,17 +212,17 @@ def generate_impact_explanation(desc):
 # Recommendation generation
 def generate_recommendation(workload_score, burnout_score, academic_impact):
     # Overloaded
-    if workload_score > 35 or burnout_score >= 4 or academic_impact >= 1.4:
-        if workload_score > 35:
+    if workload_score > WORKLOAD_HEAVY_THRESHOLD or burnout_score >= BURNOUT_HIGH_THRESHOLD or academic_impact >= IMPACT_VHIGH_THRESHOLD:
+        if workload_score > WORKLOAD_HEAVY_THRESHOLD:
             return "Overall, this is a very overloaded scheudle. Consider dropping some of your courses."
-        elif burnout_score >= 4:
+        elif burnout_score >= BURNOUT_HIGH_THRESHOLD:
             return "Overall, this is a very overloaded scheudle. Consider swapping out some of your harder courses for easier ones."
         else:
             return "Overall, this is a very overloaded scheudle. Consider dropping some of your courses or swapping them for easier ones."
     
     # Heavy
-    if (workload_score > 25 and burnout_score >= 2) or (workload_score > 25 and academic_impact >= 1.2) or (burnout_score >= 2 and academic_impact >= 1.2):
-        if workload_score > 25:
+    if (workload_score > WORKLOAD_BALANCED_THRESHOLD and burnout_score >= BURNOUT_MEDIUM_THRESHOLD) or (workload_score > WORKLOAD_BALANCED_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD) or (burnout_score >= BURNOUT_MEDIUM_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD):
+        if workload_score > WORKLOAD_BALANCED_THRESHOLD:
             return "Overall, this is a pretty heavy schedule. Consider dropping a course."
         elif burnout_score >= 3:
             return "Overall, this is a pretty heavy scheudle. Consider swapping out a harder course for an easier one."
@@ -204,7 +230,7 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
             return "Overall, this is a pretty heavy scheudle. Consider dropping a course or swapping it ouse for an easier one."
 
     # Balanced
-    if workload_score > 15 or academic_impact >= 0.8:
+    if workload_score > WORKLOAD_LIGHT_THRESHOLD or academic_impact >= IMPACT_MEDIUM_THRESHOLD:
         return "Overall, this seems like a very manageable schedule. Make sure to stay on top of your classes and pace yourself."
 
     # Light
