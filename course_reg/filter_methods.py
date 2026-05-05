@@ -39,63 +39,8 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     values = dict()
     add_condition = """ AND """
     first_condition = True
-
-    # General Education Category
-    if filters.ge_cat - 1:
-        first_condition = False
-        query += modifier + """category_id = :ge_category"""
-        values["ge_category"] = filters.ge_cat
     
-    # Department
-    if filters.department:
-        if first_condition:
-            first_condition = False
-        else:
-            query += add_condition
-
-        query += modifier + """department_id = :department"""
-        values["department"] = filters.department
-    
-    # Course Number
-    if filters.course_num:
-        if first_condition:
-            first_condition = False
-        else:
-            query += add_condition
-
-        query += modifier + """course_number = :course_number"""
-        values["course_number"] = filters.course_num
-    
-    # Course Code
-    if filters.course_code != None:
-        if first_condition:
-            first_condition = False
-        else:
-            query += add_condition
-
-        query += modifier + """course_code = :course_code"""
-        values["course_code"] = filters.course_code
-    
-    # Course Level
-    if filters.course_level != "all":
-        if first_condition:
-            first_condition = False
-        else:
-            query += add_condition
-
-        query += modifier + """course_level = :course_level"""
-        values["course_level"] = filters.course_level
-    
-    # Instructor
-    if filters.instructor:
-        if first_condition:
-            first_condition = False
-        else:
-            query += add_condition
-        
-        query += """instructor.last_name = :instructor"""
-        values["instructor"] = filters.instructor
-    
+    query, first_condition = get_courses_common(filters, query, values, first_condition, add_condition)
     query += add_condition + modifier + """cancelled = 0;"""
 
     cursor = current_app.db.execute(query, values)
@@ -110,12 +55,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     return courses
 
 
-def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
-    query = BASE_QUERY
-    values = dict()
-    add_condition = """ AND """
-    first_condition = True
-
+def get_courses_common(filters, query, values, first_condition, add_condition):
     # General Education Category
     if filters.ge_cat - 1:
         first_condition = False
@@ -171,6 +111,17 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         
         query += """instructor.last_name = :instructor"""
         values["instructor"] = filters.instructor
+    
+    return query, first_condition
+
+
+def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
+    query = BASE_QUERY
+    values = dict()
+    add_condition = """ AND """
+    first_condition = True
+
+    query, first_condition = get_courses_common(filters, query, values, first_condition, add_condition)
     
     # Modality
     if filters.modality != "nomode":
