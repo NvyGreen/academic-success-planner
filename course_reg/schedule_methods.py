@@ -1,6 +1,6 @@
-from flask import current_app
 from datetime import datetime
 import math
+from flask import current_app
 
 
 def get_short_courses(course_codes):

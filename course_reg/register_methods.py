@@ -1,6 +1,5 @@
-from flask import current_app
 from datetime import datetime
-
+from flask import current_app
 
 
 def get_enrollment_window(user_id):

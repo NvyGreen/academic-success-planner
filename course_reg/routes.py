@@ -1,3 +1,5 @@
+import functools
+from passlib.hash import pbkdf2_sha256
 from flask import (
     Blueprint,
     render_template,
@@ -14,9 +16,6 @@ import course_reg.filter_methods
 import course_reg.schedule_methods
 import course_reg.register_methods
 import course_reg.logic
-from passlib.hash import pbkdf2_sha256
-import functools
-from datetime import datetime, timezone
 
 
 pages = Blueprint(

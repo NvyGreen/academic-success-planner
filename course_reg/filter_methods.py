@@ -1,5 +1,5 @@
-from flask import current_app
 from datetime import datetime
+from flask import current_app
 
 
 BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
