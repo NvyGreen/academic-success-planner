@@ -224,21 +224,8 @@ def add_final_to_calendar(course, calendar):
             calendar[start_slot + r][col] = "SKIP"
 
 
-def get_registered_courses(user_id):
-    query = """SELECT course.course_code FROM enrollment JOIN course ON enrollment.course_id = course.course_id WHERE enrollment.student_id = :student_id;"""
-    cursor = current_app.db.execute(query, {"student_id": user_id})
-    codes_tup = cursor.fetchall()
-    cursor.close()
-
-    course_codes = []
-    for code in codes_tup:
-        course_codes.append(code[0])
-
-    return course_codes
-
-
-def get_waitlist(user_id):
-    query = """SELECT course.course_code FROM student_waitlist JOIN course ON student_waitlist.course_id = course.course_id WHERE student_waitlist.student_id = :student_id;"""
+def get_courses_from_list(user_id, table):
+    query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
     cursor = current_app.db.execute(query, {"student_id": user_id})
     codes_tup = cursor.fetchall()
     cursor.close()

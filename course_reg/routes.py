@@ -55,9 +55,9 @@ def login_required(route):
 @login_required
 def index():
     course_reg.register_methods.enroll_from_waitlist()
-    session["user_courses"] = course_reg.schedule_methods.get_registered_courses(session["user_id"])
+    session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     session["unreged_courses"] = {}
-    session["user_waitlist"] = course_reg.schedule_methods.get_waitlist(session["user_id"])
+    session["user_waitlist"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
     session["temp_courses"] = []
     session["load_bearing"] = False
     session["cancel"] = False
@@ -418,7 +418,7 @@ def cancel_select():
 # @check_window
 def confirm_schedule():
     session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
-    session["user_courses"] = course_reg.schedule_methods.get_registered_courses(session["user_id"])
+    session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     session["temp_courses"] = []
     session["load_bearing"] = False
 
