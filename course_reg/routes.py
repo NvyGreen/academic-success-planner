@@ -34,23 +34,6 @@ def login_required(route):
     return route_wrapper
 
 
-# def check_window(route):
-#     @functools.wraps(route)
-#     def route_wrapper(*args, **kwargs):
-#         if session["start_window"] > datetime.now(timezone.utc) or session["end_window"] < datetime.now(timezone.utc):
-#             standard_start = datetime.strptime("07:00", "%H:%M").time()
-#             standard_end = datetime.strptime("19:00", "%H:%M").time()
-#             test_now = datetime.strptime("01:00", "%H:%M").time()
-
-#             if standard_start <= test_now and standard_end >= test_now:
-#                 return redirect(url_for(".user_courses"))
-#             # return redirect(url_for(".user_courses"))
-
-#         return route(*args, **kwargs)
-    
-#     return route_wrapper
-
-
 @pages.route("/")
 @login_required
 def index():

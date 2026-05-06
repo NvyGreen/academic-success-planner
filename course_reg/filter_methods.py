@@ -249,17 +249,6 @@ def get_user_waitlist(user_id, course_codes):
     courses = []
     for raw_course in courses_raw:
         courses.append(clean_wait(raw_course, user_id))
-    
-    # for i in range(len(courses)):
-    #     new_query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
-    #     cursor = current_app.db.execute(new_query, {"course_code": course_codes[i]})
-    #     course_id = cursor.fetchone()[0]
-
-    #     new_query = """SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
-    #     cursor = current_app.db.execute(new_query, {"student_id": user_id, "course_id": course_id})
-    #     student_pos = cursor.fetchone()[0]
-
-    #     courses[i].append(student_pos)
 
     cursor.close()
     return courses

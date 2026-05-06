@@ -2,17 +2,6 @@ from datetime import datetime
 from flask import current_app
 
 
-def get_enrollment_window(user_id):
-    query = """SELECT enrollment_start, enrollment_end FROM student WHERE student_id = :student_id;"""
-    cursor = current_app.db.execute(query, {"student_id": user_id})
-    raw_start, raw_end = cursor.fetchone()
-    start = datetime.fromisoformat(raw_start)
-    end = datetime.fromisoformat(raw_end)
-    cursor.close()
-
-    return (start, end)
-
-
 def get_course_description(course_id):
     query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
     cursor = current_app.db.execute(query, {"course_id": course_id})
