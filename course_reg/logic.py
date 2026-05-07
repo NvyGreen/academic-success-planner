@@ -1,3 +1,4 @@
+import sqlite3
 from flask import current_app
 
 WORKLOAD_LIGHT_THRESHOLD = 15
@@ -26,16 +27,21 @@ AVG_COURSES = 4
 # Workload Estimation
 
 def calculate_workload(courses, user_id):
-    query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
-    cursor = current_app.db.execute(query, {"student_id": user_id})
-    gpa = cursor.fetchone()[0]
+    try:
+        query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
+        cursor = current_app.db.execute(query, {"student_id": user_id})
+        gpa = cursor.fetchone()[0]
 
-    placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
-    query = f"SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE course_code IN ({placeholders})"
-    values = {f"code_{i}": code for i, code in enumerate(courses)}
-    cursor = current_app.db.execute(query, values)
-    workload_data = cursor.fetchall()
-    cursor.close()
+        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+        query = f"SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE course_code IN ({placeholders})"
+        values = {f"code_{i}": code for i, code in enumerate(courses)}
+        cursor = current_app.db.execute(query, values)
+        workload_data = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     workload_score = 0
     total_credits = 0
@@ -61,13 +67,18 @@ def classify_workload(final_score):
     else:
         return "Overloaded"
 
-def total_hours_per_week(courses):    
-    placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
-    query = f"SELECT difficulty_score, estimated_hours_per_week FROM course WHERE course_code IN ({placeholders})"
-    values = {f"code_{i}": code for i, code in enumerate(courses)}
-    cursor = current_app.db.execute(query, values)
-    raw_hours = cursor.fetchall()
-    cursor.close()
+def total_hours_per_week(courses):
+    try:  
+        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+        query = f"SELECT difficulty_score, estimated_hours_per_week FROM course WHERE course_code IN ({placeholders})"
+        values = {f"code_{i}": code for i, code in enumerate(courses)}
+        cursor = current_app.db.execute(query, values)
+        raw_hours = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     total_hours = 0
     for datum in raw_hours:
@@ -91,12 +102,17 @@ def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
     factors = []
 
-    placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
-    query = f"SELECT credits, difficulty_score FROM course WHERE course_code IN ({placeholders})"
-    values = {f"code_{i}": code for i, code in enumerate(courses)}
-    cursor = current_app.db.execute(query, values)
-    course_data = cursor.fetchall()
-    cursor.close()
+    try:
+        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+        query = f"SELECT credits, difficulty_score FROM course WHERE course_code IN ({placeholders})"
+        values = {f"code_{i}": code for i, code in enumerate(courses)}
+        cursor = current_app.db.execute(query, values)
+        course_data = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     num_courses = 0
     for course in course_data:
@@ -177,10 +193,15 @@ def generate_burnout_explanation(factors):
 # GPA / Academic Impact Estimation
 
 def score_academic_impact(courses, user_id):
-    query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
-    cursor = current_app.db.execute(query, {"student_id": user_id})
-    gpa = cursor.fetchone()[0]
-    cursor.close()
+    try:
+        query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
+        cursor = current_app.db.execute(query, {"student_id": user_id})
+        gpa = cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     estimate = total_hours_per_week(courses) / 16
     if gpa:

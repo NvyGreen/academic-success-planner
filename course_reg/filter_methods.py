@@ -1,4 +1,5 @@
 from datetime import datetime
+import sqlite3
 from flask import current_app
 
 
@@ -6,10 +7,15 @@ BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_num
 modifier = "course."
 
 def prep_ge():
-    cursor = current_app.db.execute("SELECT * FROM ge_category;")
-    # (category_id, label, name)
-    ge_categories = cursor.fetchall()
-    cursor.close()
+    try:
+        cursor = current_app.db.execute("SELECT * FROM ge_category;")
+        # (category_id, label, name)
+        ge_categories = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     ge_dropdown = []
     for category in ge_categories:
@@ -22,10 +28,15 @@ def prep_ge():
 
 
 def prep_departments():
-    cursor = current_app.db.execute("SELECT * FROM department;")
-    # (department_id, abbreviation, name)
-    dep_list = cursor.fetchall()
-    cursor.close()
+    try:
+        cursor = current_app.db.execute("SELECT * FROM department;")
+        # (department_id, abbreviation, name)
+        dep_list = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     dep_dropdown = [("0", " ")]
     for department in dep_list:
@@ -43,9 +54,14 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     query, first_condition = get_courses_common(filters, query, values, first_condition, add_condition)
     query += add_condition + modifier + """cancelled = 0;"""
 
-    cursor = current_app.db.execute(query, values)
-    courses_raw = cursor.fetchall()
-    cursor.close()
+    try:
+        cursor = current_app.db.execute(query, values)
+        courses_raw = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -205,9 +221,14 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     
     query += ";"
 
-    cursor = current_app.db.execute(query, values)
-    courses_raw = cursor.fetchall()
-    cursor.close()
+    try:
+        cursor = current_app.db.execute(query, values)
+        courses_raw = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -225,9 +246,15 @@ def get_courses_from_codes(course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query += f"course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
-    cursor = current_app.db.execute(query, values)
-    courses_raw = cursor.fetchall()
-    cursor.close()
+
+    try:
+        cursor = current_app.db.execute(query, values)
+        courses_raw = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -243,14 +270,20 @@ def get_user_waitlist(user_id, course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query += f"course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
-    cursor = current_app.db.execute(query, values)
-    courses_raw = cursor.fetchall()
+
+    try:
+        cursor = current_app.db.execute(query, values)
+        courses_raw = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     courses = []
     for raw_course in courses_raw:
         courses.append(clean_wait(raw_course, user_id))
 
-    cursor.close()
     return courses
 
 
@@ -258,15 +291,27 @@ def get_criteria(filters):
     criteria = []
 
     if filters.ge_cat - 1:
-        cursor = current_app.db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
-        category = cursor.fetchone()
-        cursor.close()
+        try:
+            cursor = current_app.db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
+            category = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
+    
         criteria.append("General Education Category " + category[0] + ": " + category[1])
     
     if filters.department:
-        cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
-        dep = cursor.fetchone()
-        cursor.close()
+        try:
+            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
+            dep = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
+
         criteria.append("Department: " + dep[0])
     
     if filters.course_num:
@@ -295,15 +340,27 @@ def get_criteria_adv(filters):
     criteria = []
 
     if filters.ge_cat - 1:
-        cursor = current_app.db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
-        category = cursor.fetchone()
-        cursor.close()
+        try:
+            cursor = current_app.db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
+            category = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
+        
         criteria.append("General Education Category " + category[0] + ": " + category[1])
     
     if filters.department:
-        cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
-        dep = cursor.fetchone()
-        cursor.close()
+        try:
+            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
+            dep = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
+        
         criteria.append("Department: " + dep[0])
     
     if filters.course_num:
@@ -384,8 +441,14 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
     else:
         course.append("Neither")
     
-    cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
-    clean_common(raw_course, course, cursor)
+    try:
+        cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
+        clean_common(raw_course, course, cursor)
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     # Status
     if raw_course[18] == 1:
@@ -401,30 +464,41 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
     
     course.append(raw_course[19])
     
-    cursor.close()
     return course
 
 def clean_wait(raw_course, user_id):
     course = []
     course.append("Waitlisted")
 
-    cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
-    clean_common(raw_course, course, cursor)
+    try:
+        cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
+        clean_common(raw_course, course, cursor)
 
-    cursor = current_app.db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
-    student_pos = cursor.fetchone()[0]
+        cursor = current_app.db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
+        student_pos = cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
+
     course.append(student_pos)
     course.append(raw_course[19])
 
-    cursor.close()
     return course
 
 def clean_common(raw_course, course, cursor):
     # Abbreviation
-    cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[1]})
-    department = cursor.fetchone()[0]
-    course.append(department + " " + raw_course[2])    # department + course_number
+    try:
+        cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[1]})
+        department = cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
+    course.append(department + " " + raw_course[2])    # department + course_number
     course.append(raw_course[3])    # course_name
     course.append(raw_course[4])    # type
     course.append(raw_course[5])    # days
@@ -440,8 +514,14 @@ def clean_common(raw_course, course, cursor):
         course.append(start_time + "-" + end_time)
     
     # Final
-    cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[8]})
-    final_data = cursor.fetchone()
+    try:
+        cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[8]})
+        final_data = cursor.fetchone()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     if (final_data[0] == "No Final"):
         course.append(None)

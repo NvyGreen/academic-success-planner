@@ -1,5 +1,6 @@
 from datetime import datetime
 import math
+import sqlite3
 from flask import current_app
 
 
@@ -10,8 +11,15 @@ def get_short_courses(course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query = f"SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
-    cursor = current_app.db.execute(query, values)
-    raw_courses = cursor.fetchall()
+
+    try:
+        cursor = current_app.db.execute(query, values)
+        raw_courses = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     courses = []
     # (department_id, number, name, days, start_time, end_time, teach_first, teach_last, is_online, building_code, room)
@@ -19,10 +27,16 @@ def get_short_courses(course_codes):
         course = []
 
         # Abbreviation
-        cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
-        department = cursor.fetchone()[0]
+        try:
+            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
+            department = cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
+        
         course.append(department + " " + raw_course[1])    # department + course_number
-
         course.append(raw_course[2])    # name/title
         course.append(raw_course[3])    # type
         course.append(raw_course[4])    # days
@@ -48,7 +62,6 @@ def get_short_courses(course_codes):
 
         courses.append(course)
     
-    cursor.close()
     return courses
 
 
@@ -59,8 +72,15 @@ def get_short_courses_final(course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query = f"SELECT course.department_id, course.course_number, course.course_name, course.type, course.final_id, course.is_online, course.building_code, course.room FROM course JOIN final ON course.final_id = final.final_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
-    cursor = current_app.db.execute(query, values)
-    raw_courses = cursor.fetchall()
+
+    try:
+        cursor = current_app.db.execute(query, values)
+        raw_courses = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
     courses = []
 
     # (department_id, course_number, course_name, type, final_id, is_online, building_code, room)
@@ -68,17 +88,29 @@ def get_short_courses_final(course_codes):
         course = []
 
         # Abbreviation
-        cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
-        department = cursor.fetchone()[0]
-        course.append(department + " " + raw_course[1])    # department + course_number
+        try:
+            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
+            department = cursor.fetchone()[0]
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
 
+        course.append(department + " " + raw_course[1])    # department + course_number
         course.append(raw_course[2])    # name/title
         course.append(raw_course[3])    # type
 
         # Final Data
-        cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[4]})
-        raw_final = cursor.fetchone()
-
+        try:
+            cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[4]})
+            raw_final = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise
+        finally:
+            cursor.close()
+        
         if (raw_final[0] == "No Final") or (raw_final[1] == "No Final"):
             course.append(None)
         else:
@@ -96,7 +128,6 @@ def get_short_courses_final(course_codes):
 
         courses.append(course)
     
-    cursor.close()
     return courses
 
 
@@ -226,9 +257,14 @@ def add_final_to_calendar(course, calendar):
 
 def get_courses_from_list(user_id, table):
     query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
-    cursor = current_app.db.execute(query, {"student_id": user_id})
-    codes_tup = cursor.fetchall()
-    cursor.close()
+    try:
+        cursor = current_app.db.execute(query, {"student_id": user_id})
+        codes_tup = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise
+    finally:
+        cursor.close()
 
     course_codes = []
     for code in codes_tup:

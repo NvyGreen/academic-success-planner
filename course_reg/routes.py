@@ -44,7 +44,6 @@ def index():
     session["temp_courses"] = []
     session["load_bearing"] = False
     session["cancel"] = False
-    session["start_window"], session["end_window"] = course_reg.register_methods.get_enrollment_window(session["user_id"])
     
     return redirect(url_for(".user_courses"))
 
