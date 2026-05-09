@@ -51,20 +51,32 @@ def index():
 @pages.route("/courses")
 @login_required
 def user_courses():
-    courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
-    calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
+    if type(session["user_courses"]) == str:
+        flash(session["user_courses"], "error")
+        courses = []
+        calendar = [[]]
+        workload_score = "-"
+        classification = "-"
+        avg_hours = "-"
+    else:
+        courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
+            calendar = [[]]
+        else:
+            calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
+
+        workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
+        classification = course_reg.logic.classify_workload(workload_score)
+        avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
 
     if "Success" in session["unreged_courses"]:
         flash("All courses successfully registered", "success")
     else:
         for course, reqs in session["unreged_courses"].items():
             flash(f"Could not join {course} - {reqs}", "error")
-
     session["unreged_courses"] = {}
-
-    workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
-    classification = course_reg.logic.classify_workload(workload_score)
-    avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
 
     return render_template(
         "index.html",
@@ -80,8 +92,18 @@ def user_courses():
 @pages.route("/finals")
 @login_required
 def user_finals():
-    courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
-    calendar = course_reg.schedule_methods.create_calendar(courses, "final")
+    if type(session["user_courses"]) == str:
+        flash(session["user_courses"], "error")
+        courses = []
+        calendar = [[]]
+    else:
+        courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
+            calendar = [[]]
+        else:
+            calendar = course_reg.schedule_methods.create_calendar(courses, "final")
 
     return render_template(
         "index_finals.html",
@@ -94,7 +116,14 @@ def user_finals():
 @pages.route("/quarter")
 @login_required
 def user_quarter():
-    courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+    if type(session["user_courses"]) == str:
+        flash(session["user_courses"], "error")
+        courses = []
+    else:
+        courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
 
     return render_template(
         "index_quarter.html",
@@ -106,7 +135,14 @@ def user_quarter():
 @pages.route("/waitlists")
 @login_required
 def user_waitlists():
-    courses = course_reg.filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
+    if type(session["user_waitlist"]) == str:
+        flash(session["user_waitlist"], "error")
+        courses = []
+    else:
+        courses = course_reg.filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
 
     return render_template(
         "waitlists.html",
@@ -157,7 +193,6 @@ def login():
 
 @pages.route("/drop-courses")
 @login_required
-# @check_window
 def drop_courses():
     courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
 
@@ -181,6 +216,14 @@ def filter_courses():
     
 
     if form.validate_on_submit():
+        if type(session["user_courses"]) == str:
+            flash(session["user_courses"], "error")
+            return redirect(request.args.get("current_page"))
+
+        if type(session["user_waitlist"]) == str:
+            flash(session["user_waitlist"], "error")
+            return redirect(request.args.get("current_page"))
+        
         filters = Filters(
             ge_cat=int(form.gen_cat.data),
             department=int(form.department.data),
@@ -208,6 +251,14 @@ def filter_courses_advanced():
     form.department.choices = course_reg.filter_methods.prep_departments()
 
     if form.validate_on_submit():
+        if type(session["user_courses"]) == str:
+            flash(session["user_courses"], "error")
+            return redirect(request.args.get("current_page"))
+
+        if type(session["user_waitlist"]) == str:
+            flash(session["user_waitlist"], "error")
+            return redirect(request.args.get("current_page"))
+        
         filters = AdvancedFilters(
             ge_cat=int(form.gen_cat.data),
             department=int(form.department.data),
@@ -250,8 +301,16 @@ def course_listing():
 @pages.route("/preview/courses")
 @login_required
 def preview_courses():
-    courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
-    calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
+    if type(session["user_courses"]) == str:
+        flash(session["user_courses"], "error")
+        courses = []
+        calendar = [[]]
+    else:
+        courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
+        calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
     return render_template(
         "preview_courses.html",
@@ -264,8 +323,16 @@ def preview_courses():
 @pages.route("/preview/finals")
 @login_required
 def preview_finals():
-    courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
-    calendar = course_reg.schedule_methods.create_calendar(courses, "final")
+    if type(session["user_courses"]) == str:
+        flash(session["user_courses"], "error")
+        courses = []
+        calendar = [[]]
+    else:
+        courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
+        calendar = course_reg.schedule_methods.create_calendar(courses, "final")
 
     return render_template(
         "preview_finals.html",
@@ -278,7 +345,15 @@ def preview_finals():
 @pages.route("/preview/quarter")
 @login_required
 def preview_quarter():
-    courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+    if type(session["user_courses"]) == str:
+        flash(session["user_courses"], "error")
+        courses = []
+        calendar = [[]]
+    else:
+        courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+        if type(courses) == str:
+            flash(courses, "error")
+            courses = []
 
     return render_template(
         "preview_quarter.html",
@@ -290,7 +365,6 @@ def preview_quarter():
 
 @pages.get("/add-course/<int:code>")
 @login_required
-# @check_window
 def add_course(code):
     if code not in session["temp_courses"]:
         session["load_bearing"] = True
@@ -308,7 +382,6 @@ def add_course(code):
 
 @pages.get("/drop-course/<int:code>")
 @login_required
-# @check_window
 def drop_course(code):
     if code in session["temp_courses"]:
         session["load_bearing"] = False
@@ -338,38 +411,42 @@ def drop_course(code):
 
 @pages.get("/wait-course/<int:code>")
 @login_required
-# @check_window
 def wait_course(code):
-    if code not in session["user_waitlist"]:
-        course_reg.register_methods.waitlist_course(session["user_id"], code)
-        session["load_bearing"] = True
-        session["user_waitlist"].append(code)
+    if type(session["user_waitlist"]) == str:
+        flash(session["user_waitlist"], "error")
+    else:
+        if code not in session["user_waitlist"]:
+            course_reg.register_methods.waitlist_course(session["user_id"], code)
+            session["load_bearing"] = True
+            session["user_waitlist"].append(code)
 
-        for course in session["filter_courses"]:
-            if course[-1] == code:
-                course[0] = "Waitlisted"
-                break
+            for course in session["filter_courses"]:
+                if course[-1] == code:
+                    course[0] = "Waitlisted"
+                    break
 
-        session.modified = True
+            session.modified = True
 
     return redirect(request.args.get("current_page"))
 
 
 @pages.get("/drop-wait/<int:code>")
 @login_required
-# @check_window
 def drop_wait(code):
-    if code in session["user_waitlist"]:
-        course_reg.register_methods.drop_waitlist(session["user_id"], code)
-        session["load_bearing"] = False
-        session["user_waitlist"].remove(code)
+    if type(session["user_waitlist"]) == str:
+        flash(session["user_waitlist"], "error")
+    else:
+        if code in session["user_waitlist"]:
+            course_reg.register_methods.drop_waitlist(session["user_id"], code)
+            session["load_bearing"] = False
+            session["user_waitlist"].remove(code)
 
-        for course in session["filter_courses"]:
-            if course[-1] == code:
-                course[0] = "Neither"
-                break
-        
-        session.modified = True
+            for course in session["filter_courses"]:
+                if course[-1] == code:
+                    course[0] = "Neither"
+                    break
+            
+            session.modified = True
     
     return redirect(request.args.get("current_page"))
 

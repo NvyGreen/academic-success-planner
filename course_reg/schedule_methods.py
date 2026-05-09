@@ -17,7 +17,7 @@ def get_short_courses(course_codes):
         raw_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not fetch courses for calendar"
     finally:
         cursor.close()
 
@@ -32,7 +32,7 @@ def get_short_courses(course_codes):
             department = cursor.fetchone()[0]
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: Could not fetch courses for calendar"
         finally:
             cursor.close()
         
@@ -78,7 +78,7 @@ def get_short_courses_final(course_codes):
         raw_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not fetch finals for calendar"
     finally:
         cursor.close()
     courses = []
@@ -93,7 +93,7 @@ def get_short_courses_final(course_codes):
             department = cursor.fetchone()[0]
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: Could not fetch finals for calendar"
         finally:
             cursor.close()
 
@@ -107,7 +107,7 @@ def get_short_courses_final(course_codes):
             raw_final = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: Could not fetch finals for calendar"
         finally:
             cursor.close()
         
@@ -262,7 +262,7 @@ def get_courses_from_list(user_id, table):
         codes_tup = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not get student's courses"
     finally:
         cursor.close()
 

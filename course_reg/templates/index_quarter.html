@@ -9,6 +9,24 @@
 {% block main_content %}
     <div class="schedule__container">
 
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <div class="schedule__messages">
+                    {% for category, message in messages %}
+                    <div class="schedule__flash schedule__flash--{{ category }}">
+                        <span class="schedule__flash-icon">
+                            {% if category == 'success' %}✓
+                            {% elif category == 'error' %}✕
+                            {% else %}i{% endif %}
+                        </span>
+                        <span class="schedule__flash-text">{{ message }}</span>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
         <div class="schedule__half">
             <div class="schedule__nav">
                 <a href="{{ url_for('pages.user_courses') }}" class="schedule__link schedule__link--outline">&#9670; Weekly</a>
