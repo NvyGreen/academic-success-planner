@@ -68,8 +68,17 @@ def user_courses():
             calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
         workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
-        classification = course_reg.logic.classify_workload(workload_score)
+        if type(workload_score) == str:
+            flash(workload_score, "error")
+            workload_score = "-"
+            classification = "-"
+        else:
+            classification = course_reg.logic.classify_workload(workload_score)
+
         avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
+        if type(avg_hours) == str:
+            flash(avg_hours, "error")
+            avg_hours = "-"
 
     if type(session["unreged_courses"]) == str:
         flash(session["unreged_courses"], "error")
