@@ -89,17 +89,29 @@ Concepts:
 To run this project locally:
 1. Ensure Python (3.9+) and SQLite are installed on your machine.
 2. Clone the repository and navigate to the project directory.
-3. Create and activate a virtual environment, then install the required dependencies by running `pip install -r requirements.txt` in your terminal.
-4. Create a .env file in the root directory by copying from .env.example and update the following values:  
+3. Create and activate a virtual environment.  
+Mac:
+```
+>>> python3 -m venv .venv
+>>> source .venv/bin/activate
+```
+
+Windows:
+```
+>>> python -m venv .venv
+>>> .venv\Scripts\activate
+```
+4. Install the required dependencies by running `pip install -r requirements.txt` in your terminal.
+5. Create a .env file in the root directory by copying from .env.example and update the following values:  
    a. SQLITE3_DB = name of your local database file (e.g., academic_success_planner.db)  
    b. SECRET_KEY = any random secure string
-5. Create a .flaskenv file in the root directory by copying from .flaskenv.example and update the following values:  
+6. Create a .flaskenv file in the root directory by copying from .flaskenv.example and update the following values:  
    a. FLASK_APP = name of the app (e.g., course_reg)  
    b. SECRET_KEY = any random secure string (e.g., development)  
-6. Create an empty SQLite database file in the project root using the name specified in .env.
-7. Start the Flask development server by running `flask run` in your terminal.
-8. Open the application in your browser at http://127.0.0.1:5000.
-9. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
+7. Create an empty SQLite database file in the project root using the name specified in .env.
+8. Start the Flask development server by running `flask run` in your terminal.
+9. Open the application in your browser at http://127.0.0.1:5000.
+10. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
 
 ### 📊 Database Setup
 The application uses a relational SQLite database with tables for courses, departments, instructors, and student schedules.  
