@@ -211,8 +211,16 @@ def filter_courses():
         session["cancel"] = False
     
     form = FilterForm()
+
     form.gen_cat.choices = course_reg.filter_methods.prep_ge()
+    if type(form.gen_cat.choices) == str:
+        flash(form.gen_cat.choices, "error")
+        return redirect(request.args.get("current_page"))
+    
     form.department.choices = course_reg.filter_methods.prep_departments()
+    if type(form.department.choices) == str:
+        flash(form.department.choices, "error")
+        return redirect(request.args.get("current_page"))
     
 
     if form.validate_on_submit():
@@ -232,8 +240,18 @@ def filter_courses():
             course_level=form.course_level.data,
             instructor=form.instructor.data
         )
+        
         session["filter_courses"] = course_reg.filter_methods.get_courses(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
         session["filter_criteria"] = course_reg.filter_methods.get_criteria(filters)
+
+        if type(session["filter_courses"]) == str:
+            flash(session["filter_courses"], "error")
+            return redirect(request.args.get("current_page"))
+        
+        if type(session["filter_criteria"]) == str:
+            flash(session["filter_criteria"], "error")
+            return redirect(request.args.get("current_page"))
+        
         return redirect(url_for(".course_listing"))
 
     return render_template(
@@ -247,8 +265,16 @@ def filter_courses():
 @login_required
 def filter_courses_advanced():
     form = AdvancedFilterForm()
+    
     form.gen_cat.choices = course_reg.filter_methods.prep_ge()
+    if type(form.gen_cat.choices) == str:
+        flash(form.gen_cat.choices, "error")
+        return redirect(request.args.get("current_page"))
+    
     form.department.choices = course_reg.filter_methods.prep_departments()
+    if type(form.department.choices) == str:
+        flash(form.department.choices, "error")
+        return redirect(request.args.get("current_page"))
 
     if form.validate_on_submit():
         if type(session["user_courses"]) == str:
@@ -278,6 +304,15 @@ def filter_courses_advanced():
         )
         session["filter_criteria"] = course_reg.filter_methods.get_criteria_adv(filters)
         session["filter_courses"] = course_reg.filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
+
+        if type(session["filter_courses"]) == str:
+            flash(session["filter_courses"], "error")
+            return redirect(request.args.get("current_page"))
+        
+        if type(session["filter_criteria"]) == str:
+            flash(session["filter_criteria"], "error")
+            return redirect(request.args.get("current_page"))
+        
         return redirect(url_for(".course_listing"))
 
     return render_template(

@@ -13,7 +13,7 @@ def prep_ge():
         ge_categories = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not get General Education categories"
     finally:
         cursor.close()
 
@@ -34,7 +34,7 @@ def prep_departments():
         dep_list = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not get Departments"
     finally:
         cursor.close()
 
@@ -59,7 +59,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
@@ -226,7 +226,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
@@ -296,7 +296,7 @@ def get_criteria(filters):
             category = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: could not fetch filtering criteria"
         finally:
             cursor.close()
     
@@ -308,7 +308,7 @@ def get_criteria(filters):
             dep = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: could not fetch filtering criteria"
         finally:
             cursor.close()
 
@@ -345,7 +345,7 @@ def get_criteria_adv(filters):
             category = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: could not fetch filtering criteria"
         finally:
             cursor.close()
         
@@ -357,7 +357,7 @@ def get_criteria_adv(filters):
             dep = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            raise
+            return "Error: could not fetch filtering criteria"
         finally:
             cursor.close()
         
@@ -446,7 +446,7 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
         clean_common(raw_course, course, cursor)
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
@@ -478,7 +478,7 @@ def clean_wait(raw_course, user_id):
         student_pos = cursor.fetchone()[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
@@ -494,7 +494,7 @@ def clean_common(raw_course, course, cursor):
         department = cursor.fetchone()[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
@@ -519,7 +519,7 @@ def clean_common(raw_course, course, cursor):
         final_data = cursor.fetchone()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
