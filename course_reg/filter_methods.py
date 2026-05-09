@@ -67,7 +67,10 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     for raw_course in courses_raw:
         added = (raw_course[-1] in temp_courses) or (raw_course[-1] in reg_courses)
         waitlisted = raw_course[-1] in waitlist
-        courses.append(clean_course(raw_course, added, waitlisted))
+        course = clean_course(raw_course, added, waitlisted)
+        if type(course) == str:
+            return "Error: could not fetch courses"
+        courses.append(course)
     return courses
 
 
@@ -234,7 +237,10 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     for raw_course in courses_raw:
         added = (raw_course[len(raw_course) - 1] in temp_courses) or (raw_course[len(raw_course) - 1] in reg_courses)
         waitlisted = raw_course[len(raw_course) - 1] in waitlist
-        courses.append(clean_course(raw_course, added, waitlisted))
+        course = clean_course(raw_course, added, waitlisted)
+        if type(course) == str:
+            return "Error: could not fetch courses"
+        courses.append(course)
     return courses
 
 
@@ -252,13 +258,16 @@ def get_courses_from_codes(course_codes):
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not fetch courses"
     finally:
         cursor.close()
 
     courses = []
     for raw_course in courses_raw:
-        courses.append(clean_course(raw_course, True, False))
+        course = clean_course(raw_course, True, False)
+        if type(course) == str:
+            return "Error: Could not fetch courses"
+        courses.append(course)
     return courses
 
 
@@ -276,13 +285,16 @@ def get_user_waitlist(user_id, course_codes):
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not fetch courses"
     finally:
         cursor.close()
 
     courses = []
     for raw_course in courses_raw:
-        courses.append(clean_wait(raw_course, user_id))
+        course = clean_wait(raw_course, user_id)
+        if type(course) == str:
+            return "Error: could not fetch courses"
+        courses.append(courses)
 
     return courses
 
@@ -443,7 +455,9 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
     
     try:
         cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
-        clean_common(raw_course, course, cursor)
+        error = clean_common(raw_course, course, cursor)
+        if type(error) == str:
+            return "Error: could not fetch courses"
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
@@ -472,7 +486,9 @@ def clean_wait(raw_course, user_id):
 
     try:
         cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
-        clean_common(raw_course, course, cursor)
+        error = clean_common(raw_course, course, cursor)
+        if type(error) == str:
+            return "Error: could not fetch courses"
 
         cursor = current_app.db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
         student_pos = cursor.fetchone()[0]

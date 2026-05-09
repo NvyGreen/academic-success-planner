@@ -143,6 +143,7 @@ def user_waitlists():
         if type(courses) == str:
             flash(courses, "error")
             courses = []
+            return redirect(url_for(".index"))
 
     return render_template(
         "waitlists.html",
@@ -195,6 +196,9 @@ def login():
 @login_required
 def drop_courses():
     courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
+    if type(courses) == str:
+        flash(courses, "error")
+        return redirect(url_for(".index"))
 
     return render_template(
         "drop_courses.html",
