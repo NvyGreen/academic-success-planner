@@ -71,7 +71,9 @@ def user_courses():
         classification = course_reg.logic.classify_workload(workload_score)
         avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
 
-    if "Success" in session["unreged_courses"]:
+    if type(session["unreged_courses"]) == str:
+        flash(session["unreged_courses"], "error")
+    elif "Success" in session["unreged_courses"]:
         flash("All courses successfully registered", "success")
     else:
         for course, reqs in session["unreged_courses"].items():
@@ -442,7 +444,10 @@ def drop_course(code):
                 course[0] = "Neither"
                 break
 
-        course_reg.register_methods.drop_course(session["user_id"], code)
+        error = course_reg.register_methods.drop_course(session["user_id"], code)
+        if type(error) == str:
+            flash(error, "error")
+            redirect(request.args.get("current_page"))
         session.modified = True
 
     return redirect(request.args.get("current_page"))
@@ -455,7 +460,11 @@ def wait_course(code):
         flash(session["user_waitlist"], "error")
     else:
         if code not in session["user_waitlist"]:
-            course_reg.register_methods.waitlist_course(session["user_id"], code)
+            error = course_reg.register_methods.waitlist_course(session["user_id"], code)
+            if type(error) == str:
+                flash(error, "error")
+                redirect(request.args.get("current_page"))
+
             session["load_bearing"] = True
             session["user_waitlist"].append(code)
 
@@ -476,7 +485,11 @@ def drop_wait(code):
         flash(session["user_waitlist"], "error")
     else:
         if code in session["user_waitlist"]:
-            course_reg.register_methods.drop_waitlist(session["user_id"], code)
+            error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
+            if type(error) == str:
+                flash(error, "error")
+                redirect(request.args.get("current_page"))
+            
             session["load_bearing"] = False
             session["user_waitlist"].remove(code)
 

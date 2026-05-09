@@ -1,4 +1,3 @@
-from datetime import datetime
 import sqlite3
 from flask import current_app
 
@@ -14,7 +13,7 @@ def get_course_description(course_id):
         course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not register for courses"
     finally:
         cursor.close()
 
@@ -34,7 +33,7 @@ def register_courses(user_id, course_codes):
         course_ids = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not register for courses"
     finally:
         cursor.close()
     unreged_courses = {}
@@ -42,12 +41,19 @@ def register_courses(user_id, course_codes):
     for course_id in course_ids:
         prereqs_check = check_prereqs(user_id, course_id[0])
         coreqs_check = check_coreqs(user_id, course_id[0])
+        if type(prereqs_check) == str or type(coreqs_check) == str:
+            return "Error: Could not register for courses"
+
         if len(prereqs_check) > 0:
             course_desc = get_course_description(course_id[0])
+            if course_desc.startswith("Error"):
+                return "Error: Could not register for courses"
             prereqs = "Following prerequisites not satisfied: " + ", ".join(prereqs_check)
             unreged_courses[course_desc] = prereqs
         elif len(coreqs_check) > 0:
             course_desc = get_course_description(course_id[0])
+            if course_desc.startswith("Error"):
+                return "Error: Could not register for courses"
             coreqs = "Following corequisites not satisfied: " + ", ".join(coreqs_check)
             unreged_courses[course_desc] = coreqs
         else:
@@ -61,7 +67,7 @@ def register_courses(user_id, course_codes):
                 current_app.db.commit()
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
-                raise
+                return "Error: Could not register for courses"
             finally:
                 cursor.close()
     
@@ -78,7 +84,7 @@ def check_coreqs(course_id, all_ids):
         coreqs = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not register for courses"
     finally:
         cursor.close()
 
@@ -89,6 +95,8 @@ def check_coreqs(course_id, all_ids):
     for coreq in coreqs:
         if coreq not in all_ids:
             course_desc = get_course_description(coreq[0])
+            if course_desc.startswith("Error"):
+                return "Error: Could not register for courses"
             unfilled_coreqs.append(course_desc)
     
     return unfilled_coreqs
@@ -109,13 +117,15 @@ def check_prereqs(user_id, course_id):
         prev_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not register for courses"
     finally:
         cursor.close()
 
     for prereq in prereqs:
         if prereq not in prev_courses:
             course_desc = get_course_description(prereq[0])
+            if course_desc.startswith("Error"):
+                return "Error: Could not register for courses"
             unfilled_prereqs.append(course_desc)
     
     return unfilled_prereqs
@@ -136,7 +146,7 @@ def drop_course(user_id, course_code):
         current_app.db.commit()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not drop course"
     finally:
         cursor.close()
 
@@ -163,7 +173,7 @@ def waitlist_course(user_id, course_code):
         current_app.db.commit()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not waitlist course"
     finally:
         cursor.close()
 
@@ -190,7 +200,7 @@ def drop_waitlist(user_id, course_code):
         current_app.db.commit()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: Could not drop course from waitlist"
     finally:
         cursor.close()
 
@@ -202,7 +212,7 @@ def enroll_from_waitlist():
         courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise
+        return "Error: could not enroll in course from waitlist"
     finally:
         cursor.close()
 
@@ -217,7 +227,7 @@ def enroll_from_waitlist():
                 student_id = cursor.fetchone()
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
-                raise
+                return "Error: could not enroll in course from waitlist"
             finally:
                 cursor.close()
 
@@ -245,6 +255,6 @@ def enroll_from_waitlist():
                     current_app.db.commit()
                 except sqlite3.Error as e:
                     current_app.logger.error(f"Database error: {e}")
-                    raise
+                    return "Error: could not enroll in course from waitlist"
                 finally:
                     cursor.close()
