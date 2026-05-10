@@ -10,6 +10,7 @@ from flask import (
     flash,
     request
 )
+from course_reg.db import get_db
 from course_reg.forms import LoginForm, FilterForm, AdvancedFilterForm
 from course_reg.models import Filters, AdvancedFilters
 import course_reg.filter_methods
@@ -171,7 +172,8 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user_cursor = current_app.db.execute(
+        db = get_db()
+        user_cursor = db.execute(
             """SELECT student_id, email, password
             FROM student
             WHERE email = :email""",

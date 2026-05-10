@@ -1,6 +1,7 @@
 from datetime import datetime
 import sqlite3
 from flask import current_app
+from course_reg.db import get_db
 
 
 BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
@@ -8,7 +9,8 @@ modifier = "course."
 
 def prep_ge():
     try:
-        cursor = current_app.db.execute("SELECT * FROM ge_category;")
+        db = get_db()
+        cursor = db.execute("SELECT * FROM ge_category;")
         # (category_id, label, name)
         ge_categories = cursor.fetchall()
     except sqlite3.Error as e:
@@ -29,7 +31,8 @@ def prep_ge():
 
 def prep_departments():
     try:
-        cursor = current_app.db.execute("SELECT * FROM department;")
+        db = get_db()
+        cursor = db.execute("SELECT * FROM department;")
         # (department_id, abbreviation, name)
         dep_list = cursor.fetchall()
     except sqlite3.Error as e:
@@ -55,7 +58,8 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     query += add_condition + modifier + """cancelled = 0;"""
 
     try:
-        cursor = current_app.db.execute(query, values)
+        db = get_db()
+        cursor = db.execute(query, values)
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -225,7 +229,8 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     query += ";"
 
     try:
-        cursor = current_app.db.execute(query, values)
+        db = get_db()
+        cursor = db.execute(query, values)
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -254,7 +259,8 @@ def get_courses_from_codes(course_codes):
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
 
     try:
-        cursor = current_app.db.execute(query, values)
+        db = get_db()
+        cursor = db.execute(query, values)
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -281,7 +287,8 @@ def get_user_waitlist(user_id, course_codes):
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
 
     try:
-        cursor = current_app.db.execute(query, values)
+        db = get_db()
+        cursor = db.execute(query, values)
         courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -294,7 +301,7 @@ def get_user_waitlist(user_id, course_codes):
         course = clean_wait(raw_course, user_id)
         if type(course) == str:
             return "Error: could not fetch courses"
-        courses.append(courses)
+        courses.append(course)
 
     return courses
 
@@ -304,7 +311,8 @@ def get_criteria(filters):
 
     if filters.ge_cat - 1:
         try:
-            cursor = current_app.db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
+            db = get_db()
+            cursor = db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
             category = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -316,7 +324,8 @@ def get_criteria(filters):
     
     if filters.department:
         try:
-            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
+            db = get_db()
+            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
             dep = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -353,7 +362,8 @@ def get_criteria_adv(filters):
 
     if filters.ge_cat - 1:
         try:
-            cursor = current_app.db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
+            db = get_db()
+            cursor = db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
             category = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -365,7 +375,8 @@ def get_criteria_adv(filters):
     
     if filters.department:
         try:
-            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
+            db = get_db()
+            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
             dep = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -454,7 +465,8 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
         course.append("Neither")
     
     try:
-        cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
+        db = get_db()
+        cursor = db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
         error = clean_common(raw_course, course, cursor)
         if type(error) == str:
             return "Error: could not fetch courses"
@@ -485,12 +497,13 @@ def clean_wait(raw_course, user_id):
     course.append("Waitlisted")
 
     try:
-        cursor = current_app.db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
+        db = get_db()
+        cursor = db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
         error = clean_common(raw_course, course, cursor)
         if type(error) == str:
             return "Error: could not fetch courses"
 
-        cursor = current_app.db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
+        cursor = db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
         student_pos = cursor.fetchone()[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -506,7 +519,8 @@ def clean_wait(raw_course, user_id):
 def clean_common(raw_course, course, cursor):
     # Abbreviation
     try:
-        cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[1]})
+        db = get_db()
+        cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[1]})
         department = cursor.fetchone()[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -531,7 +545,8 @@ def clean_common(raw_course, course, cursor):
     
     # Final
     try:
-        cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[8]})
+        db = get_db()
+        cursor = db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[8]})
         final_data = cursor.fetchone()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")

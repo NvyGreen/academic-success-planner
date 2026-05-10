@@ -1,5 +1,6 @@
 import sqlite3
 from flask import current_app
+from course_reg.db import get_db
 
 WORKLOAD_LIGHT_THRESHOLD = 15
 WORKLOAD_BALANCED_THRESHOLD = 25
@@ -28,14 +29,15 @@ AVG_COURSES = 4
 
 def calculate_workload(courses, user_id):
     try:
+        db = get_db()
         query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
-        cursor = current_app.db.execute(query, {"student_id": user_id})
+        cursor = db.execute(query, {"student_id": user_id})
         gpa = cursor.fetchone()[0]
 
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
         query = f"SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE course_code IN ({placeholders})"
         values = {f"code_{i}": code for i, code in enumerate(courses)}
-        cursor = current_app.db.execute(query, values)
+        cursor = db.execute(query, values)
         workload_data = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -68,11 +70,12 @@ def classify_workload(final_score):
         return "Overloaded"
 
 def total_hours_per_week(courses):
-    try:  
+    try:
+        db = get_db()
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
         query = f"SELECT difficulty_score, estimated_hours_per_week FROM course WHERE course_code IN ({placeholders})"
         values = {f"code_{i}": code for i, code in enumerate(courses)}
-        cursor = current_app.db.execute(query, values)
+        cursor = db.execute(query, values)
         raw_hours = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -103,10 +106,11 @@ def calculate_burnout_risk(courses, user_id):
     factors = []
 
     try:
+        db = get_db()
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
         query = f"SELECT credits, difficulty_score FROM course WHERE course_code IN ({placeholders})"
         values = {f"code_{i}": code for i, code in enumerate(courses)}
-        cursor = current_app.db.execute(query, values)
+        cursor = db.execute(query, values)
         course_data = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -194,8 +198,9 @@ def generate_burnout_explanation(factors):
 
 def score_academic_impact(courses, user_id):
     try:
+        db = get_db()
         query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
-        cursor = current_app.db.execute(query, {"student_id": user_id})
+        cursor = db.execute(query, {"student_id": user_id})
         gpa = cursor.fetchone()[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")

@@ -2,6 +2,7 @@ from datetime import datetime
 import math
 import sqlite3
 from flask import current_app
+from course_reg.db import get_db
 
 
 def get_short_courses(course_codes):
@@ -13,7 +14,8 @@ def get_short_courses(course_codes):
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
 
     try:
-        cursor = current_app.db.execute(query, values)
+        db = get_db()
+        cursor = db.execute(query, values)
         raw_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -28,7 +30,8 @@ def get_short_courses(course_codes):
 
         # Abbreviation
         try:
-            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
+            db = get_db()
+            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
             department = cursor.fetchone()[0]
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -74,7 +77,8 @@ def get_short_courses_final(course_codes):
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
 
     try:
-        cursor = current_app.db.execute(query, values)
+        db = get_db()
+        cursor = db.execute(query, values)
         raw_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -89,7 +93,8 @@ def get_short_courses_final(course_codes):
 
         # Abbreviation
         try:
-            cursor = current_app.db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
+            db = get_db()
+            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
             department = cursor.fetchone()[0]
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -103,7 +108,8 @@ def get_short_courses_final(course_codes):
 
         # Final Data
         try:
-            cursor = current_app.db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[4]})
+            db = get_db()
+            cursor = db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[4]})
             raw_final = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
@@ -258,7 +264,8 @@ def add_final_to_calendar(course, calendar):
 def get_courses_from_list(user_id, table):
     query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
     try:
-        cursor = current_app.db.execute(query, {"student_id": user_id})
+        db = get_db()
+        cursor = db.execute(query, {"student_id": user_id})
         codes_tup = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
