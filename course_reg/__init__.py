@@ -4,7 +4,7 @@ import flask
 from flask import Flask
 from dotenv import load_dotenv
 from course_reg.routes import pages
-from course_reg.db import get_db, init_db, close_db
+from course_reg.db import *
 
 
 load_dotenv()
@@ -18,7 +18,10 @@ def create_app():
 
     with app.app_context():
         db = get_db()
-        init_db(db, os.environ.get("SEED_EMAIL"), os.environ.get("SEED_PWD"))
+        already_exists = tables_exist(db)
+        init_db(db)
+        if not already_exists:
+            seed_db(db, os.environ.get("SEED_EMAIL"), os.environ.get("SEED_PWD"))
 
     app.register_blueprint(pages)
 
