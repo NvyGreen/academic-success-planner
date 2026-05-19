@@ -51,14 +51,14 @@ class FilterForm(FlaskForm):
 
 
 class AdvancedFilterForm(FilterForm):
-    modality = SelectField("Modality", choices=[
+    modality = SelectField("Modality", validators=[Optional()], choices=[
         ("nomode", " "),
         ("inperson", "In-person"),
         ("online", "Online")
     ])
-    days = StringField("Days", render_kw={"placeholder": "ex: Tu; M,W,F"})
+    days = StringField("Days", validators=[Optional()], render_kw={"placeholder": "ex: Tu; M,W,F"})
     
-    starts_after = SelectField("Starts After", choices=[
+    starts_after = SelectField("Starts After", validators=[Optional()], choices=[
         ("nopref", " "),
         ("01:00", "1:00am"),
         ("02:00", "2:00am"),
@@ -85,7 +85,7 @@ class AdvancedFilterForm(FilterForm):
         ("23:00", "11:00pm")
     ])
 
-    ends_before = SelectField("Ends Before", choices=[
+    ends_before = SelectField("Ends Before", validators=[Optional()], choices=[
         ("nopref", " "),
         ("02:00", "2:00am"),
         ("03:00", "3:00am"),
@@ -111,7 +111,7 @@ class AdvancedFilterForm(FilterForm):
         ("23:00", "11:00pm")
     ])
 
-    course_full_option = SelectField("Show Courses at Capacity", choices=[
+    course_full_option = SelectField("Show Courses at Capacity", validators=[Optional()], choices=[
         ("nopref", " "),
         ("open_or_waitlist", "Include waitlisted courses"),
         ("open_only", "Don't show full courses"),
@@ -119,16 +119,16 @@ class AdvancedFilterForm(FilterForm):
         ("over_only", "Only over-enrolled courses")
     ])
 
-    cancel_option = SelectField("Cancelled/Unavailable Courses", choices=[
+    cancel_option = SelectField("Cancelled/Unavailable Courses", validators=[Optional()], choices=[
         ("excl", "Exclude cancelled courses"),
         ("incl", "Include cancelled courses"),
         ("only_cancel", "Only show cancelled courses")
     ])
 
-    building_code = StringField("Building Code")
-    room_no = StringField("Room #")
+    building_code = StringField("Building Code", validators=[Optional()])
+    room_no = StringField("Room #", validators=[Optional()])
 
-    credits = IntegerField("Credits")
+    credits = IntegerField("Credits", validators=[Optional()])
 
     def validate(self, extra_validators=None):
         if super().validate(extra_validators):
