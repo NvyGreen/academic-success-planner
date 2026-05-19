@@ -45,6 +45,7 @@ class FilterForm(FlaskForm):
             return False
         
         if (self.gen_cat.data == GEN_CAT_BLANK) and (self.department.data == DEPT_BLANK) and not self.course_code.data and not self.instructor.data:
+            self.gen_cat.errors.append("Please refine your search with a department, course code, or instructor.")
             return False
         
         return True
@@ -132,7 +133,8 @@ class AdvancedFilterForm(FilterForm):
 
     def validate(self, extra_validators=None):
         if super().validate(extra_validators):
-            if self.room_no.data:
-                return bool(self.building_code.data)
+            if self.room_no.data and not self.building_code.data:
+                self.building_code.errors.append("Please add a building code to go with the room number.")
+                return False
             return True
         return False
