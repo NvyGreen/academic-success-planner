@@ -12,6 +12,8 @@ from wtforms.validators import (
     Optional
 )
 
+GEN_CAT_BLANK = "1"
+DEPT_BLANK = "0"
 
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[InputRequired(), Email()], render_kw={"placeholder": "Email"})
@@ -42,7 +44,7 @@ class FilterForm(FlaskForm):
         if not super().validate(extra_validators):
             return False
         
-        if (self.gen_cat.data == "1") and (self.department.data == "0") and not self.course_code.data and not self.instructor.data:
+        if (self.gen_cat.data == GEN_CAT_BLANK) and (self.department.data == DEPT_BLANK) and not self.course_code.data and not self.instructor.data:
             return False
         
         return True
