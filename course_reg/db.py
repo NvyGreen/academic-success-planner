@@ -189,7 +189,7 @@ def init_db(db, seed_email, seed_pwd):
             "course_name" TEXT,
             "course_number" TEXT,
             "difficulty_score" INTEGER NOT NULL,
-            "estimated_hours_per_week" REAL NOT NULL,
+            "estimated_hours_per_week" REAL NOT NULL DEFAULT -1,
             "course_code" INTEGER UNIQUE,
             "credits" INTEGER,
             "category_id" INTEGER,
