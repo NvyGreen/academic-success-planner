@@ -14,6 +14,32 @@ from wtforms.validators import (
 
 GEN_CAT_BLANK = "1"
 DEPT_BLANK = "0"
+TIMES = [
+    ("nopref", " "),
+    ("01:00", "1:00am"),
+    ("02:00", "2:00am"),
+    ("03:00", "3:00am"),
+    ("04:00", "4:00am"),
+    ("05:00", "5:00am"),
+    ("06:00", "6:00am"),
+    ("07:00", "7:00am"),
+    ("08:00", "8:00am"),
+    ("09:00", "9:00am"),
+    ("10:00", "10:00am"),
+    ("11:00", "11:00am"),
+    ("12:00", "12:00pm"),
+    ("13:00", "1:00pm"),
+    ("14:00", "2:00pm"),
+    ("15:00", "3:00pm"),
+    ("16:00", "4:00pm"),
+    ("17:00", "5:00pm"),
+    ("18:00", "6:00pm"),
+    ("19:00", "7:00pm"),
+    ("20:00", "8:00pm"),
+    ("21:00", "9:00pm"),
+    ("22:00", "10:00pm"),
+    ("23:00", "11:00pm")
+]
 
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[InputRequired(), Email()], render_kw={"placeholder": "Email"})
@@ -59,58 +85,9 @@ class AdvancedFilterForm(FilterForm):
     ])
     days = StringField("Days", validators=[Optional()], render_kw={"placeholder": "ex: Tu; M,W,F"})
     
-    starts_after = SelectField("Starts After", validators=[Optional()], choices=[
-        ("nopref", " "),
-        ("01:00", "1:00am"),
-        ("02:00", "2:00am"),
-        ("03:00", "3:00am"),
-        ("04:00", "4:00am"),
-        ("05:00", "5:00am"),
-        ("06:00", "6:00am"),
-        ("07:00", "7:00am"),
-        ("08:00", "8:00am"),
-        ("09:00", "9:00am"),
-        ("10:00", "10:00am"),
-        ("11:00", "11:00am"),
-        ("12:00", "12:00pm"),
-        ("13:00", "1:00pm"),
-        ("14:00", "2:00pm"),
-        ("15:00", "3:00pm"),
-        ("16:00", "4:00pm"),
-        ("17:00", "5:00pm"),
-        ("18:00", "6:00pm"),
-        ("19:00", "7:00pm"),
-        ("20:00", "8:00pm"),
-        ("21:00", "9:00pm"),
-        ("22:00", "10:00pm"),
-        ("23:00", "11:00pm")
-    ])
+    starts_after = SelectField("Starts After", validators=[Optional()], choices=TIMES)
 
-    ends_before = SelectField("Ends Before", validators=[Optional()], choices=[
-        ("nopref", " "),
-        ("02:00", "2:00am"),
-        ("03:00", "3:00am"),
-        ("04:00", "4:00am"),
-        ("05:00", "5:00am"),
-        ("06:00", "6:00am"),
-        ("07:00", "7:00am"),
-        ("08:00", "8:00am"),
-        ("09:00", "9:00am"),
-        ("10:00", "10:00am"),
-        ("11:00", "11:00am"),
-        ("12:00", "12:00pm"),
-        ("13:00", "1:00pm"),
-        ("14:00", "2:00pm"),
-        ("15:00", "3:00pm"),
-        ("16:00", "4:00pm"),
-        ("17:00", "5:00pm"),
-        ("18:00", "6:00pm"),
-        ("19:00", "7:00pm"),
-        ("20:00", "8:00pm"),
-        ("21:00", "9:00pm"),
-        ("22:00", "10:00pm"),
-        ("23:00", "11:00pm")
-    ])
+    ends_before = SelectField("Ends Before", validators=[Optional()], choices=TIMES)
 
     course_full_option = SelectField("Show Courses at Capacity", validators=[Optional()], choices=[
         ("nopref", " "),
