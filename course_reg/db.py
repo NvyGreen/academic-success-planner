@@ -5,7 +5,7 @@ NO_WAITLIST = -1
 
 def get_db():
     if 'db' not in flask.g:
-        flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"])
+        flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"], isolation_level=None)
         flask.g.db.row_factory = sqlite3.Row
     return flask.g.db
 
