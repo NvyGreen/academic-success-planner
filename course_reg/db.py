@@ -4,6 +4,7 @@ import flask
 def get_db():
     if 'db' not in flask.g:
         flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"])
+        flask.g.db.row_factory = sqlite3.Row
     return flask.g.db
 
 def init_db(db, seed_email, seed_pwd):
