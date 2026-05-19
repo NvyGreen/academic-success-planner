@@ -216,7 +216,7 @@ def init_db(db, seed_email, seed_pwd):
 
     if not existing:
         db.execute("""
-            CREATE TRIGGER sync_estimated_hours
+            CREATE TRIGGER IF NOT EXISTS sync_estimated_hours
             AFTER INSERT ON course
             BEGIN
                 UPDATE course
@@ -226,7 +226,7 @@ def init_db(db, seed_email, seed_pwd):
         """)
 
         db.execute("""
-            CREATE TRIGGER sync_estimated_hours_on_update
+            CREATE TRIGGER IF NOT EXISTS sync_estimated_hours_on_update
             AFTER UPDATE OF credits ON course
             BEGIN
                 UPDATE course
