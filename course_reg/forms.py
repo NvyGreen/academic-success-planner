@@ -8,7 +8,8 @@ from wtforms import (
 )
 from wtforms.validators import (
     InputRequired,
-    Email
+    Email,
+    Optional
 )
 
 
@@ -19,25 +20,28 @@ class LoginForm(FlaskForm):
 
 
 class FilterForm(FlaskForm):
-    gen_cat = SelectField("General Education Category")
+    gen_cat = SelectField("General Education Category", validators=[Optional()])
 
-    department = SelectField("Department")
+    department = SelectField("Department", validators=[Optional()])
 
-    course_num = StringField("Course Number/Range", render_kw={"placeholder": "ex: 45B, 31-33"})
-    course_code = IntegerField("Course Code")
+    course_num = StringField("Course Number/Range", validators=[Optional()], render_kw={"placeholder": "ex: 45B, 31-33"})
+    course_code = IntegerField("Course Code", validators=[Optional()])
 
-    course_level = SelectField("Course Level", choices=[
+    course_level = SelectField("Course Level", validators=[Optional()], choices=[
         ("all", " "),
         ("lower", "Lower Division Only"),
         ("upper", "Upper Division Only"),
         ("gradprof", "Graduate/Professional Only")
     ])
 
-    instructor = StringField("Instructor", render_kw={"placeholder": "ex: Smith"})
+    instructor = StringField("Instructor", validators=[Optional()], render_kw={"placeholder": "ex: Smith"})
     submit = SubmitField("See Courses")
 
 
     def validate(self, extra_validators = None):
+        if not super().validate(extra_validators):
+            return False
+        
         if (self.gen_cat.data == "1") and (self.department.data == "0") and not self.course_code.data and not self.instructor.data:
             return False
         
