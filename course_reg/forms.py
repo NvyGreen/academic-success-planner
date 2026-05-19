@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -110,6 +111,12 @@ class AdvancedFilterForm(FilterForm):
 
     def validate(self, extra_validators=None):
         if super().validate(extra_validators):
+            start_time = datetime.strptime(self.starts_after.data, "%H:%M").time()
+            end_time = datetime.strptime(self.ends_before.data, "%H:%M").time()
+            if end_time < start_time:
+                self.ends_before.errors.append("Please make sure you have a valid time window")
+                return False
+
             if self.room_no.data and not self.building_code.data:
                 self.building_code.errors.append("Please add a building code to go with the room number.")
                 return False
