@@ -18,7 +18,7 @@ def create_app():
 
     with app.app_context():
         db = get_db()
-        init_db(db)
+        init_db(db, os.environ.get("SEED_EMAIL"), os.environ.get("SEED_PWD"))
 
     app.register_blueprint(pages)
 

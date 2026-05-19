@@ -6,7 +6,7 @@ def get_db():
         flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"])
     return flask.g.db
 
-def init_db(db):
+def init_db(db, seed_email, seed_pwd):
     existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='final'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (
@@ -144,8 +144,7 @@ def init_db(db):
         db.execute("""
             INSERT INTO "student" ("first_name", "last_name", "email", "password", "gpa", "schedule_preference")
             VALUES (?, ?, ?, ?, ?, ?)
-        """, ("John", "Doe", "jdoe@uci.edu", "$pbkdf2-sha256$29000$Pee8l5IyZqw15rxX6p1zLg$nAFBakv3V4wPhfjqY21TJkVLv2YCEab6x4u5DPmeDpY", 3.5, "balanced"))
-        # password is 12345 in plaintext
+        """, ("John", "Doe", seed_email, seed_pwd, 3.5, "balanced"))
 
 
     existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='department'""").fetchone()
