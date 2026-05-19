@@ -7,6 +7,8 @@ def get_db():
     return flask.g.db
 
 def init_db(db, seed_email, seed_pwd):
+    db.execute("PRAGMA foreign_keys = ON")
+    
     existing = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='final'""").fetchone()
     db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (
