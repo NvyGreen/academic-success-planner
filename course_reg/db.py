@@ -1,6 +1,8 @@
 import sqlite3
 import flask
 
+NO_WAITLIST = -1
+
 def get_db():
     if 'db' not in flask.g:
         flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"])
@@ -252,8 +254,8 @@ def init_db(db, seed_email, seed_pwd):
             ("Boolean Logic and Discrete Structures", "6B", 2, 35931, 0, 1, 4, "lower", "Dis", "MW", "2024-09-30T15:00:00.000Z", "2024-09-30T15:50:00.000Z", 0, 1, 0, 206, 325, 0, "SSLH", "100"),
             ("New Students Seminar", "90", 1, 36240, 1, 1, 4, "lower", "Lec", "Th", "2024-09-26T15:30:00.000Z", "2024-09-26T16:50:00.000Z", 0, 1, 0, 6, 50, 0, "HG", "1800"),
             ("AI for Human Good", "3", 1, 87413, 1, 1, 1, "lower", "Sem", "Tu", "2024-10-01T09:00:00.000Z", "2024-10-01T09:50:00.000Z", 0, 1, 0, 8, 15, 0, "CAC", "3100B"),
-            ("Directed Studies in Undergraduate Education", "196", 1, 87760, 1, 1, 1, "upper", "Res", None, None, None, 1, 1, 0, 516, 950, -1, None, None),
-            ("Foundations for Success", "87", 1, 87610, 1, 1, 1, "lower", "Sem", None, None, None, 1, 1, 0, 49, 120, -1, None, None),
+            ("Directed Studies in Undergraduate Education", "196", 1, 87760, 1, 1, 1, "upper", "Res", None, None, None, 1, 1, 0, 516, 950, NO_WAITLIST, None, None),
+            ("Foundations for Success", "87", 1, 87610, 1, 1, 1, "lower", "Sem", None, None, None, 1, 1, 0, 49, 120, NO_WAITLIST, None, None),
             ("Single-Variable Calculus I", "2A", 3, 44020, 4, 8, 8, "lower", "Lec", "MWF", "2024-09-30T16:00:00.000Z", "2024-09-30T16:50:00.000Z", 0, 7, 0, 94, 195, 0, "PSLH", "100"),
             ("Single-Variable Calculus I", "2A", 3, 44021, 0, 1, 8, "lower", "Dis", "TuTh", "2024-09-26T12:00:00.000Z", "2024-09-26T12:50:00.000Z", 0, 1, 0, 21, 49, 0, "DBH", "1300"),
             ("Fundamentals of Spanish", "1A", 2, 31300, 4, 1, 9, "lower", "Lec", "TuWTh", "2024-09-26T08:00:00.000Z", "2024-09-26T08:50:00.000Z", 0, 8, 0, 18, 23, 0, "HH", "108"),
