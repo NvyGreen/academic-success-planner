@@ -235,6 +235,7 @@ def init_db(db, seed_email, seed_pwd):
             END;
         """)
 
+        # (course_name, course_number, difficulty_score, course_code, credits, category_id, , department_id, course_level, type, days, start_time, end_time, is_online, final_id, cancelled, num_enrolled, capacity, waitlist, building_code, room)
         data = [
             ("Critical Reading and Rhetoric", "50", 2, 33201, 4, 2, 2, "lower", "Sem", "MWF", "2024-09-30T11:00:00.000Z", "2024-09-30T11:50:00.000Z", 0, 1, 0, 23, 23, 0, "HH", "230"),
             ("Argument and Research", "60", 2, 33314, 4, 2, 2, "lower", "Sem", "TuTh", "2024-09-26T12:30:00.000Z", "2024-09-26T13:50:00.000Z", 0, 1, 0, 17, 23, 0, "PSCB", "220"),
