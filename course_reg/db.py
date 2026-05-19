@@ -439,4 +439,8 @@ def init_db(db, seed_email, seed_pwd):
 def close_db(exception):
     db = flask.g.pop('db', None)
     if db is not None:
+        if exception is not None:
+            db.rollback()
+        else:
+            db.commit()
         db.close()
