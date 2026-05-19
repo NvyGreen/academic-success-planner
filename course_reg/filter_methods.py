@@ -346,7 +346,7 @@ def get_criteria(filters):
             criteria.append("Course Level: Lower Division only")
         elif filters.course_level == "upper":
             criteria.append("Course Level: Upper Division only")
-        elif filters.course_level == "gradprof":
+        elif filters.course_level == "grad_prof":
             criteria.append("Course Level: Graduate/Professional only")
     
     if filters.instructor:
@@ -397,7 +397,7 @@ def get_criteria_adv(filters):
             criteria.append("Course Level: Lower Division only")
         elif filters.course_level == "upper":
             criteria.append("Course Level: Upper Division only")
-        elif filters.course_level == "gradprof":
+        elif filters.course_level == "grad_prof":
             criteria.append("Course Level: Graduate/Professional only")
 
 

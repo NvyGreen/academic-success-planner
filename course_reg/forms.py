@@ -60,7 +60,7 @@ class FilterForm(FlaskForm):
         ("all", " "),
         ("lower", "Lower Division Only"),
         ("upper", "Upper Division Only"),
-        ("gradprof", "Graduate/Professional Only")
+        ("grad_prof", "Graduate/Professional Only")
     ])
 
     instructor = StringField("Instructor", validators=[Optional()], render_kw={"placeholder": "ex: Smith"})
@@ -109,7 +109,7 @@ class AdvancedFilterForm(FilterForm):
 
     credits = IntegerField("Credits", validators=[Optional()])
 
-    def validate(self, extra_validators=None):
+    def validate(self, extra_validators = None):
         if super().validate(extra_validators):
             start_time = datetime.strptime(self.starts_after.data, "%H:%M").time()
             end_time = datetime.strptime(self.ends_before.data, "%H:%M").time()
