@@ -242,8 +242,8 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
 
     courses = []
     for raw_course in courses_raw:
-        added = (raw_course[len(raw_course) - 1] in temp_courses) or (raw_course[len(raw_course) - 1] in reg_courses)
-        waitlisted = raw_course[len(raw_course) - 1] in waitlist
+        added = (raw_course[-1] in temp_courses) or (raw_course[-1] in reg_courses)
+        waitlisted = raw_course[-1] in waitlist
         course = clean_course(raw_course, added, waitlisted)
         if isinstance(course, str):
             return "Error: could not fetch courses"
