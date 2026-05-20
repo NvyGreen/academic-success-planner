@@ -111,9 +111,15 @@ class AdvancedFilterForm(FilterForm):
 
     def validate(self, extra_validators = None):
         if super().validate(extra_validators):
-            start_time = datetime.strptime(self.starts_after.data, "%H:%M").time()
-            end_time = datetime.strptime(self.ends_before.data, "%H:%M").time()
-            if end_time < start_time:
+            start_time = None
+            if self.starts_after.data and self.starts_after.data != "nopref":
+                start_time = datetime.strptime(self.starts_after.data, "%H:%M").time()
+
+            end_time = None
+            if self.ends_before.data and self.ends_before.data != "nopref":
+                end_time = datetime.strptime(self.ends_before.data, "%H:%M").time()
+
+            if start_time is not None and end_time is not None and end_time < start_time:
                 self.ends_before.errors.append("Please make sure you have a valid time window")
                 return False
 
