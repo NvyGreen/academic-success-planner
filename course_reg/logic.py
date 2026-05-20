@@ -55,10 +55,12 @@ def calculate_workload(courses, user_id):
         total_credits += datum[2]
         workload_score += datum[0] * datum[1] * 2 * datum[2]
     
-    if gpa is not None:
+    if gpa is not None and gpa != 0.0:
         workload_score /= total_credits + gpa
-    else:
+    elif total_credits != 0:
         workload_score /= total_credits
+    else:
+        workload_score = 0.0
     
     return workload_score
 
