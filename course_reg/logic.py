@@ -231,9 +231,9 @@ def score_academic_impact(courses, user_id):
 def estimate_academic_impact(score):
     if score < IMPACT_MEDIUM_THRESHOLD:
         return "Low"
-    elif score >= IMPACT_MEDIUM_THRESHOLD and score < IMPACT_HIGH_THRESHOLD:
+    elif score < IMPACT_HIGH_THRESHOLD:
         return "Medium"
-    elif score >= IMPACT_HIGH_THRESHOLD and score < IMPACT_VHIGH_THRESHOLD:
+    elif score < IMPACT_VHIGH_THRESHOLD:
         return "High"
     else:
         return "Very High"
