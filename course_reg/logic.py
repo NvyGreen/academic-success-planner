@@ -208,7 +208,7 @@ def generate_burnout_explanation(factors):
 
 # GPA / Academic Impact Estimation
 
-def score_academic_impact(courses, user_id):
+def calculate_academic_impact(courses, user_id):
     cursor = None
     try:
         db = get_db()
@@ -228,7 +228,7 @@ def score_academic_impact(courses, user_id):
     
     return estimate
 
-def estimate_academic_impact(score):
+def classify_academic_impact(score):
     if score < IMPACT_MEDIUM_THRESHOLD:
         return "Low"
     elif score < IMPACT_HIGH_THRESHOLD:
