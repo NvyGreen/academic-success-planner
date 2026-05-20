@@ -5,7 +5,7 @@ from course_reg.db import get_db
 
 
 BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
-modifier = "course."
+MODIFIER = "course."
 
 NO_GE_CAT = 1
 
@@ -57,7 +57,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     first_condition = True
     
     query, first_condition = get_courses_common(filters, query, values, first_condition, add_condition)
-    query += add_condition + modifier + """cancelled = 0;"""
+    query += add_condition + MODIFIER + """cancelled = 0;"""
 
     try:
         db = get_db()
@@ -84,7 +84,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
     # General Education Category
     if filters.ge_cat != NO_GE_CAT:
         first_condition = False
-        query += modifier + """category_id = :ge_category"""
+        query += MODIFIER + """category_id = :ge_category"""
         values["ge_category"] = filters.ge_cat
     
     # Department
@@ -94,7 +94,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
         else:
             query += add_condition
 
-        query += modifier + """department_id = :department"""
+        query += MODIFIER + """department_id = :department"""
         values["department"] = filters.department
     
     # Course Number
@@ -104,7 +104,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
         else:
             query += add_condition
 
-        query += modifier + """course_number = :course_number"""
+        query += MODIFIER + """course_number = :course_number"""
         values["course_number"] = filters.course_num
     
     # Course Code
@@ -114,7 +114,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
         else:
             query += add_condition
 
-        query += modifier + """course_code = :course_code"""
+        query += MODIFIER + """course_code = :course_code"""
         values["course_code"] = filters.course_code
     
     # Course Level
@@ -124,7 +124,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
         else:
             query += add_condition
 
-        query += modifier + """course_level = :course_level"""
+        query += MODIFIER + """course_level = :course_level"""
         values["course_level"] = filters.course_level
     
     # Instructor
@@ -156,9 +156,9 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
             query += add_condition
         
         if filters.modality == "inperson":
-            query += modifier + """is_online = 0"""
+            query += MODIFIER + """is_online = 0"""
         elif filters.modality == "online":
-            query += modifier + """is_online = 1"""
+            query += MODIFIER + """is_online = 1"""
     
     # Days
     if filters.days:        
@@ -166,37 +166,37 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         days_abbr = ["Su", "M", "Tu", "W", "Th", "F", "Sa"]
         for day in days_arr:
             if day in days_abbr:
-                query += add_condition + modifier + f"""days LIKE '%{day}%'"""
+                query += add_condition + MODIFIER + f"""days LIKE '%{day}%'"""
 
     # Starts After
     if filters.starts_after != "nopref":
         start_time = datetime.strptime(filters.starts_after, "%H:%M").strftime("%H:%M:%S")
-        query += add_condition + modifier + """TIME(start_time) >= :start_time"""
+        query += add_condition + MODIFIER + """TIME(start_time) >= :start_time"""
         values["start_time"] = start_time
 
     # Ends Before
     if filters.ends_before != "nopref":
         end_time = datetime.strptime(filters.ends_before, "%H:%M").strftime("%H:%M:%S")
-        query += add_condition + modifier + """TIME(end_time) < :end_time"""
+        query += add_condition + MODIFIER + """TIME(end_time) < :end_time"""
         values["end_time"] = end_time
 
     # Courses Full Option
     if filters.course_full_option != "nopref":
         if filters.course_full_option == "open_or_waitlist":
-            query += add_condition + """(""" + modifier + """num_enrolled < """ + modifier + """capacity OR """
-            query += modifier + """waitlist <> -1)"""
+            query += add_condition + """(""" + MODIFIER + """num_enrolled < """ + MODIFIER + """capacity OR """
+            query += MODIFIER + """waitlist <> -1)"""
         elif filters.course_full_option == "open_only":
-            query += add_condition + modifier + """num_enrolled < """ + modifier + """capacity"""
+            query += add_condition + MODIFIER + """num_enrolled < """ + MODIFIER + """capacity"""
         elif filters.course_full_option == "full_only":
-            query += add_condition + modifier + """num_enrolled >= """ + modifier + """capacity"""
+            query += add_condition + MODIFIER + """num_enrolled >= """ + MODIFIER + """capacity"""
         elif filters.course_full_option == "over_only":
-            query += add_condition + modifier + """num_enrolled > """ + modifier + """capacity"""
+            query += add_condition + MODIFIER + """num_enrolled > """ + MODIFIER + """capacity"""
 
     # Cancel Option
     if filters.cancel_option == "excl":
-        query += add_condition + modifier + "cancelled = 0"
+        query += add_condition + MODIFIER + "cancelled = 0"
     elif filters.cancel_option == "only_cancel":
-        query += add_condition + modifier + "cancelled = 1"
+        query += add_condition + MODIFIER + "cancelled = 1"
 
     # Building Code
     if filters.building_code:
@@ -205,7 +205,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         else:
             query += add_condition
         
-        query += modifier + """building_code = :building_code"""
+        query += MODIFIER + """building_code = :building_code"""
         values["building_code"] = filters.building_code
 
     # Room No
@@ -215,7 +215,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         else:
             query += add_condition
         
-        query += modifier + """room = :room"""
+        query += MODIFIER + """room = :room"""
         values["room"] = filters.room_no
     
     # Credits
@@ -225,7 +225,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         else:
             query += add_condition
         
-        query += modifier + """credits = :credits"""
+        query += MODIFIER + """credits = :credits"""
         values["credits"] = filters.credits
     
     query += ";"
