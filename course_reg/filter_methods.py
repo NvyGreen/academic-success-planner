@@ -108,7 +108,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
         values["course_number"] = filters.course_num
     
     # Course Code
-    if filters.course_code != None:
+    if filters.course_code is not None:
         if first_condition:
             first_condition = False
         else:
@@ -360,7 +360,7 @@ def get_criteria_adv(filters):
     elif filters.cancel_option == "only_cancel":
         criteria.append("Only show cancelled courses")
     
-    if filters.credits != None:
+    if filters.credits is not None:
         criteria.append("Number of credits: " + str(filters.credits))
     
     return criteria
@@ -459,7 +459,7 @@ def clean_common(raw_course, course):
         end_time = datetime.fromisoformat(raw_course[7]).strftime("%I:%M %p")
         course.append(start_time + "-" + end_time)
 
-    if (data["start_datetime"] is None):
+    if data["start_datetime"] is None:
         course.append(None)
     else:
         final_date = datetime.fromisoformat(data["start_datetime"]).strftime("%b") + " " + str(datetime.fromisoformat(data["start_datetime"]).day)
@@ -511,7 +511,7 @@ def get_criteria_common(criteria, filters):
     if filters.course_num:
         criteria.append("Course Number Range: " + filters.course_num)
     
-    if filters.course_code != None:
+    if filters.course_code is not None:
         criteria.append("Course Code: " + str(filters.course_code))
     
     if filters.course_level != "all":
