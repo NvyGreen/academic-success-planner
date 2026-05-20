@@ -28,6 +28,7 @@ AVG_COURSES = 4
 # Workload Estimation
 
 def calculate_workload(courses, user_id):
+    cursor = None
     try:
         db = get_db()
         query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
@@ -43,7 +44,8 @@ def calculate_workload(courses, user_id):
         current_app.logger.error(f"Database error: {e}")
         return "Error: Could not calculate workload"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     workload_score = 0
     total_credits = 0
@@ -70,6 +72,7 @@ def classify_workload(final_score):
         return "Overloaded"
 
 def total_hours_per_week(courses):
+    cursor = None
     try:
         db = get_db()
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
@@ -81,7 +84,8 @@ def total_hours_per_week(courses):
         current_app.logger.error(f"Database error: {e}")
         return "Error: Could not estimate hours per week of work"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     total_hours = 0
     for datum in raw_hours:
@@ -104,6 +108,7 @@ def total_hours_per_week(courses):
 def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
     factors = []
+    cursor = None
 
     try:
         db = get_db()
@@ -116,7 +121,8 @@ def calculate_burnout_risk(courses, user_id):
         current_app.logger.error(f"Database error: {e}")
         return "Error: Could not calculate burnout risk"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     num_courses = 0
     for course in course_data:
@@ -197,6 +203,7 @@ def generate_burnout_explanation(factors):
 # GPA / Academic Impact Estimation
 
 def score_academic_impact(courses, user_id):
+    cursor = None
     try:
         db = get_db()
         query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
@@ -206,7 +213,8 @@ def score_academic_impact(courses, user_id):
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not estimate academic impact"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     estimate = total_hours_per_week(courses) / 16
     if gpa:
