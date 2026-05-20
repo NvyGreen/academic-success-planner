@@ -53,8 +53,8 @@ def calculate_workload(courses, user_id):
     total_credits = 0
 
     for datum in workload_data:
-        total_credits += datum[2]
-        workload_score += datum[0] * datum[1] * 2 * datum[2]
+        total_credits += datum["credits"]
+        workload_score += datum["difficulty_score"] * datum["estimated_hours_per_week"] * 2 * datum["credits"]    # The * 2 weights estimated hours per week a little more
     
     if gpa is not None and gpa != 0.0:
         workload_score /= total_credits + gpa
