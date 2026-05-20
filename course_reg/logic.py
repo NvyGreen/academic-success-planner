@@ -19,7 +19,7 @@ IMPACT_HIGH_THRESHOLD = 1.2
 IMPACT_VHIGH_THRESHOLD = 1.4
 
 EASY_MULTIPLIER = 0.5
-MEDIUM_MULTIPILER = 0.8
+MEDIUM_MULTIPLIER = 0.8
 HARD_MULTIPLIER = 1.3
 VHARD_MULTIPLIER = 1.6
 
@@ -97,7 +97,7 @@ def total_hours_per_week(courses):
         if difficulty_score == 1:
             total_hours += EASY_MULTIPLIER * datum[1]
         elif difficulty_score == 2:
-            total_hours += MEDIUM_MULTIPILER * datum[1]
+            total_hours += MEDIUM_MULTIPLIER * datum[1]
         elif difficulty_score == 3:
             total_hours += datum[1]
         elif difficulty_score == 4:
@@ -192,7 +192,7 @@ def generate_burnout_explanation(factors):
     elif factors["workload"] == "Balanced":
         explanations.append("Your schedule looks pretty balanced, but make sure to pace yourself!")
     else:
-        explanations.append("You're schedule looks pretty light, consider adding some more difficult courses.")
+        explanations.append("Your schedule looks pretty light, consider adding some more difficult courses.")
     
     if (factors["num_difficult"] / factors["num_courses"]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
         explanations.append("You're only taking hard courses! It's best to replace a few with easier courses.")
@@ -254,20 +254,20 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
     # Overloaded
     if workload_score > WORKLOAD_HEAVY_THRESHOLD or burnout_score >= BURNOUT_HIGH_THRESHOLD or academic_impact >= IMPACT_VHIGH_THRESHOLD:
         if workload_score > WORKLOAD_HEAVY_THRESHOLD:
-            return "Overall, this is a very overloaded scheudle. Consider dropping some of your courses."
+            return "Overall, this is a very overloaded schedule. Consider dropping some of your courses."
         elif burnout_score >= BURNOUT_HIGH_THRESHOLD:
-            return "Overall, this is a very overloaded scheudle. Consider swapping out some of your harder courses for easier ones."
+            return "Overall, this is a very overloaded schedule. Consider swapping out some of your harder courses for easier ones."
         else:
-            return "Overall, this is a very overloaded scheudle. Consider dropping some of your courses or swapping them for easier ones."
+            return "Overall, this is a very overloaded schedule. Consider dropping some of your courses or swapping them for easier ones."
     
     # Heavy
     if (workload_score > WORKLOAD_BALANCED_THRESHOLD and burnout_score >= BURNOUT_MEDIUM_THRESHOLD) or (workload_score > WORKLOAD_BALANCED_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD) or (burnout_score >= BURNOUT_MEDIUM_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD):
         if workload_score > WORKLOAD_BALANCED_THRESHOLD:
             return "Overall, this is a pretty heavy schedule. Consider dropping a course."
         elif burnout_score >= BURNOUT_MED_HIGH_THRESHOLD:
-            return "Overall, this is a pretty heavy scheudle. Consider swapping out a harder course for an easier one."
+            return "Overall, this is a pretty heavy schedule. Consider swapping out a harder course for an easier one."
         else:
-            return "Overall, this is a pretty heavy scheudle. Consider dropping a course or swapping it ouse for an easier one."
+            return "Overall, this is a pretty heavy schedule. Consider dropping a course or swapping it out for an easier one."
 
     # Balanced
     if workload_score > WORKLOAD_LIGHT_THRESHOLD or academic_impact >= IMPACT_MEDIUM_THRESHOLD:
