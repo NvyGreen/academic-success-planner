@@ -514,6 +514,7 @@ def clean_wait(raw_course, user_id):
     return course
 
 def clean_common(raw_course, course):
+    print(raw_course.keys())
     # Abbreviation
     try:
         db = get_db()
@@ -565,7 +566,7 @@ def clean_common(raw_course, course):
         course.append(final_day + ", " + final_date + ", " + final_start + "-" + final_end)
 
     # Instructor
-    course.append(raw_course[9] + ", " + raw_course[10][0] + ".")    # instructor.first_name, instructor.first_initial.
+    course.append(raw_course["last_name"] + ", " + raw_course["first_name"][:1] + ".")    # instructor.last_name, instructor.first_initial.
 
     # Location
     if (raw_course[11] == 1):
