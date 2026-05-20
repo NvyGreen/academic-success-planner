@@ -111,7 +111,7 @@ def total_hours_per_week(courses):
 # Burnout Estimation
 def calculate_burnout_risk(courses, user_id):
     burnout_score = 0
-    factors = []
+    factors = {}
     cursor = None
 
     try:
@@ -136,22 +136,22 @@ def calculate_burnout_risk(courses, user_id):
     if num_courses >= 4:
         burnout_score += 1
     
-    factors.append(num_courses)
+    factors["num_courses"] = num_courses
     
     workload = calculate_workload(courses, user_id)
     if isinstance(workload, str):
         return "Error: Could not calculate workload"
     elif workload > WORKLOAD_HEAVY_THRESHOLD:
         burnout_score += 3
-        factors.append("Overloaded")
+        factors["workload"] = "Overloaded"
     elif workload > WORKLOAD_BALANCED_THRESHOLD:
         burnout_score += 2
-        factors.append("Heavy")
+        factors["workload"] = "Heavy"
     elif workload > WORKLOAD_LIGHT_THRESHOLD:
         burnout_score += 1
-        factors.append("Balanced")
+        factors["workload"] = "Balanced"
     else:
-        factors.append("Light")
+        factors["workload"] = "Light"
 
     num_difficult = 0
     for course in course_data:
@@ -159,7 +159,7 @@ def calculate_burnout_risk(courses, user_id):
             burnout_score += 1
             num_difficult += 1
     
-    factors.append(num_difficult)
+    factors["num_difficult"] = num_difficult
     
     return (burnout_score, factors)
 
@@ -174,31 +174,31 @@ def estimate_burnout_risk(score):
 def generate_burnout_explanation(factors):
     explanations = []
 
-    if factors[0] == 0:
+    if factors["num_courses"] == 0:
         explanations.append("You're not taking any classes at all! Add some courses to your schedule to get a proper recommendation.")
         return explanations
 
-    if factors[0] == 4:
+    if factors["num_courses"] == 4:
         explanations.append(f"You're taking {AVG_COURSES} courses, which is the average amount of courses a UCI student takes, but you should still pace yourself.")
-    elif factors[0] > 4:
-        explanations.append(f"You're taking {factors[0]} courses, which is more than what the average UCI student takes. Make sure to pace yourself, and consider taking out some classes if you think it might be too much.")
+    elif factors["num_courses"] > 4:
+        explanations.append(f"You're taking {factors["num_courses"]} courses, which is more than what the average UCI student takes. Make sure to pace yourself, and consider taking out some classes if you think it might be too much.")
     else:
-        explanations.append(f"You're taking {factors[0]} courses, which is less than what the average UCI student takes. Consider adding some more courses")
+        explanations.append(f"You're taking {factors["num_courses"]} courses, which is less than what the average UCI student takes. Consider adding some more courses")
     
-    if factors[1] == "Overloaded":
+    if factors["workload"] == "Overloaded":
         explanations.append("Your schedule is overloaded! It's best to take out some of your more difficult courses.")
-    elif factors[1] == "Heavy":
+    elif factors["workload"] == "Heavy":
         explanations.append("Your schedule looks heavy, so consider taking out some of your more difficult courses.")
-    elif factors[1] == "Balanced":
+    elif factors["workload"] == "Balanced":
         explanations.append("Your schedule looks pretty balanced, but make sure to pace yourself!")
     else:
         explanations.append("You're schedule looks pretty light, consider adding some more difficult courses.")
     
-    if (factors[2] / factors[0]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
+    if (factors["num_difficult"] / factors["num_courses"]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
         explanations.append("You're only taking hard courses! It's best to replace a few with easier courses.")
-    elif (factors[2] / factors[0]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
+    elif (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
         explanations.append("You're taking a lot of hard courses, consider taking out one.")
-    elif (factors[2] / factors[0]) >= BURNOUT_COURSES_MEDIUM_THRESHOLD:
+    elif (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_MEDIUM_THRESHOLD:
         explanations.append("At least half of your schedule is hard courses, make sure to pace yourself!")
     else:
         explanations.append("It looks like you aren't taking a lot of difficult courses, consider adding another!")
