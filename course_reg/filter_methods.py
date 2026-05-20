@@ -459,7 +459,7 @@ def clean_common(raw_course, course):
         end_time = datetime.fromisoformat(raw_course[7]).strftime("%I:%M %p")
         course.append(start_time + "-" + end_time)
 
-    if (data["start_datetime"] == "No Final"):
+    if (data["start_datetime"] is None):
         course.append(None)
     else:
         final_date = datetime.fromisoformat(data["start_datetime"]).strftime("%b") + " " + str(datetime.fromisoformat(data["start_datetime"]).day)
