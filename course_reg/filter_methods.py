@@ -74,7 +74,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
         added = (raw_course[-1] in temp_courses) or (raw_course[-1] in reg_courses)
         waitlisted = raw_course[-1] in waitlist
         course = clean_course(raw_course, added, waitlisted)
-        if type(course) == str:
+        if isinstance(course, str):
             return "Error: could not fetch courses"
         courses.append(course)
     return courses
@@ -245,7 +245,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         added = (raw_course[len(raw_course) - 1] in temp_courses) or (raw_course[len(raw_course) - 1] in reg_courses)
         waitlisted = raw_course[len(raw_course) - 1] in waitlist
         course = clean_course(raw_course, added, waitlisted)
-        if type(course) == str:
+        if isinstance(course, str):
             return "Error: could not fetch courses"
         courses.append(course)
     return courses
@@ -273,7 +273,7 @@ def get_courses_from_codes(course_codes):
     courses = []
     for raw_course in courses_raw:
         course = clean_course(raw_course, True, False)
-        if type(course) == str:
+        if isinstance(course, str):
             return "Error: Could not fetch courses"
         courses.append(course)
     return courses
@@ -301,7 +301,7 @@ def get_user_waitlist(user_id, course_codes):
     courses = []
     for raw_course in courses_raw:
         course = clean_wait(raw_course, user_id)
-        if type(course) == str:
+        if isinstance(course, str):
             return "Error: could not fetch courses"
         courses.append(course)
 
@@ -381,7 +381,7 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
     
     try:
         error = clean_common(raw_course, course)
-        if type(error) == str:
+        if isinstance(error, str):
             return "Error: could not fetch courses"
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -410,7 +410,7 @@ def clean_wait(raw_course, user_id):
     try:
         db = get_db()
         error = clean_common(raw_course, course)
-        if type(error) == str:
+        if isinstance(error, str):
             return "Error: could not fetch courses"
 
         cursor = db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
