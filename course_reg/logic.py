@@ -136,7 +136,7 @@ def calculate_burnout_risk(courses, user_id):
     if num_courses >= 4:
         burnout_score += 1
     
-    factors.append(len(courses))
+    factors.append(num_courses)
     
     workload = calculate_workload(courses, user_id)
     if isinstance(workload, str):
