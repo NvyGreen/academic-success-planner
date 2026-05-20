@@ -455,22 +455,17 @@ def clean_common(raw_course, course):
     if raw_course[6] is None or raw_course[7] is None:
         course.append(None)
     else:
-        start_time_raw = str(datetime.fromisoformat(raw_course[6]).hour) + ":" + str(datetime.fromisoformat(raw_course[6]).minute)
-        end_time_raw = str(datetime.fromisoformat(raw_course[7]).hour) + ":" + str(datetime.fromisoformat(raw_course[7]).minute)
-        start_time = datetime.strptime(start_time_raw, "%H:%M").strftime("%I:%M %p")
-        end_time = datetime.strptime(end_time_raw, "%H:%M").strftime("%I:%M %p")
+        start_time = datetime.fromisoformat(raw_course[6]).strftime("%I:%M %p")
+        end_time = datetime.fromisoformat(raw_course[7]).strftime("%I:%M %p")
         course.append(start_time + "-" + end_time)
 
     if (data["start_datetime"] == "No Final"):
         course.append(None)
     else:
-        final_start_raw = str(datetime.fromisoformat(data["start_datetime"]).hour) + ":" + str(datetime.fromisoformat(data["start_datetime"]).minute)
-        final_end_raw = str(datetime.fromisoformat(data["end_datetime"]).hour) + ":" + str(datetime.fromisoformat(data["end_datetime"]).minute)
-
         final_date = datetime.fromisoformat(data["start_datetime"]).strftime("%b") + " " + str(datetime.fromisoformat(data["start_datetime"]).day)
         final_day = datetime.fromisoformat(data["start_datetime"]).strftime("%a")
-        final_start = datetime.strptime(final_start_raw, "%H:%M").strftime("%I:%M %p")
-        final_end = datetime.strptime(final_end_raw, "%H:%M").strftime("%I:%M %p")
+        final_start = datetime.fromisoformat(data["start_datetime"]).strftime("%I:%M %p")
+        final_end = datetime.fromisoformat(data["end_datetime"]).strftime("%I:%M %p")
 
         course.append(final_day + ", " + final_date + ", " + final_start + "-" + final_end)
 
