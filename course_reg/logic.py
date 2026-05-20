@@ -136,7 +136,9 @@ def calculate_burnout_risk(courses, user_id):
     factors.append(len(courses))
     
     workload = calculate_workload(courses, user_id)
-    if workload > WORKLOAD_HEAVY_THRESHOLD:
+    if isinstance(workload, str):
+        return "Error: Could not calculate workload"
+    elif workload > WORKLOAD_HEAVY_THRESHOLD:
         burnout_score += 3
         factors.append("Overloaded")
     elif workload > WORKLOAD_BALANCED_THRESHOLD:
