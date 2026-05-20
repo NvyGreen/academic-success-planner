@@ -19,7 +19,7 @@ IMPACT_HIGH_THRESHOLD = 1.2
 IMPACT_VHIGH_THRESHOLD = 1.4
 
 EASY_MULTIPLIER = 0.5
-MEDIUM_MULTIPLER = 0.8
+MEDIUM_MULTIPILER = 0.8
 HARD_MULTIPLIER = 1.3
 VHARD_MULTIPLIER = 1.6
 
@@ -97,7 +97,7 @@ def total_hours_per_week(courses):
         if difficulty_score == 1:
             total_hours += EASY_MULTIPLIER * datum[1]
         elif difficulty_score == 2:
-            total_hours += MEDIUM_MULTIPLER * datum[1]
+            total_hours += MEDIUM_MULTIPILER * datum[1]
         elif difficulty_score == 3:
             total_hours += datum[1]
         elif difficulty_score == 4:
