@@ -222,7 +222,7 @@ def score_academic_impact(courses, user_id):
         if cursor is not None:
             cursor.close()
 
-    estimate = total_hours_per_week(courses) / 16
+    estimate = total_hours_per_week(courses) / (WORKLOAD_LIGHT_THRESHOLD + 1)
     if gpa is not None:
         estimate *= 1 / (gpa / 4.0)
     
