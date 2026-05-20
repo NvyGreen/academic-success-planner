@@ -467,16 +467,12 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
         course.append("Neither")
     
     try:
-        db = get_db()
-        cursor = db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
-        error = clean_common(raw_course, course, cursor)
+        error = clean_common(raw_course, course)
         if type(error) == str:
             return "Error: could not fetch courses"
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
-    finally:
-        cursor.close()
 
     # Status
     if raw_course[18] == 1:
@@ -500,8 +496,7 @@ def clean_wait(raw_course, user_id):
 
     try:
         db = get_db()
-        cursor = db.execute("""SELECT department_id FROM course WHERE course_id = 1;""")
-        error = clean_common(raw_course, course, cursor)
+        error = clean_common(raw_course, course)
         if type(error) == str:
             return "Error: could not fetch courses"
 
@@ -518,7 +513,7 @@ def clean_wait(raw_course, user_id):
 
     return course
 
-def clean_common(raw_course, course, cursor):
+def clean_common(raw_course, course):
     # Abbreviation
     try:
         db = get_db()
