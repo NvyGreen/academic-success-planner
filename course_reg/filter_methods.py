@@ -171,9 +171,11 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     if filters.days:        
         days_arr = filters.days.split(",")
         days_abbr = ["Su", "M", "Tu", "W", "Th", "F", "Sa"]
-        for day in days_arr:
+        for i, day in enumerate(days_arr):
             if day in days_abbr:
-                query += add_condition + MODIFIER + f"""days LIKE '%{day}%'"""
+                key = f"day_{i}"
+                query += add_condition + MODIFIER + f"days LIKE :{key}"
+                values[key] = f"%{day}%"
 
     # Starts After
     if filters.starts_after != "nopref":
