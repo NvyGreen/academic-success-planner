@@ -324,11 +324,11 @@ def filter_courses_advanced():
 
         if type(session["filter_courses"]) == str:
             flash(session["filter_courses"], "error")
-            return redirect(request.args.get("current_page"))
-        
+            return redirect(request.args.get("current_page") or url_for(".filter_courses_advanced"))
+
         if type(session["filter_criteria"]) == str:
             flash(session["filter_criteria"], "error")
-            return redirect(request.args.get("current_page"))
+            return redirect(request.args.get("current_page") or url_for(".filter_courses_advanced"))
         
         return redirect(url_for(".course_listing"))
 

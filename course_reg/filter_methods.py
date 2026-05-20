@@ -10,6 +10,7 @@ MODIFIER = "course."
 NO_GE_CAT = 1
 
 def prep_ge():
+    cursor = None
     try:
         db = get_db()
         cursor = db.execute("SELECT * FROM ge_category;")
@@ -19,7 +20,8 @@ def prep_ge():
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not get General Education categories"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     ge_dropdown = []
     for category in ge_categories:
@@ -32,6 +34,7 @@ def prep_ge():
 
 
 def prep_departments():
+    cursor = None
     try:
         db = get_db()
         cursor = db.execute("SELECT * FROM department;")
@@ -41,7 +44,8 @@ def prep_departments():
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not get Departments"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     dep_dropdown = [("0", " ")]
     for department in dep_list:
@@ -55,6 +59,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     values = dict()
     add_condition = """ AND """
     first_condition = True
+    cursor = None
     
     query, first_condition = get_courses_common(filters, query, values, first_condition, add_condition)
     query += add_condition + MODIFIER + """cancelled = 0;"""
@@ -67,7 +72,8 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -147,7 +153,8 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     first_condition = True
 
     query, first_condition = get_courses_common(filters, query, values, first_condition, add_condition)
-    
+    cursor = None
+
     # Modality
     if filters.modality != "nomode":
         if first_condition:
@@ -171,13 +178,13 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     # Starts After
     if filters.starts_after != "nopref":
         start_time = datetime.strptime(filters.starts_after, "%H:%M").strftime("%H:%M:%S")
-        query += add_condition + MODIFIER + """TIME(start_time) >= :start_time"""
+        query += add_condition + "TIME(" + MODIFIER + "start_time) >= :start_time"
         values["start_time"] = start_time
 
     # Ends Before
     if filters.ends_before != "nopref":
         end_time = datetime.strptime(filters.ends_before, "%H:%M").strftime("%H:%M:%S")
-        query += add_condition + MODIFIER + """TIME(end_time) < :end_time"""
+        query += add_condition + "TIME(" + MODIFIER + "end_time) < :end_time"
         values["end_time"] = end_time
 
     # Courses Full Option
@@ -238,7 +245,8 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -268,7 +276,8 @@ def get_courses_from_codes(course_codes):
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -296,7 +305,8 @@ def get_user_waitlist(user_id, course_codes):
         current_app.logger.error(f"Database error: {e}")
         return "Error: Could not fetch courses"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     courses = []
     for raw_course in courses_raw:
@@ -406,6 +416,7 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
 def clean_wait(raw_course, user_id):
     course = []
     course.append("Waitlisted")
+    cursor = None
 
     try:
         db = get_db()
@@ -418,8 +429,9 @@ def clean_wait(raw_course, user_id):
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
-    # finally:
-    #     cursor.close()
+    finally:
+        if cursor is not None:
+            cursor.close()
 
     course.append(student_pos)
     course.append(raw_course[19])
@@ -428,6 +440,7 @@ def clean_wait(raw_course, user_id):
 
 def clean_common(raw_course, course):
     # Get course data
+    cursor = None
     try:
         my_query = """
             SELECT d.abbreviation, f.start_datetime, f.end_datetime
@@ -443,7 +456,8 @@ def clean_common(raw_course, course):
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     # Abbreviation
     course.append(data["abbreviation"] + " " + raw_course[2])    # department + course_number
@@ -482,6 +496,7 @@ def clean_common(raw_course, course):
     course.append(str(raw_course[15]) + " / " + str(raw_course[16]))    # num_enrolled / capacity
 
 def get_criteria_common(criteria, filters):
+    cursor = None
     if filters.ge_cat != NO_GE_CAT:
         try:
             db = get_db()
@@ -491,7 +506,8 @@ def get_criteria_common(criteria, filters):
             current_app.logger.error(f"Database error: {e}")
             return "Error: could not fetch filtering criteria"
         finally:
-            cursor.close()
+            if cursor is not None:
+                cursor.close()
     
         criteria.append("General Education Category " + category[0] + ": " + category[1])
     
@@ -504,7 +520,8 @@ def get_criteria_common(criteria, filters):
             current_app.logger.error(f"Database error: {e}")
             return "Error: could not fetch filtering criteria"
         finally:
-            cursor.close()
+            if cursor is not None:
+                cursor.close()
 
         criteria.append("Department: " + dep[0])
     
