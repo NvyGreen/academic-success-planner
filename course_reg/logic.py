@@ -55,7 +55,7 @@ def calculate_workload(courses, user_id):
         total_credits += datum[2]
         workload_score += datum[0] * datum[1] * 2 * datum[2]
     
-    if gpa:
+    if gpa is not None:
         workload_score /= total_credits + gpa
     else:
         workload_score /= total_credits
@@ -218,7 +218,7 @@ def score_academic_impact(courses, user_id):
             cursor.close()
 
     estimate = total_hours_per_week(courses) / 16
-    if gpa:
+    if gpa is not None:
         estimate *= 1 / (gpa / 4.0)
     
     return estimate
