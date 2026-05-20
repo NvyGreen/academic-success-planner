@@ -7,6 +7,8 @@ from course_reg.db import get_db
 BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
 modifier = "course."
 
+NO_GE_CAT = 1
+
 def prep_ge():
     try:
         db = get_db()
@@ -80,7 +82,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
 
 def get_courses_common(filters, query, values, first_condition, add_condition):
     # General Education Category
-    if filters.ge_cat - 1:
+    if filters.ge_cat != NO_GE_CAT:
         first_condition = False
         query += modifier + """category_id = :ge_category"""
         values["ge_category"] = filters.ge_cat
@@ -309,7 +311,7 @@ def get_user_waitlist(user_id, course_codes):
 def get_criteria(filters):
     criteria = []
 
-    if filters.ge_cat - 1:
+    if filters.ge_cat != NO_GE_CAT:
         try:
             db = get_db()
             cursor = db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
