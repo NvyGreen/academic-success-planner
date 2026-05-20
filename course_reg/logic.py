@@ -7,6 +7,7 @@ WORKLOAD_BALANCED_THRESHOLD = 25
 WORKLOAD_HEAVY_THRESHOLD = 35
 
 BURNOUT_MEDIUM_THRESHOLD = 2
+BURNOUT_MED_HIGH_THRESHOLD = 3
 BURNOUT_HIGH_THRESHOLD = 4
 
 BURNOUT_COURSES_MEDIUM_THRESHOLD = 0.5
@@ -263,7 +264,7 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
     if (workload_score > WORKLOAD_BALANCED_THRESHOLD and burnout_score >= BURNOUT_MEDIUM_THRESHOLD) or (workload_score > WORKLOAD_BALANCED_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD) or (burnout_score >= BURNOUT_MEDIUM_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD):
         if workload_score > WORKLOAD_BALANCED_THRESHOLD:
             return "Overall, this is a pretty heavy schedule. Consider dropping a course."
-        elif burnout_score >= 3:
+        elif burnout_score >= BURNOUT_MED_HIGH_THRESHOLD:
             return "Overall, this is a pretty heavy scheudle. Consider swapping out a harder course for an easier one."
         else:
             return "Overall, this is a pretty heavy scheudle. Consider dropping a course or swapping it ouse for an easier one."
