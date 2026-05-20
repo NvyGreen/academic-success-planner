@@ -505,8 +505,8 @@ def clean_wait(raw_course, user_id):
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
-    finally:
-        cursor.close()
+    # finally:
+    #     cursor.close()
 
     course.append(student_pos)
     course.append(raw_course[19])
@@ -514,19 +514,26 @@ def clean_wait(raw_course, user_id):
     return course
 
 def clean_common(raw_course, course):
-    print(raw_course.keys())
-    # Abbreviation
+    # Get course data
     try:
+        my_query = """
+            SELECT d.abbreviation, f.start_datetime, f.end_datetime
+            FROM course as c
+            JOIN department as d ON c.department_id = d.department_id
+            JOIN final as f on c.final_id = f.final_id
+            WHERE c.course_id = :course_id;
+        """
         db = get_db()
-        cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[1]})
-        department = cursor.fetchone()[0]
+        cursor = db.execute(my_query, {"course_id": raw_course["course_id"]})
+        data = cursor.fetchone()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         return "Error: could not fetch courses"
     finally:
         cursor.close()
 
-    course.append(department + " " + raw_course[2])    # department + course_number
+    # Abbreviation
+    course.append(data["abbreviation"] + " " + raw_course[2])    # department + course_number
     course.append(raw_course[3])    # course_name
     course.append(raw_course[4])    # type
     course.append(raw_course[5])    # days
@@ -540,26 +547,15 @@ def clean_common(raw_course, course):
         start_time = datetime.strptime(start_time_raw, "%H:%M").strftime("%I:%M %p")
         end_time = datetime.strptime(end_time_raw, "%H:%M").strftime("%I:%M %p")
         course.append(start_time + "-" + end_time)
-    
-    # Final
-    try:
-        db = get_db()
-        cursor = db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[8]})
-        final_data = cursor.fetchone()
-    except sqlite3.Error as e:
-        current_app.logger.error(f"Database error: {e}")
-        return "Error: could not fetch courses"
-    finally:
-        cursor.close()
 
-    if (final_data[0] == "No Final"):
+    if (data["start_datetime"] == "No Final"):
         course.append(None)
     else:
-        final_start_raw = str(datetime.fromisoformat(final_data[0]).hour) + ":" + str(datetime.fromisoformat(final_data[0]).minute)
-        final_end_raw = str(datetime.fromisoformat(final_data[1]).hour) + ":" + str(datetime.fromisoformat(final_data[1]).minute)
+        final_start_raw = str(datetime.fromisoformat(data["start_datetime"]).hour) + ":" + str(datetime.fromisoformat(data["start_datetime"]).minute)
+        final_end_raw = str(datetime.fromisoformat(data["end_datetime"]).hour) + ":" + str(datetime.fromisoformat(data["end_datetime"]).minute)
 
-        final_date = datetime.fromisoformat(final_data[0]).strftime("%b") + " " + str(datetime.fromisoformat(final_data[0]).day)
-        final_day = datetime.fromisoformat(final_data[0]).strftime("%a")
+        final_date = datetime.fromisoformat(data["start_datetime"]).strftime("%b") + " " + str(datetime.fromisoformat(data["start_datetime"]).day)
+        final_day = datetime.fromisoformat(data["start_datetime"]).strftime("%a")
         final_start = datetime.strptime(final_start_raw, "%H:%M").strftime("%I:%M %p")
         final_end = datetime.strptime(final_end_raw, "%H:%M").strftime("%I:%M %p")
 
