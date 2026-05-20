@@ -310,102 +310,15 @@ def get_user_waitlist(user_id, course_codes):
 
 def get_criteria(filters):
     criteria = []
-
-    if filters.ge_cat != NO_GE_CAT:
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
-            category = cursor.fetchone()
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            return "Error: could not fetch filtering criteria"
-        finally:
-            cursor.close()
-    
-        criteria.append("General Education Category " + category[0] + ": " + category[1])
-    
-    if filters.department:
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
-            dep = cursor.fetchone()
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            return "Error: could not fetch filtering criteria"
-        finally:
-            cursor.close()
-
-        criteria.append("Department: " + dep[0])
-    
-    if filters.course_num:
-        criteria.append("Course Number Range: " + filters.course_num)
-    
-    if filters.course_code != None:
-        criteria.append("Course Code: " + str(filters.course_code))
-    
-    if filters.course_level != "all":
-        if filters.course_level == "lower":
-            criteria.append("Course Level: Lower Division only")
-        elif filters.course_level == "upper":
-            criteria.append("Course Level: Upper Division only")
-        elif filters.course_level == "grad_prof":
-            criteria.append("Course Level: Graduate/Professional only")
-    
-    if filters.instructor:
-        criteria.append("Instructor: " + filters.instructor)
-    
-    criteria.append("Exclude cancelled courses")
-    
+    get_criteria_common(criteria, filters)    
+    criteria.append("Exclude cancelled courses")    
     return criteria
 
 
 def get_criteria_adv(filters):
     criteria = []
-
-    if filters.ge_cat - 1:
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
-            category = cursor.fetchone()
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            return "Error: could not fetch filtering criteria"
-        finally:
-            cursor.close()
+    get_criteria_common(criteria, filters)
         
-        criteria.append("General Education Category " + category[0] + ": " + category[1])
-    
-    if filters.department:
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
-            dep = cursor.fetchone()
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            return "Error: could not fetch filtering criteria"
-        finally:
-            cursor.close()
-        
-        criteria.append("Department: " + dep[0])
-    
-    if filters.course_num:
-        criteria.append("Course Number Range: " + filters.course_num)
-    
-    if filters.course_code != None:
-        criteria.append("Course Code: " + str(filters.course_code))
-    
-    if filters.course_level != "all":
-        if filters.course_level == "lower":
-            criteria.append("Course Level: Lower Division only")
-        elif filters.course_level == "upper":
-            criteria.append("Course Level: Upper Division only")
-        elif filters.course_level == "grad_prof":
-            criteria.append("Course Level: Graduate/Professional only")
-
-
-    if filters.instructor:
-        criteria.append("Instructor: " + filters.instructor)
-    
     if filters.modality != "nomode":
         if filters.modality == "inperson":
             criteria.append("Modality: In-person")
@@ -572,3 +485,47 @@ def clean_common(raw_course, course):
     
     course.append(raw_course[14])    # credits
     course.append(str(raw_course[15]) + " / " + str(raw_course[16]))    # num_enrolled / capacity
+
+def get_criteria_common(criteria, filters):
+    if filters.ge_cat != NO_GE_CAT:
+        try:
+            db = get_db()
+            cursor = db.execute("SELECT label, name FROM ge_category WHERE category_id = :category_id", {"category_id": filters.ge_cat})
+            category = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            return "Error: could not fetch filtering criteria"
+        finally:
+            cursor.close()
+    
+        criteria.append("General Education Category " + category[0] + ": " + category[1])
+    
+    if filters.department:
+        try:
+            db = get_db()
+            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id", {"department_id": filters.department})
+            dep = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            return "Error: could not fetch filtering criteria"
+        finally:
+            cursor.close()
+
+        criteria.append("Department: " + dep[0])
+    
+    if filters.course_num:
+        criteria.append("Course Number Range: " + filters.course_num)
+    
+    if filters.course_code != None:
+        criteria.append("Course Code: " + str(filters.course_code))
+    
+    if filters.course_level != "all":
+        if filters.course_level == "lower":
+            criteria.append("Course Level: Lower Division only")
+        elif filters.course_level == "upper":
+            criteria.append("Course Level: Upper Division only")
+        elif filters.course_level == "grad_prof":
+            criteria.append("Course Level: Graduate/Professional only")
+    
+    if filters.instructor:
+        criteria.append("Instructor: " + filters.instructor)
