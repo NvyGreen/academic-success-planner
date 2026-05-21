@@ -185,9 +185,10 @@ def user_waitlists():
         flash(session["user_waitlist"], "error")
         courses = []
     else:
-        courses = course_reg.filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
             return redirect(url_for(".index"))
 
@@ -242,9 +243,10 @@ def login():
 @pages.route("/drop-courses")
 @login_required
 def drop_courses():
-    courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
-    if isinstance(courses, str):
-        flash(courses, "error")
+    try:
+        courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
+    except sqlite3.Error as e:
+        flash(str(e), "error")
         return redirect(url_for(".index"))
 
     return render_template(
@@ -263,14 +265,16 @@ def filter_courses():
     
     form = FilterForm()
 
-    form.gen_cat.choices = course_reg.filter_methods.prep_ge()
-    if isinstance(form.gen_cat.choices, str):
-        flash(form.gen_cat.choices, "error")
+    try:
+        form.gen_cat.choices = course_reg.filter_methods.prep_ge()
+    except sqlite3.Error as e:
+        flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
-    form.department.choices = course_reg.filter_methods.prep_departments()
-    if isinstance(form.department.choices, str):
-        flash(form.department.choices, "error")
+    try:
+        form.department.choices = course_reg.filter_methods.prep_departments()
+    except sqlite3.Error as e:
+        flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
 
@@ -292,15 +296,11 @@ def filter_courses():
             instructor=form.instructor.data
         )
         
-        session["filter_courses"] = course_reg.filter_methods.get_courses(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
-        session["filter_criteria"] = course_reg.filter_methods.get_criteria(filters)
-
-        if isinstance(session["filter_courses"], str):
-            flash(session["filter_courses"], "error")
-            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
-        
-        if isinstance(session["filter_criteria"], str):
-            flash(session["filter_criteria"], "error")
+        try:
+            session["filter_courses"] = course_reg.filter_methods.get_courses(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
+            session["filter_criteria"] = course_reg.filter_methods.get_criteria(filters)
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
         return redirect(url_for(".course_listing"))
@@ -317,13 +317,15 @@ def filter_courses():
 def filter_courses_advanced():
     form = AdvancedFilterForm()
     
-    form.gen_cat.choices = course_reg.filter_methods.prep_ge()
-    if isinstance(form.gen_cat.choices, str):
-        flash(form.gen_cat.choices, "error")
+    try:
+        form.gen_cat.choices = course_reg.filter_methods.prep_ge()
+    except sqlite3.Error as e:
+        flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
-    form.department.choices = course_reg.filter_methods.prep_departments()
-    if isinstance(form.department.choices, str):
+    try:
+        form.department.choices = course_reg.filter_methods.prep_departments()
+    except sqlite3.Error as e:
         flash(form.department.choices, "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
@@ -353,15 +355,12 @@ def filter_courses_advanced():
             room_no=form.room_no.data,
             credits=form.credits.data
         )
-        session["filter_criteria"] = course_reg.filter_methods.get_criteria_adv(filters)
-        session["filter_courses"] = course_reg.filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
 
-        if isinstance(session["filter_courses"], str):
-            flash(session["filter_courses"], "error")
-            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
-
-        if isinstance(session["filter_criteria"], str):
-            flash(session["filter_criteria"], "error")
+        try:
+            session["filter_criteria"] = course_reg.filter_methods.get_criteria_adv(filters)
+            session["filter_courses"] = course_reg.filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
         
         return redirect(url_for(".course_listing"))
