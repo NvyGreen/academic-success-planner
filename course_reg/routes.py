@@ -423,7 +423,6 @@ def preview_quarter():
     if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
-        calendar = [[]]
     else:
         courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
         if isinstance(courses, str):
