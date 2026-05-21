@@ -53,16 +53,22 @@ def safe_redirect(target, fallback = "/"):
 @pages.route("/")
 @login_required
 def index():
-    course_reg.register_methods.enroll_from_waitlist()
+    try:
+        course_reg.register_methods.enroll_from_waitlist()
+    except sqlite3.Error as e:
+        pass
+
     try:
         session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
     session["unreged_courses"] = {}
+
     try:
         session["user_waitlist"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
     except sqlite3.Error as e:
         session["user_waitlist"] = str(e)
+        
     session["temp_courses"] = []
     session["load_bearing"] = False
     session["cancel"] = False
@@ -498,8 +504,9 @@ def drop_course(code):
                     course[0] = "Neither"
                     break
 
-        error = course_reg.register_methods.drop_course(session["user_id"], code)
-        if isinstance(error, str):
+        try:
+            error = course_reg.register_methods.drop_course(session["user_id"], code)
+        except sqlite3.Error as e:
             flash(error, "error")
             return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
@@ -515,10 +522,12 @@ def wait_course(code):
         flash(session["user_waitlist"], "error")
     else:
         if code not in session["user_waitlist"]:
-            error = course_reg.register_methods.waitlist_course(session["user_id"], code)
-            if isinstance(error, str):
-                flash(error, "error")
+            try:
+                error = course_reg.register_methods.waitlist_course(session["user_id"], code)
+            except sqlite3.Error as e:
+                flash(str(e), "error")
                 return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
+                
 
             session["load_bearing"] = True
             session["user_waitlist"].append(code)
@@ -540,9 +549,10 @@ def drop_wait(code):
         flash(session["user_waitlist"], "error")
     else:
         if code in session["user_waitlist"]:
-            error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
-            if isinstance(error, str):
-                flash(error, "error")
+            try:
+                error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
+            except sqlite3.Error as e:
+                flash(str(e), "error")
                 return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
             
             session["load_bearing"] = False
@@ -583,11 +593,16 @@ def cancel_select():
 @pages.get("/confirm-schedule")
 @login_required
 def confirm_schedule():
-    session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
+    try:
+        session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
+    except sqlite3.Error as e:
+        session["unreged_courses"] = str(e)
+
     try:
         session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
+
     session["temp_courses"] = []
     session["load_bearing"] = False
 
