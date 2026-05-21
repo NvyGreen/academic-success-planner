@@ -461,10 +461,11 @@ def drop_course(code):
         session["load_bearing"] = False
         session["temp_courses"].remove(code)
 
-        for course in session["filter_courses"]:
-            if course[-1] == code:
-                course[0] = "Neither"
-                break
+        if session.get("filter_courses"):
+            for course in session["filter_courses"]:
+                if course[-1] == code:
+                    course[0] = "Neither"
+                    break
         
         session.modified = True
     
@@ -472,10 +473,11 @@ def drop_course(code):
         session["load_bearing"] = False
         session["user_courses"].remove(code)
 
-        for course in session["filter_courses"]:
-            if course[-1] == code:
-                course[0] = "Neither"
-                break
+        if session.get("filter_courses"):
+            for course in session["filter_courses"]:
+                if course[-1] == code:
+                    course[0] = "Neither"
+                    break
 
         error = course_reg.register_methods.drop_course(session["user_id"], code)
         if isinstance(error, str):
@@ -527,10 +529,11 @@ def drop_wait(code):
             session["load_bearing"] = False
             session["user_waitlist"].remove(code)
 
-            for course in session["filter_courses"]:
-                if course[-1] == code:
-                    course[0] = "Neither"
-                    break
+            if session.get("filter_courses"):
+                for course in session["filter_courses"]:
+                    if course[-1] == code:
+                        course[0] = "Neither"
+                        break
             
             session.modified = True
     

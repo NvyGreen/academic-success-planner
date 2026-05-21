@@ -58,7 +58,12 @@
                         {% if loop.first %}
                             {% if item == "Waitlisted" %}
                                 <td class="table__item">
-                                    <a href="{{ url_for('pages.drop_wait', code=course[12], current_page=request.path) }}" class="table__action table__action--drop">Drop</a>
+                                    <form method="POST" action="{{ url_for('pages.drop_wait', code=course[12], current_page=request.path) }}" class="table__action--form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="current_page" value="{{ request.path }}">
+                                        <button type="submit" class="table__action table__action--drop">Drop</button>
+                                    </form>
+                                    <!-- <a href="{{ url_for('pages.drop_wait', code=course[12], current_page=request.path) }}" class="table__action table__action--drop">Drop</a> -->
                                 </td>
                             {% else %}
                                 <td class="table__item">
