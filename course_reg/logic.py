@@ -44,7 +44,7 @@ def calculate_workload(courses, user_id):
         workload_data = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: Could not calculate workload"
+        raise sqlite3.Error("Error: Could not calculate workload")
     finally:
         if cursor is not None:
             cursor.close()
@@ -86,7 +86,7 @@ def total_hours_per_week(courses):
         raw_hours = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: Could not estimate hours per week of work"
+        raise sqlite3.Error("Error: Could not estimate hours per week of work")
     finally:
         if cursor is not None:
             cursor.close()
@@ -123,7 +123,7 @@ def calculate_burnout_risk(courses, user_id):
         course_data = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: Could not calculate burnout risk"
+        raise sqlite3.Error("Error: Could not calculate burnout risk")
     finally:
         if cursor is not None:
             cursor.close()
@@ -217,7 +217,7 @@ def calculate_academic_impact(courses, user_id):
         gpa = cursor.fetchone()[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: could not estimate academic impact"
+        raise sqlite3.Error("Error: could not estimate academic impact")
     finally:
         if cursor is not None:
             cursor.close()

@@ -68,7 +68,7 @@ def index():
         session["user_waitlist"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
     except sqlite3.Error as e:
         session["user_waitlist"] = str(e)
-        
+
     session["temp_courses"] = []
     session["load_bearing"] = False
     session["cancel"] = False
@@ -102,17 +102,19 @@ def user_courses():
         else:
             calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
-        workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
-        if isinstance(workload_score, str):
-            flash(workload_score, "error")
+        try:
+            workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             workload_score = "-"
-            classification = "-"
+            classification = "-"            
         else:
             classification = course_reg.logic.classify_workload(workload_score)
 
-        avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
-        if isinstance(avg_hours, str):
-            flash(avg_hours, "error")
+        try:
+            avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             avg_hours = "-"
 
     if isinstance(session["unreged_courses"], str):
