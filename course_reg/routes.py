@@ -1,4 +1,5 @@
 import functools
+from urllib.parse import urlparse, urljoin
 from passlib.hash import pbkdf2_sha256
 from flask import (
     Blueprint,
@@ -33,6 +34,19 @@ def login_required(route):
         return route(*args, **kwargs)
     
     return route_wrapper
+
+
+def safe_redirect(target, fallback = "/"):
+    if not target:
+        return redirect(fallback)
+    
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+
+    if test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc:
+        return redirect(target)
+
+    return redirect(fallback)
 
 
 @pages.route("/")
@@ -238,22 +252,22 @@ def filter_courses():
     form.gen_cat.choices = course_reg.filter_methods.prep_ge()
     if type(form.gen_cat.choices) == str:
         flash(form.gen_cat.choices, "error")
-        return redirect(request.args.get("current_page"))
+        return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
     form.department.choices = course_reg.filter_methods.prep_departments()
     if type(form.department.choices) == str:
         flash(form.department.choices, "error")
-        return redirect(request.args.get("current_page"))
+        return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
 
     if form.validate_on_submit():
         if type(session["user_courses"]) == str:
             flash(session["user_courses"], "error")
-            return redirect(request.args.get("current_page"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
         if type(session["user_waitlist"]) == str:
             flash(session["user_waitlist"], "error")
-            return redirect(request.args.get("current_page"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
         filters = Filters(
             ge_cat=int(form.gen_cat.data),
@@ -269,11 +283,11 @@ def filter_courses():
 
         if type(session["filter_courses"]) == str:
             flash(session["filter_courses"], "error")
-            return redirect(request.args.get("current_page"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
         if type(session["filter_criteria"]) == str:
             flash(session["filter_criteria"], "error")
-            return redirect(request.args.get("current_page"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
         return redirect(url_for(".course_listing"))
 
@@ -292,21 +306,21 @@ def filter_courses_advanced():
     form.gen_cat.choices = course_reg.filter_methods.prep_ge()
     if type(form.gen_cat.choices) == str:
         flash(form.gen_cat.choices, "error")
-        return redirect(request.args.get("current_page"))
+        return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
     form.department.choices = course_reg.filter_methods.prep_departments()
     if type(form.department.choices) == str:
         flash(form.department.choices, "error")
-        return redirect(request.args.get("current_page"))
+        return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
     if form.validate_on_submit():
         if type(session["user_courses"]) == str:
             flash(session["user_courses"], "error")
-            return redirect(request.args.get("current_page"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
         if type(session["user_waitlist"]) == str:
             flash(session["user_waitlist"], "error")
-            return redirect(request.args.get("current_page"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
         filters = AdvancedFilters(
             ge_cat=int(form.gen_cat.data),
@@ -330,11 +344,11 @@ def filter_courses_advanced():
 
         if type(session["filter_courses"]) == str:
             flash(session["filter_courses"], "error")
-            return redirect(request.args.get("current_page") or url_for(".filter_courses_advanced"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
 
         if type(session["filter_criteria"]) == str:
             flash(session["filter_criteria"], "error")
-            return redirect(request.args.get("current_page") or url_for(".filter_courses_advanced"))
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
         
         return redirect(url_for(".course_listing"))
 
@@ -438,7 +452,7 @@ def add_course(code):
         
         session.modified = True
     
-    return redirect(request.args.get("current_page"))
+    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
 
 @pages.get("/drop-course/<int:code>")
@@ -467,10 +481,10 @@ def drop_course(code):
         error = course_reg.register_methods.drop_course(session["user_id"], code)
         if type(error) == str:
             flash(error, "error")
-            redirect(request.args.get("current_page"))
+            safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         session.modified = True
 
-    return redirect(request.args.get("current_page"))
+    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
 
 @pages.get("/wait-course/<int:code>")
@@ -483,7 +497,7 @@ def wait_course(code):
             error = course_reg.register_methods.waitlist_course(session["user_id"], code)
             if type(error) == str:
                 flash(error, "error")
-                redirect(request.args.get("current_page"))
+                safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
             session["load_bearing"] = True
             session["user_waitlist"].append(code)
@@ -495,7 +509,7 @@ def wait_course(code):
 
             session.modified = True
 
-    return redirect(request.args.get("current_page"))
+    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
 
 @pages.get("/drop-wait/<int:code>")
@@ -508,7 +522,7 @@ def drop_wait(code):
             error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
             if type(error) == str:
                 flash(error, "error")
-                redirect(request.args.get("current_page"))
+                safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
             
             session["load_bearing"] = False
             session["user_waitlist"].remove(code)
@@ -520,7 +534,7 @@ def drop_wait(code):
             
             session.modified = True
     
-    return redirect(request.args.get("current_page"))
+    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
 
 @pages.get("/cancel-filter")
