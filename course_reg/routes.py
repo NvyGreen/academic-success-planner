@@ -72,7 +72,7 @@ def index():
 @pages.route("/courses")
 @login_required
 def user_courses():
-    if type(session["user_courses"]) == str:
+    if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
         calendar = [[]]
@@ -81,7 +81,7 @@ def user_courses():
         avg_hours = "-"
     else:
         courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
             calendar = [[]]
@@ -89,7 +89,7 @@ def user_courses():
             calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
         workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
-        if type(workload_score) == str:
+        if isinstance(workload_score, str):
             flash(workload_score, "error")
             workload_score = "-"
             classification = "-"
@@ -97,11 +97,11 @@ def user_courses():
             classification = course_reg.logic.classify_workload(workload_score)
 
         avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
-        if type(avg_hours) == str:
+        if isinstance(avg_hours, str):
             flash(avg_hours, "error")
             avg_hours = "-"
 
-    if type(session["unreged_courses"]) == str:
+    if isinstance(session["unreged_courses"], str):
         flash(session["unreged_courses"], "error")
     elif "Success" in session["unreged_courses"]:
         flash("All courses successfully registered", "success")
@@ -124,13 +124,13 @@ def user_courses():
 @pages.route("/finals")
 @login_required
 def user_finals():
-    if type(session["user_courses"]) == str:
+    if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
         calendar = [[]]
     else:
         courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
             calendar = [[]]
@@ -148,12 +148,12 @@ def user_finals():
 @pages.route("/quarter")
 @login_required
 def user_quarter():
-    if type(session["user_courses"]) == str:
+    if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
     else:
         courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
 
@@ -167,12 +167,12 @@ def user_quarter():
 @pages.route("/waitlists")
 @login_required
 def user_waitlists():
-    if type(session["user_waitlist"]) == str:
+    if isinstance(session["user_waitlist"], str):
         flash(session["user_waitlist"], "error")
         courses = []
     else:
         courses = course_reg.filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
             return redirect(url_for(".index"))
@@ -229,7 +229,7 @@ def login():
 @login_required
 def drop_courses():
     courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
-    if type(courses) == str:
+    if isinstance(courses, str):
         flash(courses, "error")
         return redirect(url_for(".index"))
 
@@ -250,22 +250,22 @@ def filter_courses():
     form = FilterForm()
 
     form.gen_cat.choices = course_reg.filter_methods.prep_ge()
-    if type(form.gen_cat.choices) == str:
+    if isinstance(form.gen_cat.choices, str):
         flash(form.gen_cat.choices, "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
     form.department.choices = course_reg.filter_methods.prep_departments()
-    if type(form.department.choices) == str:
+    if isinstance(form.department.choices, str):
         flash(form.department.choices, "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
 
     if form.validate_on_submit():
-        if type(session["user_courses"]) == str:
+        if isinstance(session["user_courses"], str):
             flash(session["user_courses"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
-        if type(session["user_waitlist"]) == str:
+        if isinstance(session["user_waitlist"], str):
             flash(session["user_waitlist"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
@@ -281,11 +281,11 @@ def filter_courses():
         session["filter_courses"] = course_reg.filter_methods.get_courses(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
         session["filter_criteria"] = course_reg.filter_methods.get_criteria(filters)
 
-        if type(session["filter_courses"]) == str:
+        if isinstance(session["filter_courses"], str):
             flash(session["filter_courses"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
-        if type(session["filter_criteria"]) == str:
+        if isinstance(session["filter_criteria"], str):
             flash(session["filter_criteria"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
@@ -304,21 +304,21 @@ def filter_courses_advanced():
     form = AdvancedFilterForm()
     
     form.gen_cat.choices = course_reg.filter_methods.prep_ge()
-    if type(form.gen_cat.choices) == str:
+    if isinstance(form.gen_cat.choices, str):
         flash(form.gen_cat.choices, "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
     form.department.choices = course_reg.filter_methods.prep_departments()
-    if type(form.department.choices) == str:
+    if isinstance(form.department.choices, str):
         flash(form.department.choices, "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
     if form.validate_on_submit():
-        if type(session["user_courses"]) == str:
+        if isinstance(session["user_courses"], str):
             flash(session["user_courses"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
-        if type(session["user_waitlist"]) == str:
+        if isinstance(session["user_waitlist"], str):
             flash(session["user_waitlist"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
@@ -342,11 +342,11 @@ def filter_courses_advanced():
         session["filter_criteria"] = course_reg.filter_methods.get_criteria_adv(filters)
         session["filter_courses"] = course_reg.filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
 
-        if type(session["filter_courses"]) == str:
+        if isinstance(session["filter_courses"], str):
             flash(session["filter_courses"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
 
-        if type(session["filter_criteria"]) == str:
+        if isinstance(session["filter_criteria"], str):
             flash(session["filter_criteria"], "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
         
@@ -376,13 +376,13 @@ def course_listing():
 @pages.route("/preview/courses")
 @login_required
 def preview_courses():
-    if type(session["user_courses"]) == str:
+    if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
         calendar = [[]]
     else:
         courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
         calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
@@ -398,13 +398,13 @@ def preview_courses():
 @pages.route("/preview/finals")
 @login_required
 def preview_finals():
-    if type(session["user_courses"]) == str:
+    if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
         calendar = [[]]
     else:
         courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
         calendar = course_reg.schedule_methods.create_calendar(courses, "final")
@@ -420,13 +420,13 @@ def preview_finals():
 @pages.route("/preview/quarter")
 @login_required
 def preview_quarter():
-    if type(session["user_courses"]) == str:
+    if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
         calendar = [[]]
     else:
         courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
-        if type(courses) == str:
+        if isinstance(courses, str):
             flash(courses, "error")
             courses = []
 
@@ -479,7 +479,7 @@ def drop_course(code):
                 break
 
         error = course_reg.register_methods.drop_course(session["user_id"], code)
-        if type(error) == str:
+        if isinstance(error, str):
             flash(error, "error")
             safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         session.modified = True
@@ -490,12 +490,12 @@ def drop_course(code):
 @pages.get("/wait-course/<int:code>")
 @login_required
 def wait_course(code):
-    if type(session["user_waitlist"]) == str:
+    if isinstance(session["user_waitlist"], str):
         flash(session["user_waitlist"], "error")
     else:
         if code not in session["user_waitlist"]:
             error = course_reg.register_methods.waitlist_course(session["user_id"], code)
-            if type(error) == str:
+            if isinstance(error, str):
                 flash(error, "error")
                 safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
@@ -515,12 +515,12 @@ def wait_course(code):
 @pages.get("/drop-wait/<int:code>")
 @login_required
 def drop_wait(code):
-    if type(session["user_waitlist"]) == str:
+    if isinstance(session["user_waitlist"], str):
         flash(session["user_waitlist"], "error")
     else:
         if code in session["user_waitlist"]:
             error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
-            if type(error) == str:
+            if isinstance(error, str):
                 flash(error, "error")
                 safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
             
