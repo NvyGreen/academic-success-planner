@@ -210,7 +210,7 @@ def login():
         user_email = user_data[1]
         user_pwd = user_data[2]
 
-        if user_data and pbkdf2_sha256.verify(form.password.data, user_pwd):
+        if pbkdf2_sha256.verify(form.password.data, user_pwd):
             session["user_id"] = user_id
             session["email"] = user_email
 
@@ -561,7 +561,6 @@ def cancel_select():
 
 @pages.get("/confirm-schedule")
 @login_required
-# @check_window
 def confirm_schedule():
     session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
     session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
