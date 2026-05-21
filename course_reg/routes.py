@@ -46,6 +46,12 @@ def index():
     session["load_bearing"] = False
     session["cancel"] = False
     
+    if session.get("filter_courses"):
+        session.pop("filter_courses")
+    
+    if session.get("filter_criteria"):
+        session.pop("filter_criteria")
+    
     return redirect(url_for(".user_courses"))
 
 
@@ -341,7 +347,10 @@ def filter_courses_advanced():
 
 @pages.route("/listings")
 @login_required
-def course_listing():    
+def course_listing():
+    if not session.get("filter_criteria") or not session.get("filter_courses"):
+        return redirect(url_for(".filter_courses"))
+
     return render_template(
         "course_listing.html",
         title="Course Registration - Listings",
