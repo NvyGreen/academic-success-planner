@@ -1,5 +1,6 @@
 import functools
 from urllib.parse import urlparse, urljoin
+import sqlite3
 from passlib.hash import pbkdf2_sha256
 from flask import (
     Blueprint,
@@ -53,9 +54,15 @@ def safe_redirect(target, fallback = "/"):
 @login_required
 def index():
     course_reg.register_methods.enroll_from_waitlist()
-    session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+    try:
+        session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+    except sqlite3.Error as e:
+        session["user_courses"] = str(e)
     session["unreged_courses"] = {}
-    session["user_waitlist"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
+    try:
+        session["user_waitlist"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
+    except sqlite3.Error as e:
+        session["user_waitlist"] = str(e)
     session["temp_courses"] = []
     session["load_bearing"] = False
     session["cancel"] = False
@@ -80,9 +87,10 @@ def user_courses():
         classification = "-"
         avg_hours = "-"
     else:
-        courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
             calendar = [[]]
         else:
@@ -129,11 +137,16 @@ def user_finals():
         courses = []
         calendar = [[]]
     else:
-        courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
             calendar = [[]]
+        # if isinstance(courses, str):
+        #     flash(e, "error")
+        #     courses = []
+        #     calendar = [[]]
         else:
             calendar = course_reg.schedule_methods.create_calendar(courses, "final")
 
@@ -152,9 +165,10 @@ def user_quarter():
         flash(session["user_courses"], "error")
         courses = []
     else:
-        courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
 
     return render_template(
@@ -381,9 +395,10 @@ def preview_courses():
         courses = []
         calendar = [[]]
     else:
-        courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
         calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
 
@@ -403,10 +418,14 @@ def preview_finals():
         courses = []
         calendar = [[]]
     else:
-        courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
+        # if isinstance(courses, str):
+        #     flash(courses, "error")
+        #     courses = []
         calendar = course_reg.schedule_methods.create_calendar(courses, "final")
 
     return render_template(
@@ -424,9 +443,10 @@ def preview_quarter():
         flash(session["user_courses"], "error")
         courses = []
     else:
-        courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
-        if isinstance(courses, str):
-            flash(courses, "error")
+        try:
+            courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+        except sqlite3.Error as e:
+            flash(str(e), "error")
             courses = []
 
     return render_template(
@@ -565,7 +585,10 @@ def cancel_select():
 @login_required
 def confirm_schedule():
     session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
-    session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+    try:
+        session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+    except sqlite3.Error as e:
+        session["user_courses"] = str(e)
     session["temp_courses"] = []
     session["load_bearing"] = False
 

@@ -19,7 +19,8 @@ def get_short_courses(course_codes):
         raw_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: Could not fetch courses for calendar"
+        raise sqlite3.Error("Error: could not fetch courses for calendar")
+        # return "Error: Could not fetch courses for calendar"
     finally:
         cursor.close()
 
@@ -35,7 +36,7 @@ def get_short_courses(course_codes):
             department = cursor.fetchone()[0]
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            return "Error: Could not fetch courses for calendar"
+            raise sqlite3.Error("Error: could not fetch courses for calendar")
         finally:
             cursor.close()
         
@@ -82,7 +83,7 @@ def get_short_courses_final(course_codes):
         raw_courses = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: Could not fetch finals for calendar"
+        raise sqlite3.Error("Error: Could not fetch finals for calendar")
     finally:
         cursor.close()
     courses = []
@@ -98,7 +99,7 @@ def get_short_courses_final(course_codes):
             department = cursor.fetchone()[0]
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            return "Error: Could not fetch finals for calendar"
+            raise sqlite3.Error("Error: Could not fetch finals for calendar")
         finally:
             cursor.close()
 
@@ -113,11 +114,11 @@ def get_short_courses_final(course_codes):
             raw_final = cursor.fetchone()
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
-            return "Error: Could not fetch finals for calendar"
+            raise sqlite3.Error("Error: Could not fetch finals for calendar")
         finally:
             cursor.close()
         
-        if (raw_final[0] == "No Final") or (raw_final[1] == "No Final"):
+        if (raw_final[0] is None) or (raw_final[1] is None):
             course.append(None)
         else:
             raw_start = datetime.fromisoformat(raw_final[0])
@@ -269,7 +270,7 @@ def get_courses_from_list(user_id, table):
         codes_tup = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        return "Error: could not get student's courses"
+        raise sqlite3.Error("Error: could not get student's courses")
     finally:
         cursor.close()
 
