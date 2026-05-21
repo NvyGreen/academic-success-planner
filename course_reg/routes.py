@@ -438,7 +438,7 @@ def preview_quarter():
 
 
 
-@pages.get("/add-course/<int:code>")
+@pages.post("/add-course/<int:code>")
 @login_required
 def add_course(code):
     if code not in session["temp_courses"]:
@@ -452,10 +452,10 @@ def add_course(code):
         
         session.modified = True
     
-    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+    return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
 
-@pages.get("/drop-course/<int:code>")
+@pages.post("/drop-course/<int:code>")
 @login_required
 def drop_course(code):
     if code in session["temp_courses"]:
@@ -481,13 +481,14 @@ def drop_course(code):
         error = course_reg.register_methods.drop_course(session["user_id"], code)
         if isinstance(error, str):
             flash(error, "error")
-            safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+            return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
+
         session.modified = True
 
-    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+    return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
 
-@pages.get("/wait-course/<int:code>")
+@pages.post("/wait-course/<int:code>")
 @login_required
 def wait_course(code):
     if isinstance(session["user_waitlist"], str):
@@ -497,7 +498,7 @@ def wait_course(code):
             error = course_reg.register_methods.waitlist_course(session["user_id"], code)
             if isinstance(error, str):
                 flash(error, "error")
-                safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+                return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
             session["load_bearing"] = True
             session["user_waitlist"].append(code)
@@ -509,10 +510,10 @@ def wait_course(code):
 
             session.modified = True
 
-    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+    return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
 
-@pages.get("/drop-wait/<int:code>")
+@pages.post("/drop-wait/<int:code>")
 @login_required
 def drop_wait(code):
     if isinstance(session["user_waitlist"], str):
@@ -522,7 +523,7 @@ def drop_wait(code):
             error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
             if isinstance(error, str):
                 flash(error, "error")
-                safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+                return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
             
             session["load_bearing"] = False
             session["user_waitlist"].remove(code)
@@ -534,7 +535,7 @@ def drop_wait(code):
             
             session.modified = True
     
-    return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
+    return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
 
 @pages.get("/cancel-filter")

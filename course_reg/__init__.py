@@ -2,17 +2,20 @@ import os
 import sqlite3
 import flask
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 from course_reg.routes import pages
 from course_reg.db import *
 
 
 load_dotenv()
+csrf = CSRFProtect()
 
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
     app.config["SQLITE3_DB"] = os.environ.get("SQLITE3_DB")
+    csrf.init_app(app)
 
     app.teardown_appcontext(close_db)
 

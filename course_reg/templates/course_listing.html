@@ -45,20 +45,36 @@
                         {% if loop.first %}
                             {% if item == "Registered" %}
                                 <td class="table__item">
-                                    <a href="{{ url_for('pages.drop_course', code=course[12], current_page=request.path) }}" class="table__action table__action--drop">Drop</a>
+                                    <form method="POST" action="{{ url_for('pages.drop_course', code=course[12], current_page=request.path) }}" class="table__action--form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="current_page" value="{{ request.path }}">
+                                        <button type="submit" class="table__action table__action--drop">Drop</button>
+                                    </form>
                                 </td>
                             {% elif item == "Waitlisted" %}
                                 <td class="table__item">
-                                    <a href="{{ url_for('pages.drop_wait', code=course[12], current_page=request.path) }}" class="table__action table__action--drop">Drop W</a>
+                                    <form method="POST" action="{{ url_for('pages.drop_wait', code=course[12], current_page=request.path) }}" class="table__action--form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="current_page" value="{{ request.path }}">
+                                        <button type="submit" class="table__action table__action--drop">Drop W</button>
+                                    </form>
                                 </td>
                             {% else %}
                                 {% if course[-2] == "Waitlist" %}
                                     <td class="table__item">
-                                        <a href="{{ url_for('pages.wait_course', code=course[12], current_page=request.path) }}" class="table__action table__action--wait">Wait</a>
+                                        <form method="POST" action="{{ url_for('pages.wait_course', code=course[12], current_page=request.path) }}" class="table__action--form">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="current_page" value="{{ request.path }}">
+                                            <button type="submit" class="table__action table__action--wait">Wait</button>
+                                        </form>
                                     </td>
                                 {% elif course[-2] == "Open" %}
                                     <td class="table__item">
-                                        <a href="{{ url_for('pages.add_course', code=course[12], current_page=request.path) }}" class="table__action table__action--add">Add</a>
+                                        <form method="POST" action="{{ url_for('pages.add_course', code=course[12]) }}" class="table__action--form">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="current_page" value="{{ request.path }}">
+                                            <button type="submit" class="table__action table__action--add">Add</button>
+                                        </form>
                                     </td>
                                 {% else %}
                                     <td class="table__item">
