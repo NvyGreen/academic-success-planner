@@ -10,7 +10,7 @@ def get_short_courses(course_codes):
         return []
 
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
-    query = f"SELECT course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE course_code IN ({placeholders})"
+    query = f"SELECT department.abbreviation, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id JOIN department ON course.department_id = department.department_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
 
     try:
@@ -28,25 +28,14 @@ def get_short_courses(course_codes):
     # (department_id, number, name, days, start_time, end_time, teach_first, teach_last, is_online, building_code, room)
     for raw_course in raw_courses:
         course = []
-
-        # Abbreviation
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
-            department = cursor.fetchone()[0]
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            raise sqlite3.Error("Error: could not fetch courses for calendar")
-        finally:
-            cursor.close()
         
-        course.append(department + " " + raw_course[1])    # department + course_number
-        course.append(raw_course[2])    # name/title
-        course.append(raw_course[3])    # type
-        course.append(raw_course[4])    # days
+        course.append(raw_course["abbreviation"] + " " + raw_course["course_number"])    # department + course_number
+        course.append(raw_course["course_name"])    # name/title
+        course.append(raw_course["type"])    # type
+        course.append(raw_course["days"])    # days
 
         # Times
-        if raw_course[5] is None or raw_course[6] is None:
+        if raw_course["start_time"] is None or raw_course["end_time"] is None:
             course.append(None)
         else:
             start_dt = datetime.fromisoformat(raw_course[5].replace("Z", "+00:00"))
@@ -55,14 +44,14 @@ def get_short_courses(course_codes):
             end_time = end_dt.strftime("%#I:%M %p")
             course.append(start_time + " - " + end_time)
 
-        course.append(raw_course[8] + ", " + raw_course[7][0] + ".")    # last_name, first_init
+        course.append(raw_course["last_name"] + ", " + raw_course["first_name"][0] + ".")    # last_name, first_init
 
-        if (raw_course[9] == 1):
+        if (raw_course["is_online"] == 1):
             course.append("Online")
         else:
-            course.append(raw_course[10] + " " + raw_course[11])    # building_code room
+            course.append(raw_course["building_code"] + " " + raw_course["room"])    # building_code room
         
-        course.append(raw_course[12])
+        course.append(raw_course["course_id"])
 
         courses.append(course)
     
@@ -74,7 +63,7 @@ def get_short_courses_final(course_codes):
         return []
 
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
-    query = f"SELECT course.department_id, course.course_number, course.course_name, course.type, course.final_id, course.is_online, course.building_code, course.room FROM course JOIN final ON course.final_id = final.final_id WHERE course_code IN ({placeholders})"
+    query = f"SELECT department.abbreviation, course.course_number, course.course_name, course.type, final.start_datetime, final.end_datetime, course.is_online, course.building_code, course.room FROM course JOIN final ON course.final_id = final.final_id JOIN department ON course.department_id = department.department_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
 
     try:
@@ -93,45 +82,25 @@ def get_short_courses_final(course_codes):
         course = []
 
         # Abbreviation
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT abbreviation FROM department WHERE department_id = :department_id;", {"department_id": raw_course[0]})
-            department = cursor.fetchone()[0]
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            raise sqlite3.Error("Error: Could not fetch finals for calendar")
-        finally:
-            cursor.close()
+        course.append(raw_course["abbreviation"] + " " + raw_course["course_number"])    # department + course_number
+        course.append(raw_course["course_name"])    # name/title
+        course.append(raw_course["type"])    # type
 
-        course.append(department + " " + raw_course[1])    # department + course_number
-        course.append(raw_course[2])    # name/title
-        course.append(raw_course[3])    # type
-
-        # Final Data
-        try:
-            db = get_db()
-            cursor = db.execute("SELECT start_datetime, end_datetime FROM final WHERE final_id = :final_id;", {"final_id": raw_course[4]})
-            raw_final = cursor.fetchone()
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            raise sqlite3.Error("Error: Could not fetch finals for calendar")
-        finally:
-            cursor.close()
-        
-        if (raw_final[0] is None) or (raw_final[1] is None):
+        # Final Data        
+        if (raw_course["start_datetime"] is None) or (raw_course["end_datetime"] is None):
             course.append(None)
         else:
-            raw_start = datetime.fromisoformat(raw_final[0])
-            raw_end = datetime.fromisoformat(raw_final[1])
+            raw_start = datetime.fromisoformat(raw_course["start_datetime"])
+            raw_end = datetime.fromisoformat(raw_course["end_datetime"])
             final_day = raw_start.strftime("%a")
             final_start = raw_start.strftime("%#I:%M %p")
             final_end = raw_end.strftime("%#I:%M %p")
             course.append(final_day + ", " + final_start + " - " + final_end)
         
-        if (raw_course[5] == 1):
+        if (raw_course["is_online"] == 1):
             course.append("Online")
         else:
-            course.append(raw_course[6] + " " + raw_course[7])    # building_code room
+            course.append(raw_course["building_code"] + " " + raw_course["room"])    # building_code room
 
         courses.append(course)
     
