@@ -153,13 +153,15 @@ def add_course_to_calendar(course, calendar):
 
     if not days or not time_str:
         return
-
     start_time, end_time = time_str.split(" - ")
-    start_hour = datetime.strptime(start_time, "%I:%M %p").hour
-    start_minute = datetime.strptime(start_time, "%I:%M %p").minute / 60
-    end_hour = datetime.strptime(end_time, "%I:%M %p").hour
-    end_minute = datetime.strptime(end_time, "%I:%M %p").minute / 60
-    time_diff = (end_hour + end_minute) - (start_hour + start_minute)
+
+    start_dt     = datetime.strptime(start_time, "%I:%M %p")
+    end_dt       = datetime.strptime(end_time,   "%I:%M %p")
+    start_hour   = start_dt.hour
+    start_minute = start_dt.minute / 60
+    end_hour     = end_dt.hour
+    end_minute   = end_dt.minute / 60
+    time_diff    = (end_hour + end_minute) - (start_hour + start_minute)
 
     rowspan = math.ceil(round(start_minute + time_diff, 2))
     top_pct = round((start_minute / rowspan) * 100, 2)
@@ -201,10 +203,12 @@ def add_final_to_calendar(course, calendar):
     day_part, time_part = time_str.split(", ", 1)
     start_str, end_str  = time_part.split(" - ")
 
-    start_hour   = datetime.strptime(start_str, "%I:%M %p").hour
-    start_minute = datetime.strptime(start_str, "%I:%M %p").minute / 60
-    end_hour     = datetime.strptime(end_str,   "%I:%M %p").hour
-    end_minute   = datetime.strptime(end_str,   "%I:%M %p").minute / 60
+    start_dt     = datetime.strptime(start_str, "%I:%M %p")
+    end_dt       = datetime.strptime(end_str,   "%I:%M %p")
+    start_hour   = start_dt.hour
+    start_minute = start_dt.minute / 60
+    end_hour     = end_dt.hour
+    end_minute   = end_dt.minute / 60
     time_diff    = (end_hour + end_minute) - (start_hour + start_minute)
 
     rowspan    = math.ceil(round(start_minute + time_diff, 2))
