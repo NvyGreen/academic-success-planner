@@ -4,6 +4,10 @@ import sqlite3
 from flask import current_app
 from course_reg.db import get_db
 
+ABBR_INDEX = 0
+DAYS_INDEX = 3
+FINAL_TIME_INDEX = 3
+TIMES_INDEX = 4
 
 def get_short_courses(course_codes):
     if len(course_codes) == 0:
@@ -40,8 +44,8 @@ def get_short_courses(course_codes):
         if raw_course["start_time"] is None or raw_course["end_time"] is None:
             course.append(None)
         else:
-            start_dt = datetime.fromisoformat(raw_course[5].replace("Z", "+00:00"))
-            end_dt = datetime.fromisoformat(raw_course[6].replace("Z", "+00:00"))
+            start_dt = datetime.fromisoformat(raw_course["start_time"].replace("Z", "+00:00"))
+            end_dt = datetime.fromisoformat(raw_course["end_time"].replace("Z", "+00:00"))
             start_time = start_dt.strftime("%I:%M %p").lstrip("0")
             end_time = end_dt.strftime("%I:%M %p").lstrip("0")
             course.append(start_time + " - " + end_time)
@@ -148,8 +152,8 @@ def create_calendar(courses, cal_type):
 
 
 def add_course_to_calendar(course, calendar):
-    days = course[3]
-    time_str = course[4]
+    days = course[DAYS_INDEX]
+    time_str = course[TIMES_INDEX]
 
     if not days or not time_str:
         return
@@ -167,7 +171,7 @@ def add_course_to_calendar(course, calendar):
     top_pct = round((start_minute / rowspan) * 100, 2)
     height_pct = round((time_diff / rowspan) * 100, 2)
 
-    abbreviation = course[0]
+    abbreviation = course[ABBR_INDEX]
     slot_data = (abbreviation, rowspan, top_pct, height_pct)
     
     start_slot = -1
@@ -194,7 +198,7 @@ def add_course_to_calendar(course, calendar):
 
 
 def add_final_to_calendar(course, calendar):
-    time_str = course[3]  # "Tue, 12:30 PM - 1:50 PM" or None
+    time_str = course[FINAL_TIME_INDEX]  # "Tue, 12:30 PM - 1:50 PM" or None
 
     if not time_str:
         return
@@ -215,7 +219,7 @@ def add_final_to_calendar(course, calendar):
     top_pct    = round((start_minute / rowspan) * 100, 2)
     height_pct = round((time_diff    / rowspan) * 100, 2)
 
-    abbreviation = course[0]
+    abbreviation = course[ABBR_INDEX]
     slot_data    = (abbreviation, rowspan, top_pct, height_pct)
 
     # Find the starting row
