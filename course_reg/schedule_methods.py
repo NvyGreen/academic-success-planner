@@ -12,6 +12,7 @@ def get_short_courses(course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query = f"SELECT department.abbreviation, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id JOIN department ON course.department_id = department.department_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
+    cursor = None
 
     try:
         db = get_db()
@@ -22,7 +23,8 @@ def get_short_courses(course_codes):
         raise sqlite3.Error("Error: could not fetch courses for calendar")
         # return "Error: Could not fetch courses for calendar"
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     courses = []
     # (department_id, number, name, days, start_time, end_time, teach_first, teach_last, is_online, building_code, room)
@@ -65,6 +67,7 @@ def get_short_courses_final(course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query = f"SELECT department.abbreviation, course.course_number, course.course_name, course.type, final.start_datetime, final.end_datetime, course.is_online, course.building_code, course.room FROM course JOIN final ON course.final_id = final.final_id JOIN department ON course.department_id = department.department_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
+    cursor = None
 
     try:
         db = get_db()
@@ -74,7 +77,8 @@ def get_short_courses_final(course_codes):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not fetch finals for calendar")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
     courses = []
 
     # (department_id, course_number, course_name, type, final_id, is_online, building_code, room)
