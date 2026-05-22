@@ -264,15 +264,20 @@ def add_final_to_calendar(course, calendar):
 
 def get_courses_from_list(user_id, table):
     query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
+    cursor = None
+    print(table)
     try:
         db = get_db()
+        if table not in ["enrollment", "student_waitlist"]:
+            raise sqlite3.Error("Wrong table")
         cursor = db.execute(query, {"student_id": user_id})
         codes_tup = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not get student's courses")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     course_codes = []
     for code in codes_tup:
