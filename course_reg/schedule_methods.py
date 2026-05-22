@@ -42,8 +42,8 @@ def get_short_courses(course_codes):
         else:
             start_dt = datetime.fromisoformat(raw_course[5].replace("Z", "+00:00"))
             end_dt = datetime.fromisoformat(raw_course[6].replace("Z", "+00:00"))
-            start_time = start_dt.strftime("%#I:%M %p")  # use %#I on Windows
-            end_time = end_dt.strftime("%#I:%M %p")
+            start_time = start_dt.strftime("%I:%M %p").lstrip("0")
+            end_time = end_dt.strftime("%I:%M %p").lstrip("0")
             course.append(start_time + " - " + end_time)
 
         course.append(raw_course["last_name"] + ", " + raw_course["first_name"][0] + ".")    # last_name, first_init
@@ -97,8 +97,8 @@ def get_short_courses_final(course_codes):
             raw_start = datetime.fromisoformat(raw_course["start_datetime"])
             raw_end = datetime.fromisoformat(raw_course["end_datetime"])
             final_day = raw_start.strftime("%a")
-            final_start = raw_start.strftime("%#I:%M %p")
-            final_end = raw_end.strftime("%#I:%M %p")
+            final_start = raw_start.strftime("%I:%M %p").lstrip("0")
+            final_end = raw_end.strftime("%I:%M %p").lstrip("0")
             course.append(final_day + ", " + final_start + " - " + final_end)
         
         if (raw_course["is_online"] == 1):
