@@ -8,6 +8,24 @@ ABBR_INDEX = 0
 DAYS_INDEX = 3
 FINAL_TIME_INDEX = 3
 TIMES_INDEX = 4
+SLOT_LOOKUP = [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+]
 
 def get_short_courses(course_codes):
     if len(course_codes) == 0:
@@ -174,13 +192,9 @@ def add_course_to_calendar(course, calendar):
     abbreviation = course[ABBR_INDEX]
     slot_data = (abbreviation, rowspan, top_pct, height_pct)
     
-    start_slot = -1
-    for i in range(1, len(calendar)):
-        if datetime.strptime(calendar[i][0], "%I %p").hour == start_hour:
-            start_slot = i
-            break
-    
-    if start_slot < 0:
+    try:
+        start_slot = SLOT_LOOKUP.index(start_hour) + 1
+    except ValueError:
         return
     
     col_map = []
@@ -223,13 +237,9 @@ def add_final_to_calendar(course, calendar):
     slot_data    = (abbreviation, rowspan, top_pct, height_pct)
 
     # Find the starting row
-    start_slot = -1
-    for i in range(1, len(calendar)):
-        if datetime.strptime(calendar[i][0], "%I %p").hour == start_hour:
-            start_slot = i
-            break
-
-    if start_slot < 0:
+    try:
+        start_slot = SLOT_LOOKUP.index(start_hour) + 1
+    except ValueError:
         return
 
     col_map = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5}
