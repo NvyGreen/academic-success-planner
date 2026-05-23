@@ -11,10 +11,16 @@ def get_course_description(course_id):
         cursor = db.execute(query, {"course_id": course_id})
         dept_info = cursor.fetchone()
         cursor.close()
+        if dept_info is None:
+            sqlite3.Error("Error: Could not register for courses")
 
         query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
-        cursor = db.execute(query, {"department_id": dept_info[0]})
-        course_desc = cursor.fetchone()[0] + " " + dept_info[1] + " (" + dept_info[2] + ")"
+        cursor = db.execute(query, {"department_id": dept_info["department_id"]})
+        abbreviation = cursor.fetchone()
+        if abbreviation is None:
+            sqlite3.Error("Error: Could not register for courses")
+        abbreviation = abbreviation["abbreviation"]
+        course_desc = abbreviation + " " + dept_info["course_number"] + " (" + dept_info["type"] + ")"
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
@@ -152,7 +158,10 @@ def drop_course(user_id, course_code):
         db = get_db()
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
-        course_id = cursor.fetchone()[0]
+        course_id = cursor.fetchone()
+        if course_id is None:
+            raise sqlite3.Error("Error: Could not drop course")
+        course_id = course_id["course_id"]
         cursor.close()
         
         query = """DELETE FROM enrollment WHERE student_id = :student_id AND course_id = :course_id;"""
@@ -181,12 +190,18 @@ def waitlist_course(user_id, course_code):
 
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
-        course_id = cursor.fetchone()[0]
+        course_id = cursor.fetchone()
+        if course_id is None:
+            raise sqlite3.Error("Error: Could not waitlist course")
+        course_id = course_id["course_id"]
         cursor.close()
 
         query = """SELECT MAX(position) FROM student_waitlist WHERE course_id = :course_id"""
         cursor = db.execute(query, {"course_id": course_id})
-        last_pos = cursor.fetchone()[0]
+        last_pos = cursor.fetchone()
+        if last_pos is None:
+            raise sqlite3.Error("Error: Could not waitlist course")
+        last_pos = last_pos[0]
         cursor.close()
 
         query = """INSERT INTO student_waitlist (student_id, course_id, position) VALUES (:student_id, :course_id, :position);"""
@@ -214,12 +229,18 @@ def drop_waitlist(user_id, course_code):
 
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
-        course_id = cursor.fetchone()[0]
+        course_id = cursor.fetchone()
+        if course_id is None:
+            raise sqlite3.Error("Error: Could not drop course from waitlist")
+        course_id = course_id["course_id"]
         cursor.close()
 
         query = """SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
         cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
-        old_pos = cursor.fetchone()[0]
+        old_pos = cursor.fetchone()
+        if old_pos is None:
+            raise sqlite3.Error("Error: Could not drop course from waitlist")
+        old_pos = old_pos["position"]
         cursor.close()
 
         query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
