@@ -5,10 +5,12 @@ from course_reg.db import get_db
 
 def get_course_description(course_id):
     query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
+    cursor = None
     try:
         db = get_db()
         cursor = db.execute(query, {"course_id": course_id})
         dept_info = cursor.fetchone()
+        cursor.close()
 
         query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
         cursor = db.execute(query, {"department_id": dept_info[0]})
@@ -17,7 +19,8 @@ def get_course_description(course_id):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     return course_desc
 
@@ -29,6 +32,7 @@ def register_courses(user_id, course_codes):
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
     query = f"SELECT course_id FROM course WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
+    cursor = None
 
     try:
         db = get_db()
@@ -38,7 +42,8 @@ def register_courses(user_id, course_codes):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
     
     unreged_courses = {}
     course_ids = []
@@ -62,6 +67,7 @@ def register_courses(user_id, course_codes):
                 db = get_db()
                 query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
                 cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
+                cursor.close()
 
                 query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
                 cursor = db.execute(query, {"course_id": course_id})
@@ -80,6 +86,7 @@ def register_courses(user_id, course_codes):
 
 
 def check_coreqs(course_id, all_ids):
+    cursor = None
     try:
         db = get_db()
         query = """SELECT coreq_id FROM corequisite WHERE course_id = :course_id;"""
@@ -89,7 +96,8 @@ def check_coreqs(course_id, all_ids):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     if len(coreqs) == 0:
         return []
@@ -104,11 +112,13 @@ def check_coreqs(course_id, all_ids):
 
 
 def check_prereqs(user_id, course_id):
+    cursor = None
     try:
         db = get_db()
         query = """SELECT prereq_id FROM prerequisite WHERE course_id = :course_id;"""
         cursor = db.execute(query, {"course_id": course_id})
         prereqs = cursor.fetchall()
+        cursor.close()
         
         if len(prereqs) == 0:
             return []
@@ -121,7 +131,8 @@ def check_prereqs(user_id, course_id):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
     
     prev_courses = []
     for raw_course in prev_courses_raw:
@@ -136,14 +147,17 @@ def check_prereqs(user_id, course_id):
 
 
 def drop_course(user_id, course_code):
+    cursor = None
     try:
         db = get_db()
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
         course_id = cursor.fetchone()[0]
+        cursor.close()
         
         query = """DELETE FROM enrollment WHERE student_id = :student_id AND course_id = :course_id;"""
         cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
+        cursor.close()
 
         query = """UPDATE course SET num_enrolled = num_enrolled - 1 WHERE course_id = :course_id;"""
         cursor = db.execute(query, {"course_id": course_id})
@@ -153,22 +167,27 @@ def drop_course(user_id, course_code):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not drop course")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
 
 def waitlist_course(user_id, course_code):
+    cursor = None
     try:
         db = get_db()
         query = """UPDATE course SET waitlist = waitlist + 1 WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
+        cursor.close()
 
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
         course_id = cursor.fetchone()[0]
+        cursor.close()
 
         query = """SELECT MAX(position) FROM student_waitlist WHERE course_id = :course_id"""
         cursor = db.execute(query, {"course_id": course_id})
         last_pos = cursor.fetchone()[0]
+        cursor.close()
 
         query = """INSERT INTO student_waitlist (student_id, course_id, position) VALUES (:student_id, :course_id, :position);"""
         if last_pos != None:
@@ -181,25 +200,31 @@ def waitlist_course(user_id, course_code):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not waitlist course")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
 
 def drop_waitlist(user_id, course_code):
+    cursor = None
     try:
         db = get_db()
         query = """UPDATE course SET waitlist = waitlist - 1 WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
+        cursor.close()
 
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
         course_id = cursor.fetchone()[0]
+        cursor.close()
 
         query = """SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
         cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
         old_pos = cursor.fetchone()[0]
+        cursor.close()
 
         query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
         cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
+        cursor.close()
 
         query = """UPDATE student_waitlist SET position = position - 1 WHERE course_id = :course_id AND position > :position;"""
         cursor = db.execute(query, {"course_id": course_id, "position": old_pos})
@@ -209,10 +234,12 @@ def drop_waitlist(user_id, course_code):
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not drop course from waitlist")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
 
 def enroll_from_waitlist():
+    cursor = None
     try:
         db = get_db()
         query = """SELECT course_id, num_enrolled, capacity FROM course;"""
@@ -222,7 +249,8 @@ def enroll_from_waitlist():
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not enroll in course from waitlist")
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
 
     for course in courses:
         if course[1] < course[2]:
@@ -248,16 +276,20 @@ def enroll_from_waitlist():
                     db = get_db()
                     query = """UPDATE course SET waitlist = waitlist - 1 WHERE course_id = :course_id;"""
                     cursor = db.execute(query, {"course_id": course_id})
+                    cursor.close()
 
                     query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
                     cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+                    cursor.close()
 
                     query = """UPDATE student_waitlist SET position = position - 1 WHERE course_id = :course_id;"""
                     cursor = db.execute(query, {"course_id": course_id})
+                    cursor.close()
 
                     # Add to enrollment
                     query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
                     cursor = db.execute(query, {"course_id": course_id})
+                    cursor.close()
 
                     query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
                     cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
