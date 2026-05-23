@@ -184,9 +184,6 @@ def waitlist_course(user_id, course_code):
     cursor = None
     try:
         db = get_db()
-        query = """UPDATE course SET waitlist = waitlist + 1 WHERE course_code = :course_code;"""
-        cursor = db.execute(query, {"course_code": course_code})
-        cursor.close()
 
         query = """SELECT course_id FROM course WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
@@ -209,6 +206,10 @@ def waitlist_course(user_id, course_code):
             cursor = db.execute(query, {"student_id": user_id, "course_id": course_id, "position": last_pos + 1})
         else:
             cursor = db.execute(query, {"student_id": user_id, "course_id": course_id, "position": 1})
+        
+        query = """UPDATE course SET waitlist = waitlist + 1 WHERE course_code = :course_code;"""
+        cursor = db.execute(query, {"course_code": course_code})
+        cursor.close()
 
         db.commit()
     except sqlite3.Error as e:
@@ -295,12 +296,13 @@ def enroll_from_waitlist():
                 try:
                     # Drop from waitlist
                     db = get_db()
-                    query = """UPDATE course SET waitlist = waitlist - 1 WHERE course_id = :course_id;"""
-                    cursor = db.execute(query, {"course_id": course_id})
-                    cursor.close()
 
                     query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
                     cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+                    cursor.close()
+
+                    query = """UPDATE course SET waitlist = waitlist - 1 WHERE course_id = :course_id;"""
+                    cursor = db.execute(query, {"course_id": course_id})
                     cursor.close()
 
                     query = """UPDATE student_waitlist SET position = position - 1 WHERE course_id = :course_id;"""
@@ -308,12 +310,12 @@ def enroll_from_waitlist():
                     cursor.close()
 
                     # Add to enrollment
+                    query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
+                    cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+
                     query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
                     cursor = db.execute(query, {"course_id": course_id})
                     cursor.close()
-
-                    query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
-                    cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
 
                     db.commit()
                 except sqlite3.Error as e:
