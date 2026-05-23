@@ -86,7 +86,7 @@ def register_courses(user_id, course_codes):
                 cursor.close()
     
     if len(unreged_courses) == 0:
-        unreged_courses["Success"] = "Success"
+        return "Success"
 
     return unreged_courses
 

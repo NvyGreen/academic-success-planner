@@ -118,8 +118,6 @@ def user_courses():
             avg_hours = "-"
 
     if isinstance(session["unreged_courses"], str):
-        flash(session["unreged_courses"], "error")
-    elif "Success" in session["unreged_courses"]:
         flash("All courses successfully registered", "success")
     else:
         for course, reqs in session["unreged_courses"].items():
