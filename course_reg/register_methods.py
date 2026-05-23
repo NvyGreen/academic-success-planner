@@ -264,9 +264,11 @@ def enroll_from_waitlist():
     cursor = None
     try:
         db = get_db()
-        query = """SELECT course_id, num_enrolled, capacity FROM course;"""
+        query = """SELECT course_id FROM course WHERE num_enrolled < capacity;"""
         cursor = db.execute(query)
         courses = cursor.fetchall()
+        if not courses:
+            raise sqlite3.Error("Error: could not enroll in course from waitlist")
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not enroll in course from waitlist")
@@ -275,51 +277,50 @@ def enroll_from_waitlist():
             cursor.close()
 
     for course in courses:
-        if course[1] < course[2]:
-            course_id = course[0]
+        course_id = course["course_id"]
 
-            # Check if students in waitlist
+        # Check if students in waitlist
+        try:
+            db = get_db()
+            query = """SELECT student_id FROM student_waitlist WHERE course_id = :course_id AND position = 1;"""
+            cursor = db.execute(query, {"course_id": course_id})
+            student_id = cursor.fetchone()
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
+            raise sqlite3.Error("Error: could not enroll in course from waitlist")
+        finally:
+            cursor.close()
+
+        if student_id:
+            student_id = student_id["student_id"]
+
             try:
+                # Drop from waitlist
                 db = get_db()
-                query = """SELECT student_id FROM student_waitlist WHERE course_id = :course_id AND position = 1;"""
+
+                query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
+                cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+                cursor.close()
+
+                query = """UPDATE course SET waitlist = waitlist - 1 WHERE course_id = :course_id;"""
                 cursor = db.execute(query, {"course_id": course_id})
-                student_id = cursor.fetchone()
+                cursor.close()
+
+                query = """UPDATE student_waitlist SET position = position - 1 WHERE course_id = :course_id;"""
+                cursor = db.execute(query, {"course_id": course_id})
+                cursor.close()
+
+                # Add to enrollment
+                query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
+                cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+
+                query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
+                cursor = db.execute(query, {"course_id": course_id})
+                cursor.close()
+
+                db.commit()
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
                 raise sqlite3.Error("Error: could not enroll in course from waitlist")
             finally:
                 cursor.close()
-
-            if student_id:
-                student_id = student_id[0]
-
-                try:
-                    # Drop from waitlist
-                    db = get_db()
-
-                    query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
-                    cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
-                    cursor.close()
-
-                    query = """UPDATE course SET waitlist = waitlist - 1 WHERE course_id = :course_id;"""
-                    cursor = db.execute(query, {"course_id": course_id})
-                    cursor.close()
-
-                    query = """UPDATE student_waitlist SET position = position - 1 WHERE course_id = :course_id;"""
-                    cursor = db.execute(query, {"course_id": course_id})
-                    cursor.close()
-
-                    # Add to enrollment
-                    query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
-                    cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
-
-                    query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
-                    cursor = db.execute(query, {"course_id": course_id})
-                    cursor.close()
-
-                    db.commit()
-                except sqlite3.Error as e:
-                    current_app.logger.error(f"Database error: {e}")
-                    raise sqlite3.Error("Error: could not enroll in course from waitlist")
-                finally:
-                    cursor.close()
