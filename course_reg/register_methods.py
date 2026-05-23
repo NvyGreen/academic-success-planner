@@ -195,20 +195,15 @@ def waitlist_course(user_id, course_code):
         course_id = course_id["course_id"]
         cursor.close()
 
-        query = """SELECT MAX(position) FROM student_waitlist WHERE course_id = :course_id"""
-        cursor = db.execute(query, {"course_id": course_id})
-        last_pos = cursor.fetchone()
-        if last_pos is None:
-            raise sqlite3.Error("Error: Could not waitlist course")
-        last_pos = last_pos[0]
+        query = """
+            INSERT INTO student_waitlist (student_id, course_id, position)
+            SELECT :student_id, :course_id, COALESCE(MAX(position), 0) + 1
+            FROM student_waitlist
+            WHERE course_id = :course_id;
+        """
+        cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
         cursor.close()
 
-        query = """INSERT INTO student_waitlist (student_id, course_id, position) VALUES (:student_id, :course_id, :position);"""
-        if last_pos != None:
-            cursor = db.execute(query, {"student_id": user_id, "course_id": course_id, "position": last_pos + 1})
-        else:
-            cursor = db.execute(query, {"student_id": user_id, "course_id": course_id, "position": 1})
-        
         query = """UPDATE course SET waitlist = waitlist + 1 WHERE course_code = :course_code;"""
         cursor = db.execute(query, {"course_code": course_code})
         cursor.close()
