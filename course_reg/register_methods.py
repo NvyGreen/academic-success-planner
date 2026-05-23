@@ -52,7 +52,7 @@ def register_courses(user_id, course_codes):
         if len(prereqs_check) > 0:
             course_desc = get_course_description(course_id)
             prereqs = "Following prerequisites not satisfied: " + ", ".join(prereqs_check)
-        #     unreged_courses[course_desc] = prereqs
+            unreged_courses[course_desc] = prereqs
         elif len(coreqs_check) > 0:
             course_desc = get_course_description(course_id)
             coreqs = "Following corequisites not satisfied: " + ", ".join(coreqs_check)
@@ -116,15 +116,19 @@ def check_prereqs(user_id, course_id):
         unfilled_prereqs = []
         query = """SELECT course_id FROM prev_enrollment WHERE student_id = :student_id;"""
         cursor = db.execute(query, {"student_id": user_id})
-        prev_courses = cursor.fetchall()
+        prev_courses_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
     finally:
         cursor.close()
+    
+    prev_courses = []
+    for raw_course in prev_courses_raw:
+        prev_courses.append(raw_course["course_id"])
 
     for prereq in prereqs:
-        if prereq not in prev_courses:
+        if prereq["prereq_id"] not in prev_courses:
             course_desc = get_course_description(prereq[0])
             unfilled_prereqs.append(course_desc)
     
