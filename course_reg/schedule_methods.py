@@ -256,7 +256,6 @@ def add_final_to_calendar(course, calendar):
 def get_courses_from_list(user_id, table):
     query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
     cursor = None
-    print(table)
     try:
         db = get_db()
         if table not in ["enrollment", "student_waitlist"]:

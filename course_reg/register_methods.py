@@ -33,34 +33,38 @@ def register_courses(user_id, course_codes):
     try:
         db = get_db()
         cursor = db.execute(query, values)
-        course_ids = cursor.fetchall()
+        course_ids_raw = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not register for courses")
     finally:
         cursor.close()
+    
     unreged_courses = {}
+    course_ids = []
+    for raw_id in course_ids_raw:
+        course_ids.append(raw_id["course_id"])
 
     for course_id in course_ids:
-        prereqs_check = check_prereqs(user_id, course_id[0])
-        coreqs_check = check_coreqs(user_id, course_id[0])
+        prereqs_check = check_prereqs(user_id, course_id)
+        coreqs_check = check_coreqs(course_id, course_ids)
 
         if len(prereqs_check) > 0:
-            course_desc = get_course_description(course_id[0])
+            course_desc = get_course_description(course_id)
             prereqs = "Following prerequisites not satisfied: " + ", ".join(prereqs_check)
-            unreged_courses[course_desc] = prereqs
+        #     unreged_courses[course_desc] = prereqs
         elif len(coreqs_check) > 0:
-            course_desc = get_course_description(course_id[0])
+            course_desc = get_course_description(course_id)
             coreqs = "Following corequisites not satisfied: " + ", ".join(coreqs_check)
             unreged_courses[course_desc] = coreqs
         else:
             try:
                 db = get_db()
                 query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
-                cursor = db.execute(query, {"student_id": user_id, "course_id": course_id[0]})
+                cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
 
                 query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
-                cursor = db.execute(query, {"course_id": course_id[0]})
+                cursor = db.execute(query, {"course_id": course_id})
 
                 db.commit()
             except sqlite3.Error as e:
@@ -92,8 +96,8 @@ def check_coreqs(course_id, all_ids):
 
     unfilled_coreqs = []    
     for coreq in coreqs:
-        if coreq not in all_ids:
-            course_desc = get_course_description(coreq[0])
+        if coreq["coreq_id"] not in all_ids:
+            course_desc = get_course_description(coreq["coreq_id"])
             unfilled_coreqs.append(course_desc)
     
     return unfilled_coreqs
