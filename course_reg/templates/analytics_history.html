@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="activity__header-actions">
-            <button class="btn btn--outline-gray">📅 May 1, 2026 – Jun 15, 2026 ⟲</button>
+            <button class="btn btn--outline-gray">📅 May 1, 2026 - Jun 15, 2026 ⟲</button>
             <button class="btn btn--outline-blue">⬇ Export History</button>
         </div>
     </div>
@@ -26,9 +26,8 @@
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--blue">📅</div>
             <div>
-                <div class="summary-card__value">18</div>
+                <div class="summary-card__value">{{ num_schedules }}</div>
                 <div class="summary-card__label">Schedules Evaluated</div>
-                <div class="summary-card__sublabel">Across 6 versions</div>
             </div>
         </div>
         <div class="summary-card">
@@ -41,21 +40,21 @@
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--purple">✓</div>
             <div>
-                <div class="summary-card__value">7</div>
+                <div class="summary-card__value">0</div>
                 <div class="summary-card__label">Recommendations Applied</div>
             </div>
         </div>
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--orange">👁</div>
             <div>
-                <div class="summary-card__value">3</div>
+                <div class="summary-card__value">0</div>
                 <div class="summary-card__label">Recommendations Viewed</div>
             </div>
         </div>
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--red">⊘</div>
             <div>
-                <div class="summary-card__value">2</div>
+                <div class="summary-card__value">0</div>
                 <div class="summary-card__label">Recommendations Dismissed</div>
             </div>
         </div>
@@ -67,8 +66,8 @@
             <h2>Progress Over Time</h2>
             <div class="chart-legend">
                 <span class="legend-item"><span class="legend-dot legend-dot--blue"></span> Workload (hrs/week)</span>
-                <span class="legend-item"><span class="legend-dot legend-dot--orange"></span> Burnout Risk (0-1)</span>
-                <span class="legend-item"><span class="legend-dot legend-dot--green"></span> Academic Impact (-1 to 1)</span>
+                <span class="legend-item"><span class="legend-dot legend-dot--orange"></span> Burnout Risk (0-5)</span>
+                <span class="legend-item"><span class="legend-dot legend-dot--green"></span> Academic Impact (0 to 2)</span>
             </div>
             <div class="chart-placeholder" id="progress-chart"></div>
             <p class="chart-note">Lower workload and burnout risk are better. Higher academic impact is better.</p>
@@ -121,7 +120,7 @@
                 </div>
             </div>
             <ul class="breakdown-list">
-                <li><span class="legend-dot legend-dot--blue"></span> Schedule Evaluations <span class="breakdown-value">18 (42.9%)</span></li>
+                <li><span class="legend-dot legend-dot--blue"></span> Schedule Evaluations <span class="breakdown-value">{{ num_schedules }} (42.9%)</span></li>
                 <li><span class="legend-dot legend-dot--green"></span> Recommendations Generated <span class="breakdown-value">12 (28.6%)</span></li>
                 <li><span class="legend-dot legend-dot--purple"></span> Recommendations Applied <span class="breakdown-value">7 (16.7%)</span></li>
                 <li><span class="legend-dot legend-dot--orange"></span> Recommendations Viewed <span class="breakdown-value">3 (7.1%)</span></li>

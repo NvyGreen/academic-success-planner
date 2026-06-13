@@ -483,23 +483,37 @@ def preview_quarter():
 @login_required
 def analytics_page():
     try:
-        metrics = analytics.get_metrics(session["user_id"])
-        num_schedules = metrics[0]
-        latest = metrics[1][-1]
+        num_schedules = analytics.get_num_scheudles(session["user_id"])
+        latest = analytics.get_latest_activity(session["user_id"])
 
-        workload_hours = latest["workload_score"]
-        burnout_risk = latest["burnout_score"]
-        academic_impact = round(latest["impact_score"], 2)
-        recommendation_count = latest["recommendations"]
+        if len(latest) == 0:
+            num_schedules = "-"
 
-        workload_classification = logic.classify_workload(logic.calculate_workload(session["user_courses"], session["user_id"]))
-        burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
-        impact_classification = logic.classify_academic_impact(academic_impact)
+            workload_hours = "-"
+            burnout_risk = "-"
+            academic_impact = "-"
+            recommendation_count = "-"
 
-        latest_timestamp = datetime.fromisoformat(latest["timestamp"])
-        latest_activity = f"{latest_timestamp.strftime('%B')} {latest_timestamp.day}, {latest_timestamp.year}"
+            workload_classification = "Light"
+            burnout_estimation = "Low"
+            impact_classification = "Low"
+
+            latest_activity = "-"
+        else:
+            workload_hours = latest["workload_score"]
+            burnout_risk = latest["burnout_score"]
+            academic_impact = round(latest["impact_score"], 2)
+            recommendation_count = latest["recommendations"]
+
+            workload_classification = logic.classify_workload(logic.calculate_workload(session["user_courses"], session["user_id"]))
+            burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
+            impact_classification = logic.classify_academic_impact(academic_impact)
+
+            latest_timestamp = datetime.fromisoformat(latest["timestamp"])
+            latest_activity = f"{latest_timestamp.strftime('%B')} {latest_timestamp.day}, {latest_timestamp.year}"
     except sqlite3.Error as e:
         flash(str(e), "error")
+        num_schedules = "-"
 
         workload_hours = "-"
         burnout_risk = "-"
@@ -530,9 +544,17 @@ def analytics_page():
 @pages.route("/analytics/history")
 @login_required
 def analytics_history():
+    try:
+        metrics = analytics.get_metrics(session["user_id"])
+        num_schedules = analytics.get_num_scheudles(session["user_id"])
+    except sqlite3.Error as e:
+        flash(str(e), "error")
+        num_schedules = "-"
+
     return render_template(
         "analytics_history.html",
-        title="Activity History"
+        title="Activity History",
+        num_schedules=num_schedules
     )
 
 
