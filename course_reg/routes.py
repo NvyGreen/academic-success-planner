@@ -128,7 +128,7 @@ def user_courses():
 
     return render_template(
         "index.html",
-        title="Course Registration - My Courses",
+        title="My Courses",
         courses=courses,
         calendar=calendar,
         workload_score=workload_score,
@@ -160,7 +160,7 @@ def user_finals():
 
     return render_template(
         "index_finals.html",
-        title="Course Registration - My Finals",
+        title="My Finals",
         courses=courses,
         calendar=calendar
     )
@@ -181,7 +181,7 @@ def user_quarter():
 
     return render_template(
         "index_quarter.html",
-        title="Course Registration - Current Quarter",
+        title="Current Quarter",
         courses=courses
     )
 
@@ -202,7 +202,7 @@ def user_waitlists():
 
     return render_template(
         "waitlists.html",
-        title="Course Registration - My Waitlists",
+        title="My Waitlists",
         courses=courses
     )
 
@@ -243,7 +243,7 @@ def login():
 
     return render_template(
         "login.html",
-        title="Course Registration - Login",
+        title="Login",
         form=form
     )
 
@@ -259,7 +259,7 @@ def drop_courses():
 
     return render_template(
         "drop_courses.html",
-        title="Course Registration - Drop Courses",
+        title="Drop Courses",
         courses=courses
     )
 
@@ -315,7 +315,7 @@ def filter_courses():
 
     return render_template(
         "filter_courses.html",
-        title="Course Registration - Filter Courses",
+        title="Filter Courses",
         form=form
     )
 
@@ -375,7 +375,7 @@ def filter_courses_advanced():
 
     return render_template(
         "filter_courses_advanced.html",
-        title="Course Registration - Filter Courses - Advanced",
+        title="Filter Courses - Advanced",
         form=form
     )
 
@@ -388,7 +388,7 @@ def course_listing():
 
     return render_template(
         "course_listing.html",
-        title="Course Registration - Listings",
+        title="Course Listings",
         criteria=session["filter_criteria"],
         courses=session["filter_courses"]
     )
@@ -411,7 +411,7 @@ def preview_courses():
 
     return render_template(
         "preview_courses.html",
-        title="Course Registration - Preview Courses",
+        title="Preview Courses",
         courses=courses,
         calendar=calendar
     )
@@ -437,7 +437,7 @@ def preview_finals():
 
     return render_template(
         "preview_finals.html",
-        title="Course Registration - Preview Finals",
+        title="Preview Finals",
         courses=courses,
         calendar=calendar
     )
@@ -458,7 +458,7 @@ def preview_quarter():
 
     return render_template(
         "preview_quarter.html",
-        title="Course Registration - View Quarter",
+        title="View Quarter",
         courses=courses
     )
 
@@ -468,7 +468,16 @@ def preview_quarter():
 def analytics_page():
     return render_template(
         "analytics.html",
-        title="Course Registration - Analytics"
+        title="Analytics"
+    )
+
+
+@pages.route("/analytics/history")
+@login_required
+def analytics_history():
+    return render_template(
+        "analytics_history.html",
+        title="Activity History"
     )
 
 
@@ -603,7 +612,7 @@ def cancel_select():
 @pages.get("/confirm-schedule")
 @login_required
 def confirm_schedule():
-    session["old_courses"] = session["user_courses"]
+    # session["old_courses"] = session["user_courses"]
     try:
         session["unreged_courses"] = register_methods.register_courses(session["user_id"], session["temp_courses"])
     except sqlite3.Error as e:
@@ -614,15 +623,15 @@ def confirm_schedule():
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
     
-    if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
-        try:
-            workload = logic.total_hours_per_week(session["user_courses"])
-            burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
-            impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
-            recommendation_count = -1
-            analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
-        except sqlite3.Error as e:
-            session["old_courses"] = str(e)
+    # if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
+    #     try:
+    #         workload = logic.total_hours_per_week(session["user_courses"])
+    #         burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
+    #         impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
+    #         recommendation_count = -1
+    #         analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
+    #     except sqlite3.Error as e:
+    #         session["old_courses"] = str(e)
 
     session["temp_courses"] = []
     session["load_bearing"] = False

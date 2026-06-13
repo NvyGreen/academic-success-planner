@@ -1,0 +1,211 @@
+{% extends "layout.html" %}
+
+{% block head_content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/activity.css') }}" />
+{% endblock %}
+
+{% block main_content %}
+<div class="activity">
+
+    <div class="activity__header">
+        <div class="activity__title-row">
+            <a href="{{ url_for('pages.analytics_page') }}" class="back-link">←</a>
+            <div>
+                <h1>Activity History</h1>
+                <p>Track your scheduling journey and decision history</p>
+            </div>
+        </div>
+        <div class="activity__header-actions">
+            <button class="btn btn--outline-gray">📅 May 1, 2026 – Jun 15, 2026 ⟲</button>
+            <button class="btn btn--outline-blue">⬇ Export History</button>
+        </div>
+    </div>
+
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="summary-card__icon summary-card__icon--blue">📅</div>
+            <div>
+                <div class="summary-card__value">18</div>
+                <div class="summary-card__label">Schedules Evaluated</div>
+                <div class="summary-card__sublabel">Across 6 versions</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__icon summary-card__icon--green">⇄</div>
+            <div>
+                <div class="summary-card__value">12</div>
+                <div class="summary-card__label">Recommendations Generated</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__icon summary-card__icon--purple">✓</div>
+            <div>
+                <div class="summary-card__value">7</div>
+                <div class="summary-card__label">Recommendations Applied</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__icon summary-card__icon--orange">👁</div>
+            <div>
+                <div class="summary-card__value">3</div>
+                <div class="summary-card__label">Recommendations Viewed</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__icon summary-card__icon--red">⊘</div>
+            <div>
+                <div class="summary-card__value">2</div>
+                <div class="summary-card__label">Recommendations Dismissed</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-row">
+
+        <div class="panel">
+            <h2>Progress Over Time</h2>
+            <div class="chart-legend">
+                <span class="legend-item"><span class="legend-dot legend-dot--blue"></span> Workload (hrs/week)</span>
+                <span class="legend-item"><span class="legend-dot legend-dot--orange"></span> Burnout Risk (0-1)</span>
+                <span class="legend-item"><span class="legend-dot legend-dot--green"></span> Academic Impact (-1 to 1)</span>
+            </div>
+            <div class="chart-placeholder" id="progress-chart"></div>
+            <p class="chart-note">Lower workload and burnout risk are better. Higher academic impact is better.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Improvement Summary</h2>
+
+            <div class="improvement-row">
+                <div>
+                    <div class="improvement-row__label">Workload Improvement</div>
+                    <div class="improvement-row__detail">37 → 26 hrs/week</div>
+                </div>
+                <div class="improvement-row__value improvement-row__value--positive">-11 hrs/week</div>
+            </div>
+
+            <div class="improvement-row">
+                <div>
+                    <div class="improvement-row__label">Burnout Risk Improvement</div>
+                    <div class="improvement-row__detail">0.78 → 0.18</div>
+                </div>
+                <div class="improvement-row__value improvement-row__value--positive">-0.60</div>
+            </div>
+
+            <div class="improvement-row">
+                <div>
+                    <div class="improvement-row__label">Academic Impact Improvement</div>
+                    <div class="improvement-row__detail">-0.25 → 0.15</div>
+                </div>
+                <div class="improvement-row__value improvement-row__value--positive">+0.40</div>
+            </div>
+
+            <div class="overall-progress">
+                <div class="overall-progress__row">
+                    <span>Overall Progress</span>
+                    <span class="badge badge--green">Great Progress</span>
+                </div>
+                <p>You've made strong improvements!</p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Activity Breakdown</h2>
+            <div class="donut-wrap">
+                <div class="donut" id="activity-donut">
+                    <div class="donut__center">
+                        <div class="donut__value">42</div>
+                        <div class="donut__label">Total Activities</div>
+                    </div>
+                </div>
+            </div>
+            <ul class="breakdown-list">
+                <li><span class="legend-dot legend-dot--blue"></span> Schedule Evaluations <span class="breakdown-value">18 (42.9%)</span></li>
+                <li><span class="legend-dot legend-dot--green"></span> Recommendations Generated <span class="breakdown-value">12 (28.6%)</span></li>
+                <li><span class="legend-dot legend-dot--purple"></span> Recommendations Applied <span class="breakdown-value">7 (16.7%)</span></li>
+                <li><span class="legend-dot legend-dot--orange"></span> Recommendations Viewed <span class="breakdown-value">3 (7.1%)</span></li>
+                <li><span class="legend-dot legend-dot--red"></span> Recommendations Dismissed <span class="breakdown-value">2 (4.8%)</span></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="panel">
+        <h2>Activity Timeline</h2>
+
+        <table class="timeline-table">
+            <thead>
+                <tr>
+                    <th>Date &amp; Time</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Details</th>
+                    <th>Impact</th>
+                    <th>Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Jun 15, 2026 10:24 AM</td>
+                    <td><span class="badge badge--green">✓ Applied</span></td>
+                    <td><strong>Swap CS143A for INF121</strong></td>
+                    <td>Reduced workload and burnout risk</td>
+                    <td>-6 hrs, -0.24 burnout</td>
+                    <td><span class="version-tag">V3</span></td>
+                </tr>
+                <tr>
+                    <td>Jun 10, 2026 09:15 PM</td>
+                    <td><span class="badge badge--orange">👁 Viewed</span></td>
+                    <td><strong>Swap MATH108 for STAT116</strong></td>
+                    <td>Improve academic impact</td>
+                    <td>+0.08 impact</td>
+                    <td><span class="version-tag">V2</span></td>
+                </tr>
+                <tr>
+                    <td>Jun 8, 2026 04:42 PM</td>
+                    <td><span class="badge badge--red">⊘ Dismissed</span></td>
+                    <td><strong>Drop HIST101</strong></td>
+                    <td>Lower workload</td>
+                    <td>-3 hrs</td>
+                    <td><span class="version-tag">V2</span></td>
+                </tr>
+                <tr>
+                    <td>Jun 5, 2026 11:30 AM</td>
+                    <td><span class="badge badge--blue">📋 Evaluation</span></td>
+                    <td><strong>Schedule Version 2</strong></td>
+                    <td>5 courses, 15 credits</td>
+                    <td>31 hrs/week, Burnout: Moderate</td>
+                    <td><span class="version-tag">V2</span></td>
+                </tr>
+                <tr>
+                    <td>May 30, 2026 08:50 PM</td>
+                    <td><span class="badge badge--green">✓ Applied</span></td>
+                    <td><strong>Move ICS161 to Winter</strong></td>
+                    <td>Better workload distribution</td>
+                    <td>-2 hrs, -0.12 burnout</td>
+                    <td><span class="version-tag">V2</span></td>
+                </tr>
+                <tr>
+                    <td>May 20, 2026 07:10 PM</td>
+                    <td><span class="badge badge--blue">📋 Evaluation</span></td>
+                    <td><strong>Schedule Version 1</strong></td>
+                    <td>5 courses, 15 credits</td>
+                    <td>37 hrs/week, Burnout: High</td>
+                    <td><span class="version-tag">V1</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="load-more-row">
+            <button class="btn btn--outline-gray">Load More ⌄</button>
+        </div>
+    </div>
+
+    <div class="activity__footer">
+        <span>ⓘ All times shown in your local timezone (America/Los_Angeles)</span>
+        <span>Data refreshed: Jun 15, 2026 10:24 AM ⟲</span>
+    </div>
+
+</div>
+{% endblock %}
