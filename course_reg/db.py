@@ -78,6 +78,18 @@ def init_db(db):
     """)
 
     db.execute("""
+        CREATE TABLE IF NOT EXISTS "metric" (
+            "metric_id" INTEGER,
+            "student_id" INTEGER,
+            "type" TEXT,
+            "score" REAL,
+            "timestamp" TEXT,
+            PRIMARY KEY("metric_id"),
+            FOREIGN KEY("student_id") REFERENCES "student"("student_id")
+        );
+    """)
+
+    db.execute("""
         CREATE TABLE IF NOT EXISTS "course" (
             "course_id" INTEGER,
             "course_name" TEXT,
