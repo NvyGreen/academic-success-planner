@@ -15,10 +15,7 @@ from flask import (
 from course_reg.db import get_db
 from course_reg.forms import LoginForm, FilterForm, AdvancedFilterForm
 from course_reg.models import Filters, AdvancedFilters
-import course_reg.filter_methods
-import course_reg.schedule_methods
-import course_reg.register_methods
-import course_reg.logic
+from course_reg import filter_methods, schedule_methods, register_methods, logic, analytics
 
 
 pages = Blueprint(
@@ -54,18 +51,18 @@ def safe_redirect(target, fallback = "/"):
 @login_required
 def index():
     try:
-        course_reg.register_methods.enroll_from_waitlist()
+        register_methods.enroll_from_waitlist()
     except sqlite3.Error as e:
         pass
 
     try:
-        session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+        session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
     session["unreged_courses"] = {}
 
     try:
-        session["user_waitlist"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
+        session["user_waitlist"] = schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
     except sqlite3.Error as e:
         session["user_waitlist"] = str(e)
 
@@ -95,33 +92,28 @@ def user_courses():
         avg_hours = "-"
     else:
         try:
-            courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+            courses = schedule_methods.get_short_courses(session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
             calendar = [[]]
         else:
-            calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
+            calendar = schedule_methods.create_calendar(courses, "courses")
 
         try:
-            workload_score = course_reg.logic.calculate_workload(session["user_courses"], session["user_id"])
+            workload_score = logic.calculate_workload(session["user_courses"], session["user_id"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             workload_score = "-"
             classification = "-"            
         else:
-            classification = course_reg.logic.classify_workload(workload_score)
+            classification = logic.classify_workload(workload_score)
 
         try:
-            avg_hours = course_reg.logic.total_hours_per_week(session["user_courses"])
+            avg_hours = logic.total_hours_per_week(session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             avg_hours = "-"
-        
-        if session["old_courses"] != session["user_courses"] and isinstance(workload_score, float):
-            # TODO: Save new metrics to database
-            pass
-        session["old_courses"] = []
 
     if isinstance(session["unreged_courses"], str):
         flash("All courses successfully registered", "success")
@@ -150,7 +142,7 @@ def user_finals():
         calendar = [[]]
     else:
         try:
-            courses = course_reg.schedule_methods.get_short_courses_final(session["user_courses"])
+            courses = schedule_methods.get_short_courses_final(session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
@@ -160,7 +152,7 @@ def user_finals():
         #     courses = []
         #     calendar = [[]]
         else:
-            calendar = course_reg.schedule_methods.create_calendar(courses, "final")
+            calendar = schedule_methods.create_calendar(courses, "final")
 
     return render_template(
         "index_finals.html",
@@ -178,7 +170,7 @@ def user_quarter():
         courses = []
     else:
         try:
-            courses = course_reg.schedule_methods.get_short_courses(session["user_courses"])
+            courses = schedule_methods.get_short_courses(session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
@@ -198,7 +190,7 @@ def user_waitlists():
         courses = []
     else:
         try:
-            courses = course_reg.filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
+            courses = filter_methods.get_user_waitlist(session["user_id"], session["user_waitlist"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
@@ -256,7 +248,7 @@ def login():
 @login_required
 def drop_courses():
     try:
-        courses = course_reg.filter_methods.get_courses_from_codes(session["user_courses"])
+        courses = filter_methods.get_courses_from_codes(session["user_courses"])
     except sqlite3.Error as e:
         flash(str(e), "error")
         return redirect(url_for(".index"))
@@ -278,13 +270,13 @@ def filter_courses():
     form = FilterForm()
 
     try:
-        form.gen_cat.choices = course_reg.filter_methods.prep_ge()
+        form.gen_cat.choices = filter_methods.prep_ge()
     except sqlite3.Error as e:
         flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
     try:
-        form.department.choices = course_reg.filter_methods.prep_departments()
+        form.department.choices = filter_methods.prep_departments()
     except sqlite3.Error as e:
         flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
@@ -309,8 +301,8 @@ def filter_courses():
         )
         
         try:
-            session["filter_courses"] = course_reg.filter_methods.get_courses(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
-            session["filter_criteria"] = course_reg.filter_methods.get_criteria(filters)
+            session["filter_courses"] = filter_methods.get_courses(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
+            session["filter_criteria"] = filter_methods.get_criteria(filters)
         except sqlite3.Error as e:
             flash(str(e), "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
@@ -330,13 +322,13 @@ def filter_courses_advanced():
     form = AdvancedFilterForm()
     
     try:
-        form.gen_cat.choices = course_reg.filter_methods.prep_ge()
+        form.gen_cat.choices = filter_methods.prep_ge()
     except sqlite3.Error as e:
         flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
     
     try:
-        form.department.choices = course_reg.filter_methods.prep_departments()
+        form.department.choices = filter_methods.prep_departments()
     except sqlite3.Error as e:
         flash(form.department.choices, "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
@@ -369,8 +361,8 @@ def filter_courses_advanced():
         )
 
         try:
-            session["filter_criteria"] = course_reg.filter_methods.get_criteria_adv(filters)
-            session["filter_courses"] = course_reg.filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
+            session["filter_criteria"] = filter_methods.get_criteria_adv(filters)
+            session["filter_courses"] = filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
@@ -407,11 +399,11 @@ def preview_courses():
         calendar = [[]]
     else:
         try:
-            courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+            courses = schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
-        calendar = course_reg.schedule_methods.create_calendar(courses, "courses")
+        calendar = schedule_methods.create_calendar(courses, "courses")
 
     return render_template(
         "preview_courses.html",
@@ -430,14 +422,14 @@ def preview_finals():
         calendar = [[]]
     else:
         try:
-            courses = course_reg.schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
+            courses = schedule_methods.get_short_courses_final(session["temp_courses"] + session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
         # if isinstance(courses, str):
         #     flash(courses, "error")
         #     courses = []
-        calendar = course_reg.schedule_methods.create_calendar(courses, "final")
+        calendar = schedule_methods.create_calendar(courses, "final")
 
     return render_template(
         "preview_finals.html",
@@ -455,7 +447,7 @@ def preview_quarter():
         courses = []
     else:
         try:
-            courses = course_reg.schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
+            courses = schedule_methods.get_short_courses(session["temp_courses"] + session["user_courses"])
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
@@ -519,7 +511,7 @@ def drop_course(code):
                     break
 
         try:
-            error = course_reg.register_methods.drop_course(session["user_id"], code)
+            error = register_methods.drop_course(session["user_id"], code)
         except sqlite3.Error as e:
             flash(error, "error")
             return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
@@ -537,7 +529,7 @@ def wait_course(code):
     else:
         if code not in session["user_waitlist"]:
             try:
-                error = course_reg.register_methods.waitlist_course(session["user_id"], code)
+                error = register_methods.waitlist_course(session["user_id"], code)
             except sqlite3.Error as e:
                 flash(str(e), "error")
                 return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
@@ -564,7 +556,7 @@ def drop_wait(code):
     else:
         if code in session["user_waitlist"]:
             try:
-                error = course_reg.register_methods.drop_waitlist(session["user_id"], code)
+                error = register_methods.drop_waitlist(session["user_id"], code)
             except sqlite3.Error as e:
                 flash(str(e), "error")
                 return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
@@ -609,14 +601,19 @@ def cancel_select():
 def confirm_schedule():
     session["old_courses"] = session["user_courses"]
     try:
-        session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
+        session["unreged_courses"] = register_methods.register_courses(session["user_id"], session["temp_courses"])
     except sqlite3.Error as e:
         session["unreged_courses"] = str(e)
 
     try:
-        session["user_courses"] = course_reg.schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+        session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
+    
+    # if session["old_courses"] != session["user_courses"]:
+    #     # TODO: Save new metrics to database
+    #     workload = logic.total_hours_per_week(session["user_courses"])
+    session["old_courses"] = []
 
     session["temp_courses"] = []
     session["load_bearing"] = False
