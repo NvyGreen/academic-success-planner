@@ -491,6 +491,7 @@ def analytics_page():
             workload_classification = logic.classify_workload(workload_hours)
             burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
             impact_classification = logic.classify_academic_impact(academic_impact)
+            recommendation = logic.generate_recommendation(workload_hours, burnout_risk, academic_impact)
 
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
             latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
@@ -506,6 +507,7 @@ def analytics_page():
         workload_classification = "Light"
         burnout_estimation = "Low"
         impact_classification = "Low"
+        recommendation = "-"
 
         latest_activity = "-"
 
@@ -520,6 +522,7 @@ def analytics_page():
         academic_impact=academic_impact,
         impact_classification=impact_classification,
         recommendation_count=recommendation_count,
+        recommendation=recommendation,
         latest_activity=latest_activity
     )
 
