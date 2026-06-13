@@ -137,33 +137,33 @@ def generate_burnout_explanation(factors):
     explanations = []
 
     if factors["num_courses"] == 0:
-        explanations.append("You're not taking any classes at all! Add some courses to your schedule to get a proper recommendation.")
+        explanations.append("No courses added.")
         return explanations
 
-    if factors["num_courses"] == 4:
-        explanations.append(f"You're taking {AVG_COURSES} courses, which is the average amount of courses a UCI student takes, but you should still pace yourself.")
-    elif factors["num_courses"] > 4:
-        explanations.append(f"You're taking {factors["num_courses"]} courses, which is more than what the average UCI student takes. Make sure to pace yourself, and consider taking out some classes if you think it might be too much.")
+    if factors["num_courses"] == AVG_COURSES:
+        explanations.append(f"Pace yourself!")
+    elif factors["num_courses"] > AVG_COURSES:
+        explanations.append(f"Drop a course.")
     else:
-        explanations.append(f"You're taking {factors["num_courses"]} courses, which is less than what the average UCI student takes. Consider adding some more courses")
+        explanations.append(f"Add a course!")
     
     if factors["workload"] == "Overloaded":
-        explanations.append("Your schedule is overloaded! It's best to take out some of your more difficult courses.")
+        explanations.append("Drop some hard courses.")
     elif factors["workload"] == "Heavy":
-        explanations.append("Your schedule looks heavy, so consider taking out some of your more difficult courses.")
+        explanations.append("Drop a hard course.")
     elif factors["workload"] == "Balanced":
-        explanations.append("Your schedule looks pretty balanced, but make sure to pace yourself!")
+        explanations.append("Pace yourself!")
     else:
-        explanations.append("Your schedule looks pretty light, consider adding some more difficult courses.")
+        explanations.append("Add a hard course!")
     
     if (factors["num_difficult"] / factors["num_courses"]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
-        explanations.append("You're only taking hard courses! It's best to replace a few with easier courses.")
+        explanations.append("Swap in some easier courses.")
     elif (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
-        explanations.append("You're taking a lot of hard courses, consider taking out one.")
+        explanations.append("Swap in an easier course.")
     elif (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_MEDIUM_THRESHOLD:
-        explanations.append("At least half of your schedule is hard courses, make sure to pace yourself!")
+        explanations.append("Pace yourself!")
     else:
-        explanations.append("It looks like you aren't taking a lot of difficult courses, consider adding another!")
+        explanations.append("Swap in a harder course!")
 
     return explanations
 
@@ -202,13 +202,13 @@ def classify_academic_impact(score):
 
 def generate_impact_explanation(desc):
     if desc == "Low":
-        return "You probably got this score because you aren't taking a lot of classes, or you're taking easier classes. If your workload is rated as light and your burnout risk is low, consider taking some harder classes. As of right now though, this schedule shouldn't negatively impact your GPA."
+        return "Few/Easy courses"
     elif desc == "Medium":
-        return "You probably got this score because you have a good mix of easier and challenging classes. If your workload is rated as balanced and your burnout risk is medium, you have a good schedule to make the most of this term! As long as you put effort into studying, your GPA will be fine."
+        return "Good balance"
     elif desc == "High":
-        return "You probably got this score because you're taking quite a few hard classes, or you're taking a lot of units in general. If your workload is rated as heavy but your burnout score is medium, you should be able to maintain or improve your GPA as long as you maintain good discipline. If your burnout score is high, however, you might want to replace some of your courses with easier ones, so your GPA isn't negatively impacted."
+        return "Hard/Lots of courses"
     else:
-        return "You probably got this score because you're taking a ton of difficult classes. If your workload is rated as overloaded and your burnout score is high, you should take less units or swap out some challenging classes for easier ones. As of right now, this schedule is highly likely to negatively affect your GPA."
+        return "Lots of hard courses"
 
 
 # Recommendation generation
@@ -216,24 +216,24 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
     # Overloaded
     if workload_score > WORKLOAD_HEAVY_THRESHOLD or burnout_score >= BURNOUT_HIGH_THRESHOLD or academic_impact >= IMPACT_VHIGH_THRESHOLD:
         if workload_score > WORKLOAD_HEAVY_THRESHOLD:
-            return "Overall, this is a very overloaded schedule. Consider dropping some of your courses."
+            return "Drop some courses."
         elif burnout_score >= BURNOUT_HIGH_THRESHOLD:
-            return "Overall, this is a very overloaded schedule. Consider swapping out some of your harder courses for easier ones."
+            return "Swap out some hard courses."
         else:
-            return "Overall, this is a very overloaded schedule. Consider dropping some of your courses or swapping them for easier ones."
+            return "Drop or swap some courses."
     
     # Heavy
     if (workload_score > WORKLOAD_BALANCED_THRESHOLD and burnout_score >= BURNOUT_MEDIUM_THRESHOLD) or (workload_score > WORKLOAD_BALANCED_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD) or (burnout_score >= BURNOUT_MEDIUM_THRESHOLD and academic_impact >= IMPACT_HIGH_THRESHOLD):
         if workload_score > WORKLOAD_BALANCED_THRESHOLD:
-            return "Overall, this is a pretty heavy schedule. Consider dropping a course."
+            return "Drop a course."
         elif burnout_score >= BURNOUT_MED_HIGH_THRESHOLD:
-            return "Overall, this is a pretty heavy schedule. Consider swapping out a harder course for an easier one."
+            return "Swap out a hard course."
         else:
-            return "Overall, this is a pretty heavy schedule. Consider dropping a course or swapping it out for an easier one."
+            return "Drop or swap a hard course."
 
     # Balanced
     if workload_score > WORKLOAD_LIGHT_THRESHOLD or academic_impact >= IMPACT_MEDIUM_THRESHOLD:
-        return "Overall, this seems like a very manageable schedule. Make sure to stay on top of your classes and pace yourself."
+        return "Pace yourself!"
 
     # Light
-    return "Overall, this seems like a pretty light schedule. Consider adding another course, or swapping out one of your courses for a harder one."
+    return "Add or swap in a hard course!"
