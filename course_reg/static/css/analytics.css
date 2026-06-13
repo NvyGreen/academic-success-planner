@@ -22,6 +22,16 @@
     --color-gray-bg: #eef0f4;
     --color-gray-text: #6b7280;
 
+    /* Severity scale: used for workload, burnout, and academic impact classifications */
+    --color-severity-low: #1a6e30;
+    --color-severity-low-bg: #d4edda;
+    --color-severity-medium: #1154ad;
+    --color-severity-medium-bg: #dce8f8;
+    --color-severity-high: #856404;
+    --color-severity-high-bg: #fff3cd;
+    --color-severity-vhigh: #842029;
+    --color-severity-vhigh-bg: #f8d7da;
+
     --radius: 14px;
     --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
 }
@@ -82,6 +92,20 @@
 .insight-card__icon--green { background: var(--color-green-bg); color: var(--color-green); }
 .insight-card__icon--purple { background: var(--color-purple-bg); color: var(--color-purple); }
 
+/* Workload classification: Light / Balanced / Heavy / Overloaded */
+.insight-card__icon--light { background: var(--color-severity-low-bg); color: var(--color-severity-low); }
+.insight-card__icon--balanced { background: var(--color-severity-medium-bg); color: var(--color-severity-medium); }
+.insight-card__icon--heavy { background: var(--color-severity-high-bg); color: var(--color-severity-high); }
+.insight-card__icon--overloaded { background: var(--color-severity-vhigh-bg); color: var(--color-severity-vhigh); }
+
+/* Burnout classification: Low / Medium / High */
+.insight-card__icon--low { background: var(--color-severity-low-bg); color: var(--color-severity-low); }
+.insight-card__icon--medium { background: var(--color-severity-medium-bg); color: var(--color-severity-medium); }
+.insight-card__icon--high { background: var(--color-severity-high-bg); color: var(--color-severity-high); }
+
+/* Academic impact classification: Low / Medium / High / Very High */
+.insight-card__icon--very-high { background: var(--color-severity-vhigh-bg); color: var(--color-severity-vhigh); }
+
 .insight-card__label {
     font-size: 13px;
     font-weight: 600;
@@ -99,6 +123,18 @@
     color: var(--color-purple);
     font-size: 16px;
 }
+
+/* Workload classification */
+.insight-card__value--light { color: var(--color-severity-low); }
+.insight-card__value--balanced { color: var(--color-severity-medium); }
+.insight-card__value--heavy { color: var(--color-severity-high); }
+.insight-card__value--overloaded { color: var(--color-severity-vhigh); }
+
+/* Burnout / Impact classification */
+.insight-card__value--low { color: var(--color-severity-low); }
+.insight-card__value--medium { color: var(--color-severity-medium); }
+.insight-card__value--high { color: var(--color-severity-high); }
+.insight-card__value--very-high { color: var(--color-severity-vhigh); }
 
 .insight-card__note {
     font-size: 12px;
@@ -121,6 +157,18 @@
 .badge--yellow { background: var(--color-yellow-bg); color: var(--color-yellow-text); }
 .badge--gray { background: var(--color-gray-bg); color: var(--color-gray-text); }
 
+/* Workload classification badges */
+.badge--light { background: var(--color-severity-low-bg); color: var(--color-severity-low); }
+.badge--balanced { background: var(--color-severity-medium-bg); color: var(--color-severity-medium); }
+.badge--heavy { background: var(--color-severity-high-bg); color: var(--color-severity-high); }
+.badge--overloaded { background: var(--color-severity-vhigh-bg); color: var(--color-severity-vhigh); }
+
+/* Burnout / Impact classification badges */
+.badge--low { background: var(--color-severity-low-bg); color: var(--color-severity-low); }
+.badge--medium { background: var(--color-severity-medium-bg); color: var(--color-severity-medium); }
+.badge--high { background: var(--color-severity-high-bg); color: var(--color-severity-high); }
+.badge--very-high { background: var(--color-severity-vhigh-bg); color: var(--color-severity-vhigh); }
+
 /* ---- Progress bars ------------------------------------------------- */
 
 .progress-bar {
@@ -139,6 +187,12 @@
 
 .progress-bar__fill--orange { background: var(--color-orange); }
 .progress-bar__fill--green { background: var(--color-green); }
+
+/* Burnout / Impact classification fills */
+.progress-bar__fill--low { background: var(--color-severity-low); }
+.progress-bar__fill--medium { background: var(--color-severity-medium); }
+.progress-bar__fill--high { background: var(--color-severity-high); }
+.progress-bar__fill--very-high { background: var(--color-severity-vhigh); }
 
 /* ---- Buttons ---------------------------------------------------------- */
 

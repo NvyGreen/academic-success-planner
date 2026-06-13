@@ -481,9 +481,31 @@ def preview_quarter():
 @pages.route("/analytics")
 @login_required
 def analytics_page():
+    try:
+        metrics = analytics.get_metrics(session["user_id"])
+        num_schedules = metrics[0]
+        latest = metrics[1][-1]
+
+        workload_hours = latest["workload_score"]
+        burnout_risk = latest["burnout_score"]
+        academic_impact = round(latest["impact_score"], 2)
+
+        workload_classification = logic.classify_workload(logic.calculate_workload(session["user_courses"], session["user_id"]))
+        burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
+        impact_classification = logic.classify_academic_impact(academic_impact)
+    except sqlite3.Error as e:
+        flash(str(e), "error")
+
     return render_template(
         "analytics.html",
-        title="Analytics"
+        title="Analytics",
+        num_schedules=num_schedules,
+        workload_hours=workload_hours,
+        workload_classification=workload_classification,
+        burnout_risk=burnout_risk,
+        burnout_estimation=burnout_estimation,
+        academic_impact=academic_impact,
+        impact_classification=impact_classification
     )
 
 

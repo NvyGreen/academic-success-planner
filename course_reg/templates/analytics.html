@@ -15,30 +15,30 @@
     <div class="insight-cards">
 
         <div class="insight-card">
-            <div class="insight-card__icon insight-card__icon--blue">⏱</div>
+            <div class="insight-card__icon insight-card__icon--{{ workload_classification|lower }}">⏱</div>
             <div class="insight-card__label">Workload</div>
-            <div class="insight-card__value">31 hrs/week</div>
-            <span class="badge badge--blue">Heavy</span>
-            <div class="insight-card__note">Recommended: 12-28 hrs</div>
+            <div class="insight-card__value insight-card__value--{{ workload_classification|lower }}">{{ workload_hours }} hrs/week</div>
+            <span class="badge badge--{{ workload_classification|lower }}">{{ workload_classification }}</span>
+            <div class="insight-card__note">Recommended: 15-25 hrs</div>
         </div>
 
         <div class="insight-card">
-            <div class="insight-card__icon insight-card__icon--orange">🔥</div>
+            <div class="insight-card__icon insight-card__icon--{{ burnout_estimation|lower }}">🔥</div>
             <div class="insight-card__label">Burnout Risk</div>
-            <div class="insight-card__value insight-card__value--orange">High</div>
-            <div class="insight-card__note">Score: 0.72 / 1.00</div>
+            <div class="insight-card__value insight-card__value--{{ burnout_estimation|lower }}">{{ burnout_estimation }}</div>
+            <div class="insight-card__note">Score: {{ burnout_risk }} / 5</div>
             <div class="progress-bar">
-                <div class="progress-bar__fill progress-bar__fill--orange" style="width: 72%"></div>
+                <div class="progress-bar__fill progress-bar__fill--{{ burnout_estimation|lower }}" style="width: {{ (burnout_risk / 5 * 100)|round|int }}%"></div>
             </div>
         </div>
 
         <div class="insight-card">
-            <div class="insight-card__icon insight-card__icon--green">📊</div>
+            <div class="insight-card__icon insight-card__icon--{{ impact_classification|lower|replace(' ', '-') }}">📊</div>
             <div class="insight-card__label">Academic Impact</div>
-            <div class="insight-card__value insight-card__value--green">Moderate</div>
-            <div class="insight-card__note">Impact Score: -0.15</div>
+            <div class="insight-card__value insight-card__value--{{ impact_classification|lower|replace(' ', '-') }}">{{ impact_classification }}</div>
+            <div class="insight-card__note">Impact Score: {{ academic_impact }}</div>
             <div class="progress-bar">
-                <div class="progress-bar__fill progress-bar__fill--green" style="width: 50%"></div>
+                <div class="progress-bar__fill progress-bar__fill--{{ impact_classification|lower|replace(' ', '-') }}" style="width: {{ (academic_impact / 1.4 * 100)|round|int }}%"></div>
             </div>
         </div>
 
@@ -103,9 +103,9 @@
             <div class="activity-stats">
                 <div class="activity-stat">
                     <div class="activity-stat__icon">📅</div>
-                    <div class="activity-stat__value">12</div>
-                    <div class="activity-stat__label">Schedules Evaluated</div>
-                    <div class="activity-stat__sublabel">This semester</div>
+                    <div class="activity-stat__value">{{ num_schedules }}</div>
+                    <div class="activity-stat__label">Schedule(s) Evaluated</div>
+                    <div class="activity-stat__sublabel">This quarter</div>
                 </div>
                 <div class="activity-stat">
                     <div class="activity-stat__icon">💡</div>
@@ -114,7 +114,7 @@
                 </div>
                 <div class="activity-stat">
                     <div class="activity-stat__icon">⇄</div>
-                    <div class="activity-stat__value">5</div>
+                    <div class="activity-stat__value">0</div>
                     <div class="activity-stat__label">Recommendations Applied/Accepted</div>
                 </div>
                 <div class="activity-stat">
