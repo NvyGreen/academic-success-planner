@@ -27,44 +27,6 @@ AVG_COURSES = 4
 
 
 # Workload Estimation
-
-def calculate_workload(courses, user_id):
-    cursor = None
-    try:
-        db = get_db()
-        query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
-        cursor = db.execute(query, {"student_id": user_id})
-        gpa = cursor.fetchone()[0]
-        cursor.close()
-
-        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
-        query = f"SELECT difficulty_score, estimated_hours_per_week, credits FROM course WHERE course_code IN ({placeholders})"
-        values = {f"code_{i}": code for i, code in enumerate(courses)}
-        cursor = db.execute(query, values)
-        workload_data = cursor.fetchall()
-    except sqlite3.Error as e:
-        current_app.logger.error(f"Database error: {e}")
-        raise sqlite3.Error("Error: Could not calculate workload")
-    finally:
-        if cursor is not None:
-            cursor.close()
-
-    workload_score = 0
-    total_credits = 0
-
-    for datum in workload_data:
-        total_credits += datum["credits"]
-        workload_score += datum["difficulty_score"] * datum["estimated_hours_per_week"] * 2 * datum["credits"]    # The * 2 weights estimated hours per week a little more
-    
-    if gpa is not None and gpa != 0.0:
-        workload_score /= total_credits + gpa
-    elif total_credits != 0:
-        workload_score /= total_credits
-    else:
-        workload_score = 0.0
-    
-    return workload_score
-
 def classify_workload(final_score):
     if final_score <= WORKLOAD_LIGHT_THRESHOLD:
         return "Light"
@@ -138,7 +100,7 @@ def calculate_burnout_risk(courses, user_id):
     
     factors["num_courses"] = num_courses
     
-    workload = calculate_workload(courses, user_id)
+    workload = total_hours_per_week(courses)
     if isinstance(workload, str):
         return "Error: Could not calculate workload"
     elif workload > WORKLOAD_HEAVY_THRESHOLD:

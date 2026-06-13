@@ -128,21 +128,6 @@ def user_courses():
         else:
             calendar = schedule_methods.create_calendar(courses, "courses")
 
-        try:
-            workload_score = logic.calculate_workload(session["user_courses"], session["user_id"])
-        except sqlite3.Error as e:
-            flash(str(e), "error")
-            workload_score = "-"
-            classification = "-"            
-        else:
-            classification = logic.classify_workload(workload_score)
-
-        try:
-            avg_hours = logic.total_hours_per_week(session["user_courses"])
-        except sqlite3.Error as e:
-            flash(str(e), "error")
-            avg_hours = "-"
-
     if isinstance(session["unreged_courses"], str):
         flash("All courses successfully registered", "success")
     else:
@@ -155,9 +140,6 @@ def user_courses():
         title="My Courses",
         courses=courses,
         calendar=calendar,
-        workload_score=workload_score,
-        classification=classification,
-        avg_hours=avg_hours
     )
 
 
@@ -506,7 +488,7 @@ def analytics_page():
             academic_impact = round(latest["impact_score"], 2)
             recommendation_count = latest["recommendations"]
 
-            workload_classification = logic.classify_workload(logic.calculate_workload(session["user_courses"], session["user_id"]))
+            workload_classification = logic.classify_workload(workload_hours)
             burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
             impact_classification = logic.classify_academic_impact(academic_impact)
 
@@ -529,7 +511,7 @@ def analytics_page():
 
     return render_template(
         "analytics.html",
-        title="Analytics",
+        title="Schedule Insights",
         num_schedules=num_schedules,
         workload_hours=workload_hours,
         workload_classification=workload_classification,
