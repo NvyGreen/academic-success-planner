@@ -9,7 +9,7 @@ def save_metrics(student_id, workload_score, burnout_score, impact_score, recomm
     cursor = None
     try:
         db = get_db()
-        query = """INSERT INTO metric (student_id, workload_score, burnout_score, impact_score, recommendations, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :impact_score, :timestamp);"""
+        query = """INSERT INTO metric (student_id, workload_score, burnout_score, impact_score, recommendations, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :impact_score, :recommendations, :timestamp);"""
         cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "impact_score": impact_score, "recommendations": recommendation_count, "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
     except sqlite3.Error as e:

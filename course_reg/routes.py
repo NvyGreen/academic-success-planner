@@ -623,15 +623,14 @@ def confirm_schedule():
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
     
-    # if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
-    #     try:
-    #         workload = logic.total_hours_per_week(session["user_courses"])
-    #         burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
-    #         impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
-    #         recommendation_count = -1
-    #         analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
-    #     except sqlite3.Error as e:
-    #         session["old_courses"] = str(e)
+    if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
+        try:
+            workload = logic.total_hours_per_week(session["user_courses"])
+            burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
+            impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
+            analytics.save_metrics(session["user_id"], workload, burnout, impact, 1)
+        except sqlite3.Error as e:
+            session["old_courses"] = str(e)
 
     session["temp_courses"] = []
     session["load_bearing"] = False
