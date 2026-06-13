@@ -1,5 +1,6 @@
 import functools
 from datetime import datetime
+import json
 from urllib.parse import urlparse, urljoin
 import sqlite3
 from passlib.hash import pbkdf2_sha256
@@ -510,7 +511,7 @@ def analytics_page():
             impact_classification = logic.classify_academic_impact(academic_impact)
 
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
-            latest_activity = f"{latest_timestamp.strftime('%B')} {latest_timestamp.day}, {latest_timestamp.year}"
+            latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
     except sqlite3.Error as e:
         flash(str(e), "error")
         num_schedules = "-"
@@ -550,16 +551,25 @@ def analytics_history():
         workloads = analytics.get_all_workloads(session["user_id"])
         burnout_scores = analytics.get_all_burnout_scores(session["user_id"])
         impact_scores = analytics.get_all_impact_scores(session["user_id"])
+        dates = analytics.get_all_dates(session["user_id"])
     except sqlite3.Error as e:
         flash(str(e), "error")
         num_schedules = "-"
         num_recommendations = "-"
+        workloads = []
+        burnout_scores = []
+        impact_scores = []
+        dates = []
 
     return render_template(
         "analytics_history.html",
         title="Activity History",
         num_schedules=num_schedules,
-        num_recommendations=num_recommendations
+        num_recommendations=num_recommendations,
+        workloads=json.dumps(workloads),
+        burnout_scores=json.dumps(burnout_scores),
+        impact_scores=json.dumps(impact_scores),
+        dates=json.dumps(dates)
     )
 
 

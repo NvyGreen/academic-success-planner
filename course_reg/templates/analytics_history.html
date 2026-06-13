@@ -3,6 +3,7 @@
 {% block head_content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/activity.css') }}" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 {% endblock %}
 
 {% block main_content %}
@@ -69,7 +70,9 @@
                 <span class="legend-item"><span class="legend-dot legend-dot--orange"></span> Burnout Risk (0-5)</span>
                 <span class="legend-item"><span class="legend-dot legend-dot--green"></span> Academic Impact (0 to 2)</span>
             </div>
-            <div class="chart-placeholder" id="progress-chart"></div>
+            <div style="position: relative; height: 180px;">
+                <canvas id="progress-chart"></canvas>
+            </div>
             <p class="chart-note">Lower workload and burnout risk are better. Higher academic impact is better.</p>
         </div>
 
@@ -207,4 +210,71 @@
     </div>
 
 </div>
+
+<script>
+// @ts-nocheck
+(function () {
+    const workloads     = {{ workloads | safe }};
+    const burnoutScores = {{ burnout_scores | safe }};
+    const impactScores  = {{ impact_scores | safe }};
+
+    const labels = {{ dates | safe }};
+
+    const ctx = document.getElementById('progress-chart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Workload (hrs/week)',
+                    data: workloads,
+                    borderColor: '#4d6bfe',
+                    backgroundColor: 'transparent',
+                    pointBackgroundColor: '#4d6bfe',
+                    tension: workloads.length > 1 ? 0.3 : 0,  // no curve for single points
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Burnout Risk (0–5)',
+                    data: burnoutScores,
+                    borderColor: '#f5871f',
+                    backgroundColor: 'transparent',
+                    pointBackgroundColor: '#f5871f',
+                    tension: burnoutScores.length > 1 ? 0.3 : 0,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Academic Impact (0 to 2)',
+                    data: impactScores,
+                    borderColor: '#1e9e5c',
+                    backgroundColor: 'transparent',
+                    pointBackgroundColor: '#1e9e5c',
+                    tension: impactScores.length > 1 ? 0.3 : 0,
+                    yAxisID: 'y',
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,   // prevents resize loop
+            plugins: {
+                legend: { display: false },
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 }, color: '#6b7280' },
+                },
+                y: {
+                    grid: { color: '#e6e9f2' },
+                    ticks: { font: { size: 11 }, color: '#6b7280' },
+                },
+            },
+        },
+    });
+})();
+</script>
 {% endblock %}

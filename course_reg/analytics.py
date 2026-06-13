@@ -159,3 +159,24 @@ def get_all_impact_scores(student_id):
     finally:
         if cursor is not None:
             cursor.close()
+
+def get_all_dates(student_id):
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp;"""
+        cursor = db.execute(query, {"student_id": student_id})
+        timestamps_raw = cursor.fetchall()
+
+        dates = []
+        for timestamp in timestamps_raw:
+            date = datetime.fromisoformat(timestamp[0])
+            dates.append(f"{date.strftime('%b')} {date.day}")
+
+        return dates
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch impact scores")
+    finally:
+        if cursor is not None:
+            cursor.close()
