@@ -47,6 +47,22 @@ def safe_redirect(target, fallback = "/"):
     return redirect(fallback)
 
 
+@pages.before_request
+def check_dirty_metrics():
+    if session.get("metrics_dirty") and session.get("user_id"):
+        if not isinstance(session.get("user_courses"), str):
+            try:
+                workload = logic.total_hours_per_week(session["user_courses"])
+                burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
+                impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
+                recommendation_count = session.pop("pending_recommendation_count", 0)
+                analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
+            except sqlite3.Error as e:
+                current_app.logger.error(f"Database error: {e}")
+
+        session["metrics_dirty"] = False
+
+
 @pages.route("/")
 @login_required
 def index():
@@ -151,10 +167,6 @@ def user_finals():
             flash(str(e), "error")
             courses = []
             calendar = [[]]
-        # if isinstance(courses, str):
-        #     flash(e, "error")
-        #     courses = []
-        #     calendar = [[]]
         else:
             calendar = schedule_methods.create_calendar(courses, "final")
 
@@ -430,9 +442,6 @@ def preview_finals():
         except sqlite3.Error as e:
             flash(str(e), "error")
             courses = []
-        # if isinstance(courses, str):
-        #     flash(courses, "error")
-        #     courses = []
         calendar = schedule_methods.create_calendar(courses, "final")
 
     return render_template(
@@ -529,6 +538,7 @@ def drop_course(code):
             flash(error, "error")
             return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
+        session["metrics_dirty"] = True
         session.modified = True
 
     return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
@@ -612,7 +622,7 @@ def cancel_select():
 @pages.get("/confirm-schedule")
 @login_required
 def confirm_schedule():
-    # session["old_courses"] = session["user_courses"]
+    session["old_courses"] = session["user_courses"]
     try:
         session["unreged_courses"] = register_methods.register_courses(session["user_id"], session["temp_courses"])
     except sqlite3.Error as e:
@@ -622,15 +632,10 @@ def confirm_schedule():
         session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
-    
+
     if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
-        try:
-            workload = logic.total_hours_per_week(session["user_courses"])
-            burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
-            impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
-            analytics.save_metrics(session["user_id"], workload, burnout, impact, 1)
-        except sqlite3.Error as e:
-            session["old_courses"] = str(e)
+        session["metrics_dirty"] = True
+        session["pending_recommendation_count"] = 1
 
     session["temp_courses"] = []
     session["load_bearing"] = False
