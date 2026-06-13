@@ -1,4 +1,5 @@
 import functools
+from datetime import datetime
 from urllib.parse import urlparse, urljoin
 import sqlite3
 from passlib.hash import pbkdf2_sha256
@@ -489,12 +490,27 @@ def analytics_page():
         workload_hours = latest["workload_score"]
         burnout_risk = latest["burnout_score"]
         academic_impact = round(latest["impact_score"], 2)
+        recommendation_count = latest["recommendations"]
 
         workload_classification = logic.classify_workload(logic.calculate_workload(session["user_courses"], session["user_id"]))
         burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
         impact_classification = logic.classify_academic_impact(academic_impact)
+
+        latest_timestamp = datetime.fromisoformat(latest["timestamp"])
+        latest_activity = f"{latest_timestamp.strftime('%B')} {latest_timestamp.day}, {latest_timestamp.year}"
     except sqlite3.Error as e:
         flash(str(e), "error")
+
+        workload_hours = "-"
+        burnout_risk = "-"
+        academic_impact = "-"
+        recommendation_count = "-"
+
+        workload_classification = "Light"
+        burnout_estimation = "Low"
+        impact_classification = "Low"
+
+        latest_activity = "-"
 
     return render_template(
         "analytics.html",
@@ -505,7 +521,9 @@ def analytics_page():
         burnout_risk=burnout_risk,
         burnout_estimation=burnout_estimation,
         academic_impact=academic_impact,
-        impact_classification=impact_classification
+        impact_classification=impact_classification,
+        recommendation_count=recommendation_count,
+        latest_activity=latest_activity
     )
 
 

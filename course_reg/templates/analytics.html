@@ -38,7 +38,7 @@
             <div class="insight-card__value insight-card__value--{{ impact_classification|lower|replace(' ', '-') }}">{{ impact_classification }}</div>
             <div class="insight-card__note">Impact Score: {{ academic_impact }}</div>
             <div class="progress-bar">
-                <div class="progress-bar__fill progress-bar__fill--{{ impact_classification|lower|replace(' ', '-') }}" style="width: {{ (academic_impact / 1.4 * 100)|round|int }}%"></div>
+                <div class="progress-bar__fill progress-bar__fill--{{ impact_classification|lower|replace(' ', '-') }}" style="width: {{ (academic_impact / 2.0 * 100)|round|int }}%"></div>
             </div>
         </div>
 
@@ -109,17 +109,17 @@
                 </div>
                 <div class="activity-stat">
                     <div class="activity-stat__icon">💡</div>
-                    <div class="activity-stat__value">8</div>
-                    <div class="activity-stat__label">Recommendations Generated</div>
+                    <div class="activity-stat__value">{{ recommendation_count }}</div>
+                    <div class="activity-stat__label">Recommendation(s) Generated</div>
                 </div>
                 <div class="activity-stat">
                     <div class="activity-stat__icon">⇄</div>
                     <div class="activity-stat__value">0</div>
-                    <div class="activity-stat__label">Recommendations Applied/Accepted</div>
+                    <div class="activity-stat__label">Recommendation(s) Applied/Accepted</div>
                 </div>
                 <div class="activity-stat">
                     <div class="activity-stat__icon">🕐</div>
-                    <div class="activity-stat__value">Jun 15, 2026</div>
+                    <div class="activity-stat__value">{{ latest_activity }}</div>
                     <div class="activity-stat__label">Last Activity</div>
                 </div>
             </div>
