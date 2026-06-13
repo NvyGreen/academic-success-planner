@@ -84,6 +84,7 @@ def init_db(db):
             "workload_score" REAL,
             "burnout_score" REAL,
             "impact_score" REAL,
+            "recommendation" INTEGER,
             "timestamp" TEXT,
             PRIMARY KEY("metric_id"),
             FOREIGN KEY("student_id") REFERENCES "student"("student_id")

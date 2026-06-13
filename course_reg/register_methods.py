@@ -80,10 +80,10 @@ def register_courses(user_id, course_codes):
 
                 db.commit()
             except sqlite3.Error as e:
+                db.rollback()
                 current_app.logger.error(f"Database error: {e}")
                 raise sqlite3.Error("Error: Could not register for courses")
             finally:
-                db.rollback()
                 cursor.close()
     
     if len(unreged_courses) == 0:
@@ -174,10 +174,10 @@ def drop_course(user_id, course_code):
 
         db.commit()
     except sqlite3.Error as e:
+        db.rollback()
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not drop course")
     finally:
-        db.rollback()
         if cursor is not None:
             cursor.close()
 
@@ -210,10 +210,10 @@ def waitlist_course(user_id, course_code):
 
         db.commit()
     except sqlite3.Error as e:
+        db.rollback()
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not waitlist course")
     finally:
-        db.rollback()
         if cursor is not None:
             cursor.close()
 
@@ -251,10 +251,10 @@ def drop_waitlist(user_id, course_code):
 
         db.commit()
     except sqlite3.Error as e:
+        db.rollback()
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not drop course from waitlist")
     finally:
-        db.rollback()
         if cursor is not None:
             cursor.close()
 
@@ -319,8 +319,8 @@ def enroll_from_waitlist():
 
                 db.commit()
             except sqlite3.Error as e:
+                db.rollback()
                 current_app.logger.error(f"Database error: {e}")
                 raise sqlite3.Error("Error: could not enroll in course from waitlist")
             finally:
-                db.rollback()
                 cursor.close()

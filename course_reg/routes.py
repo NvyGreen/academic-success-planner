@@ -15,7 +15,7 @@ from flask import (
 from course_reg.db import get_db
 from course_reg.forms import LoginForm, FilterForm, AdvancedFilterForm
 from course_reg.models import Filters, AdvancedFilters
-from course_reg import filter_methods, schedule_methods, register_methods, logic, analytics
+from course_reg import analytics, filter_methods, schedule_methods, register_methods, logic
 
 
 pages = Blueprint(
@@ -83,6 +83,10 @@ def index():
 @pages.route("/courses")
 @login_required
 def user_courses():
+    if isinstance(session["old_courses"], str):
+        flash(session["old_courses"], "error")
+    session["old_courses"] = []
+
     if isinstance(session["user_courses"], str):
         flash(session["user_courses"], "error")
         courses = []
@@ -461,7 +465,7 @@ def preview_quarter():
 
 @pages.route("/analytics")
 @login_required
-def analytics():
+def analytics_page():
     return render_template(
         "analytics.html",
         title="Course Registration - Analytics"
@@ -610,10 +614,15 @@ def confirm_schedule():
     except sqlite3.Error as e:
         session["user_courses"] = str(e)
     
-    # if session["old_courses"] != session["user_courses"]:
-    #     # TODO: Save new metrics to database
-    #     workload = logic.total_hours_per_week(session["user_courses"])
-    session["old_courses"] = []
+    if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
+        try:
+            workload = logic.total_hours_per_week(session["user_courses"])
+            burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
+            impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
+            recommendation_count = -1
+            analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
+        except sqlite3.Error as e:
+            session["old_courses"] = str(e)
 
     session["temp_courses"] = []
     session["load_bearing"] = False
