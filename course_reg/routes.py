@@ -467,6 +467,14 @@ def preview_quarter():
     )
 
 
+@pages.route("/analytics")
+@login_required
+def analytics():
+    return render_template(
+        "analytics.html",
+        title="Course Registration - Analytics"
+    )
+
 
 @pages.post("/add-course/<int:code>")
 @login_required

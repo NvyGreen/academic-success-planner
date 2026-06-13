@@ -20,6 +20,10 @@
                class="nav__link {% if request.endpoint == 'pages.user_waitlists' %}nav__link--active{% endif %}">
                 My Waitlist
             </a>
+            <a href="{{ url_for('pages.analytics') }}"
+               class="nav__link {% if request.endpoint == 'pages.analytics' %}nav__link--active{% endif %}">
+                Analytics
+            </a>
         </nav>
 
         <div class="nav__profile">
