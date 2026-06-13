@@ -70,6 +70,7 @@ def index():
         session["user_waitlist"] = str(e)
 
     session["temp_courses"] = []
+    session["old_courses"] = []
     session["load_bearing"] = False
     session["cancel"] = False
     
@@ -116,6 +117,11 @@ def user_courses():
         except sqlite3.Error as e:
             flash(str(e), "error")
             avg_hours = "-"
+        
+        if session["old_courses"] != session["user_courses"] and isinstance(workload_score, float):
+            # TODO: Save new metrics to database
+            pass
+        session["old_courses"] = []
 
     if isinstance(session["unreged_courses"], str):
         flash("All courses successfully registered", "success")
@@ -593,6 +599,7 @@ def cancel_select():
 @pages.get("/confirm-schedule")
 @login_required
 def confirm_schedule():
+    session["old_courses"] = session["user_courses"]
     try:
         session["unreged_courses"] = course_reg.register_methods.register_courses(session["user_id"], session["temp_courses"])
     except sqlite3.Error as e:

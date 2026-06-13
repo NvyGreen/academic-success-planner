@@ -81,8 +81,9 @@ def init_db(db):
         CREATE TABLE IF NOT EXISTS "metric" (
             "metric_id" INTEGER,
             "student_id" INTEGER,
-            "type" TEXT,
-            "score" REAL,
+            "workload_score" REAL,
+            "burnout_score" REAL,
+            "impact_score" REAL,
             "timestamp" TEXT,
             PRIMARY KEY("metric_id"),
             FOREIGN KEY("student_id") REFERENCES "student"("student_id")
