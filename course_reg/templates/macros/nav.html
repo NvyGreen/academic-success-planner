@@ -21,7 +21,7 @@
                 My Waitlist
             </a>
             <a href="{{ url_for('pages.analytics_page') }}"
-               class="nav__link {% if request.endpoint == 'pages.analytics_page' %}nav__link--active{% endif %}">
+               class="nav__link {% if request.endpoint == 'pages.analytics_page' or request.endpoint == 'pages.analytics_history' %}nav__link--active{% endif %}">
                 Analytics
             </a>
         </nav>

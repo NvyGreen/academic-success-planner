@@ -545,16 +545,18 @@ def analytics_page():
 @login_required
 def analytics_history():
     try:
-        metrics = analytics.get_metrics(session["user_id"])
         num_schedules = analytics.get_num_scheudles(session["user_id"])
+        num_recommendations = analytics.get_all_recommendations_count(session["user_id"])
     except sqlite3.Error as e:
         flash(str(e), "error")
         num_schedules = "-"
+        num_recommendations = "-"
 
     return render_template(
         "analytics_history.html",
         title="Activity History",
-        num_schedules=num_schedules
+        num_schedules=num_schedules,
+        num_recommendations=num_recommendations
     )
 
 
