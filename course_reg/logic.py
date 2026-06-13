@@ -71,7 +71,7 @@ def total_hours_per_week(courses):
 
 
 # Burnout Estimation
-def calculate_burnout_risk(courses, user_id):
+def calculate_burnout_risk(courses):
     burnout_score = 0
     factors = {}
     cursor = None
@@ -133,39 +133,24 @@ def estimate_burnout_risk(score):
     else:
         return "Low"
 
+
 def generate_burnout_explanation(factors):
-    explanations = []
-
     if factors["num_courses"] == 0:
-        explanations.append("No courses added.")
-        return explanations
-
-    if factors["num_courses"] == AVG_COURSES:
-        explanations.append(f"Pace yourself!")
-    elif factors["num_courses"] > AVG_COURSES:
-        explanations.append(f"Drop a course.")
-    else:
-        explanations.append(f"Add a course!")
+        return "No courses added."
     
-    if factors["workload"] == "Overloaded":
-        explanations.append("Drop some hard courses.")
-    elif factors["workload"] == "Heavy":
-        explanations.append("Drop a hard course.")
-    elif factors["workload"] == "Balanced":
-        explanations.append("Pace yourself!")
-    else:
-        explanations.append("Add a hard course!")
+    if factors["num_courses"] > AVG_COURSES:
+        return "A lot of courses."
+    elif factors["num_courses"] < AVG_COURSES:
+        return "Not a lot of courses."
     
-    if (factors["num_difficult"] / factors["num_courses"]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
-        explanations.append("Swap in some easier courses.")
-    elif (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
-        explanations.append("Swap in an easier course.")
-    elif (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_MEDIUM_THRESHOLD:
-        explanations.append("Pace yourself!")
-    else:
-        explanations.append("Swap in a harder course!")
-
-    return explanations
+    if factors["workload"] == "Overloaded" or (factors["num_difficult"] / factors["num_courses"]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
+        return "Too many hard courses."
+    elif factors["workload"] == "Heavy" or (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
+        return "A good amout of hard courses."
+    elif factors["workload"] == "Light" or (factors["num_difficult"] / factors["num_courses"]) < BURNOUT_COURSES_MEDIUM_THRESHOLD:
+        return "Not a lot of hard courses."
+    
+    return "Good balance of courses."
 
 
 # GPA / Academic Impact Estimation

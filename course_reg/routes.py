@@ -51,12 +51,18 @@ def safe_redirect(target, fallback = "/"):
 
 @pages.before_request
 def check_dirty_metrics():
+    # Don't recalculate while the user is still on the drop-courses page or
+    # performing a drop action - wait until they navigate elsewhere.
+    if request.endpoint in ("pages.drop_courses", "pages.drop_course"):
+        return
+
     if session.get("metrics_dirty") and session.get("user_id"):
         if not isinstance(session.get("user_courses"), str):
             try:
                 workload = logic.total_hours_per_week(session["user_courses"])
-                burnout = logic.calculate_burnout_risk(session["user_courses"], session["user_id"])[0]
+                burnout, burnout_explanation = logic.calculate_burnout_risk(session["user_courses"])
                 impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
+                impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
                 recommendation_count = session.pop("pending_recommendation_count", 0)
                 analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
             except sqlite3.Error as e:
@@ -75,7 +81,7 @@ def index():
 
         if not isinstance(session["old_courses"], str) and not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
             session["metrics_dirty"] = True
-            session["pending_recommendation_count"] = 1
+            session["pending_recommendation_count"] = session.get("pending_recommendation_count", 0) + 1
     except sqlite3.Error as e:
         pass
 
@@ -491,6 +497,8 @@ def analytics_page():
             workload_classification = logic.classify_workload(workload_hours)
             burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
             impact_classification = logic.classify_academic_impact(academic_impact)
+
+            burnout_explanation = None
             recommendation = logic.generate_recommendation(workload_hours, burnout_risk, academic_impact)
 
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
@@ -607,7 +615,7 @@ def drop_course(code):
             return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
         session["metrics_dirty"] = True
-        session["pending_recommendation_count"] = 1
+        session["pending_recommendation_count"] = session.get("pending_recommendation_count", 0) + 1
         session.modified = True
 
     return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
@@ -704,7 +712,7 @@ def confirm_schedule():
 
     if not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
         session["metrics_dirty"] = True
-        session["pending_recommendation_count"] = 1
+        session["pending_recommendation_count"] = session.get("pending_recommendation_count", 0) + 1
 
     session["temp_courses"] = []
     session["load_bearing"] = False

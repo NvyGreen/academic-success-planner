@@ -27,6 +27,7 @@
             <div class="insight-card__label">Burnout Risk</div>
             <div class="insight-card__value insight-card__value--{{ burnout_estimation|lower }}">{{ burnout_estimation }}</div>
             <div class="insight-card__note">Score: {{ burnout_risk }} / 5</div>
+            <div class="insight-card__note">Explanation</div>
             <div class="progress-bar">
                 <div class="progress-bar__fill progress-bar__fill--{{ burnout_estimation|lower }}" style="width: {{ (burnout_risk / 5 * 100)|round|int }}%"></div>
             </div>
