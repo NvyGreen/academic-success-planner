@@ -1,8 +1,185 @@
 {% extends "layout.html" %}
 
 {% block head_content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}" />
 {% endblock %}
 
 {% block main_content %}
-<h1>Analytics</h1>
+<div class="analytics">
+
+    <div class="analytics__header">
+        <h1>Schedule Insights</h1>
+        <p>AI-powered analysis of your current schedule</p>
+    </div>
+
+    <div class="insight-cards">
+
+        <div class="insight-card">
+            <div class="insight-card__icon insight-card__icon--blue">⏱</div>
+            <div class="insight-card__label">Workload</div>
+            <div class="insight-card__value">31 hrs/week</div>
+            <span class="badge badge--blue">Heavy</span>
+            <div class="insight-card__note">Recommended: 12-28 hrs</div>
+        </div>
+
+        <div class="insight-card">
+            <div class="insight-card__icon insight-card__icon--orange">🔥</div>
+            <div class="insight-card__label">Burnout Risk</div>
+            <div class="insight-card__value insight-card__value--orange">High</div>
+            <div class="insight-card__note">Score: 0.72 / 1.00</div>
+            <div class="progress-bar">
+                <div class="progress-bar__fill progress-bar__fill--orange" style="width: 72%"></div>
+            </div>
+        </div>
+
+        <div class="insight-card">
+            <div class="insight-card__icon insight-card__icon--green">📊</div>
+            <div class="insight-card__label">Academic Impact</div>
+            <div class="insight-card__value insight-card__value--green">Moderate</div>
+            <div class="insight-card__note">Impact Score: -0.15</div>
+            <div class="progress-bar">
+                <div class="progress-bar__fill progress-bar__fill--green" style="width: 50%"></div>
+            </div>
+        </div>
+
+        <div class="insight-card">
+            <div class="insight-card__icon insight-card__icon--purple">◎</div>
+            <div class="insight-card__label">Recommendation</div>
+            <div class="insight-card__value insight-card__value--purple">Swap CS143A for INF121</div>
+            <button class="btn btn--outline-purple">View Details</button>
+        </div>
+
+    </div>
+
+    <div class="panel">
+        <h2>Why This Recommendation?</h2>
+        <p class="panel__subtitle">Our engine analyzed your schedule and found that this swap improves your workload balance and reduces burnout risk.</p>
+
+        <div class="panel__grid">
+            <ul class="reason-list">
+                <li><span class="check">✓</span> Reduces weekly workload by ~6 hours</li>
+                <li><span class="check">✓</span> Lowers burnout risk from High to Moderate</li>
+                <li><span class="check">✓</span> Improves workload balance across the week</li>
+            </ul>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Current Schedule</th>
+                        <th>With Recommendation</th>
+                        <th>Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Workload</td>
+                        <td>31 hrs/week</td>
+                        <td>25 hrs/week</td>
+                        <td class="change change--positive">-6 hrs</td>
+                    </tr>
+                    <tr>
+                        <td>Burnout Risk</td>
+                        <td>High (0.72)</td>
+                        <td>Moderate (0.48)</td>
+                        <td class="change change--positive">-0.24</td>
+                    </tr>
+                    <tr>
+                        <td>Academic Impact</td>
+                        <td>Moderate (-0.15)</td>
+                        <td>Positive (+0.08)</td>
+                        <td class="change change--positive">+0.23</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="two-column">
+
+        <div class="panel">
+            <h2>📈 Planner Activity (Summary)</h2>
+
+            <div class="activity-stats">
+                <div class="activity-stat">
+                    <div class="activity-stat__icon">📅</div>
+                    <div class="activity-stat__value">12</div>
+                    <div class="activity-stat__label">Schedules Evaluated</div>
+                    <div class="activity-stat__sublabel">This semester</div>
+                </div>
+                <div class="activity-stat">
+                    <div class="activity-stat__icon">💡</div>
+                    <div class="activity-stat__value">8</div>
+                    <div class="activity-stat__label">Recommendations Generated</div>
+                </div>
+                <div class="activity-stat">
+                    <div class="activity-stat__icon">⇄</div>
+                    <div class="activity-stat__value">5</div>
+                    <div class="activity-stat__label">Recommendations Applied/Accepted</div>
+                </div>
+                <div class="activity-stat">
+                    <div class="activity-stat__icon">🕐</div>
+                    <div class="activity-stat__value">Jun 15, 2026</div>
+                    <div class="activity-stat__label">Last Activity</div>
+                </div>
+            </div>
+
+            <a href="#" class="link-arrow">View full activity history →</a>
+        </div>
+
+        <div class="panel">
+            <div class="panel__header-row">
+                <h2>Recent Recommendations</h2>
+                <a href="#" class="link-arrow">View All</a>
+            </div>
+
+            <ul class="recommendation-list">
+                <li class="recommendation-item">
+                    <div class="recommendation-item__icon">⇄</div>
+                    <div class="recommendation-item__content">
+                        <div class="recommendation-item__title">Swap CS143A for INF121</div>
+                        <div class="recommendation-item__subtitle">Reduce workload and burnout risk</div>
+                    </div>
+                    <div class="recommendation-item__meta">
+                        <span class="badge badge--green">Applied</span>
+                        <span class="recommendation-item__date">Jun 15, 2026</span>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="recommendation-item__icon">⇄</div>
+                    <div class="recommendation-item__content">
+                        <div class="recommendation-item__title">Swap MATH108 for STAT116</div>
+                        <div class="recommendation-item__subtitle">Improve academic impact</div>
+                    </div>
+                    <div class="recommendation-item__meta">
+                        <span class="badge badge--yellow">Viewed</span>
+                        <span class="recommendation-item__date">Jun 10, 2026</span>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="recommendation-item__icon">⊖</div>
+                    <div class="recommendation-item__content">
+                        <div class="recommendation-item__title">Drop HIST101</div>
+                        <div class="recommendation-item__subtitle">Lower workload</div>
+                    </div>
+                    <div class="recommendation-item__meta">
+                        <span class="badge badge--gray">Dismissed</span>
+                        <span class="recommendation-item__date">Jun 8, 2026</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="how-it-works">
+        <div class="how-it-works__icon">✨</div>
+        <div class="how-it-works__content">
+            <h3>How It Works</h3>
+            <p>We analyze your courses, workload, difficulty, and historical data to generate recommendations that help you succeed.</p>
+        </div>
+        <button class="btn btn--outline-blue">Learn More</button>
+    </div>
+
+</div>
 {% endblock %}
