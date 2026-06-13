@@ -500,8 +500,8 @@ def analytics_page():
 
             latest_activity = "-"
         else:
-            workload_hours = latest["workload_score"]
-            burnout_risk = latest["burnout_score"]
+            workload_hours = round(latest["workload_score"], 2)
+            burnout_risk = round(latest["burnout_score"], 2)
             academic_impact = round(latest["impact_score"], 2)
             recommendation_count = latest["recommendations"]
 
@@ -547,6 +547,9 @@ def analytics_history():
     try:
         num_schedules = analytics.get_num_scheudles(session["user_id"])
         num_recommendations = analytics.get_all_recommendations_count(session["user_id"])
+        workloads = analytics.get_all_workloads(session["user_id"])
+        burnout_scores = analytics.get_all_burnout_scores(session["user_id"])
+        impact_scores = analytics.get_all_impact_scores(session["user_id"])
     except sqlite3.Error as e:
         flash(str(e), "error")
         num_schedules = "-"

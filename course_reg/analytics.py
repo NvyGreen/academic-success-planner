@@ -96,3 +96,66 @@ def get_all_recommendations_count(student_id):
     finally:
         if cursor is not None:
             cursor.close()
+
+
+def get_all_workloads(student_id):
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT workload_score FROM metric WHERE student_id = :student_id ORDER BY timestamp;"""
+        cursor = db.execute(query, {"student_id": student_id})
+        workloads_raw = cursor.fetchall()
+
+        workloads = []
+        for score in workloads_raw:
+            workloads.append(round(score[0], 2))
+
+        return workloads
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch workloads")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def get_all_burnout_scores(student_id):
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT burnout_score FROM metric WHERE student_id = :student_id ORDER BY timestamp;"""
+        cursor = db.execute(query, {"student_id": student_id})
+        burnouts_raw = cursor.fetchall()
+
+        burnout_scores = []
+        for score in burnouts_raw:
+            burnout_scores.append(round(score[0], 2))
+
+        return burnout_scores
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch burnout scores")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def get_all_impact_scores(student_id):
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT impact_score FROM metric WHERE student_id = :student_id ORDER BY timestamp;"""
+        cursor = db.execute(query, {"student_id": student_id})
+        impacts_raw = cursor.fetchall()
+
+        impact_scores = []
+        for score in impacts_raw:
+            impact_scores.append(round(score[0], 2))
+
+        return impact_scores
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch impact scores")
+    finally:
+        if cursor is not None:
+            cursor.close()
