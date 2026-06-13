@@ -67,7 +67,13 @@ def check_dirty_metrics():
 @login_required
 def index():
     try:
+        session["old_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
         register_methods.enroll_from_waitlist()
+        session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+
+        if not isinstance(session["old_courses"], str) and not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
+            session["metrics_dirty"] = True
+            session["pending_recommendation_count"] = 1
     except sqlite3.Error as e:
         pass
 
@@ -539,6 +545,7 @@ def drop_course(code):
             return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
         session["metrics_dirty"] = True
+        session["pending_recommendation_count"] = 1
         session.modified = True
 
     return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
