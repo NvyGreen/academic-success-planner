@@ -268,6 +268,36 @@
     align-items: start;
 }
 
+/* ---- Collapsible panel -------------------------------------------- */
+
+.panel--collapsible {
+    cursor: pointer;
+}
+
+.panel__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 600;
+    list-style: none;
+    margin-bottom: 4px;
+}
+
+/* Remove default triangle in all browsers */
+.panel__summary::-webkit-details-marker { display: none; }
+.panel__summary::marker { display: none; }
+
+.panel__summary-arrow {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    transition: transform 0.2s ease;
+}
+
+details.panel--collapsible[open] .panel__summary-arrow {
+    transform: rotate(180deg);
+}
+
 /* ---- Reason list -------------------------------------------------- */
 
 .reason-list {
