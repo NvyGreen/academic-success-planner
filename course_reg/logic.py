@@ -167,7 +167,8 @@ def calculate_academic_impact(courses, user_id):
         db = get_db()
         query = """SELECT gpa FROM student WHERE student_id = :student_id;"""
         cursor = db.execute(query, {"student_id": user_id})
-        gpa = cursor.fetchone()[0]
+        row = cursor.fetchone()
+        gpa = row[0] if row else None
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not estimate academic impact")

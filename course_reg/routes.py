@@ -357,7 +357,7 @@ def filter_courses_advanced():
     try:
         form.department.choices = filter_methods.prep_departments()
     except sqlite3.Error as e:
-        flash(form.department.choices, "error")
+        flash(str(e), "error")
         return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
 
     if form.validate_on_submit():
