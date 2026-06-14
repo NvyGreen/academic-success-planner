@@ -3,6 +3,8 @@ from datetime import datetime
 import json
 from urllib.parse import urlparse, urljoin
 import sqlite3
+from threading import Timer
+import schedule
 from passlib.hash import pbkdf2_sha256
 from flask import (
     Blueprint,
@@ -73,20 +75,12 @@ def check_dirty_metrics():
         session["metrics_dirty"] = False
 
 
+
+
+
 @pages.route("/")
 @login_required
 def index():
-    try:
-        session["old_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
-        register_methods.enroll_from_waitlist()
-        session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
-
-        if not isinstance(session["old_courses"], str) and not isinstance(session["user_courses"], str) and session["old_courses"] != session["user_courses"]:
-            session["metrics_dirty"] = True
-            session["pending_recommendation_count"] = session.get("pending_recommendation_count", 0) + 1
-    except sqlite3.Error as e:
-        pass
-
     try:
         session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
     except sqlite3.Error as e:

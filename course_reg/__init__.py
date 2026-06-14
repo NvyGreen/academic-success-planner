@@ -6,6 +6,7 @@ from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 from course_reg.routes import pages
 from course_reg.db import *
+from course_reg.scheduler import start_scheduler
 
 
 load_dotenv()
@@ -27,5 +28,7 @@ def create_app():
             seed_db(db, os.environ.get("SEED_EMAIL"), os.environ.get("SEED_PWD"))
 
     app.register_blueprint(pages)
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        start_scheduler(app)
 
     return app

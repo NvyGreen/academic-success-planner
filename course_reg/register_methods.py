@@ -1,6 +1,9 @@
 import sqlite3
 from flask import current_app
 from course_reg.db import get_db
+import course_reg.schedule_methods as schedule_methods
+import course_reg.logic as logic
+import course_reg.analytics as analytics
 
 
 def get_course_description(course_id):
@@ -259,6 +262,27 @@ def drop_waitlist(user_id, course_code):
             cursor.close()
 
 
+def get_students():
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT student_id FROM student;"""
+        cursor = db.execute(query)
+        ids_raw = cursor.fetchall()
+
+        ids = []
+        for raw_id in ids_raw:
+            ids.append(raw_id[0])
+        
+        return ids
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not get student IDs")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
 def enroll_from_waitlist():
     cursor = None
     try:
@@ -267,7 +291,7 @@ def enroll_from_waitlist():
         cursor = db.execute(query)
         courses = cursor.fetchall()
         if not courses:
-            raise sqlite3.Error("Error: could not enroll in course from waitlist")
+            return
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not enroll in course from waitlist")
@@ -275,6 +299,7 @@ def enroll_from_waitlist():
         if cursor is not None:
             cursor.close()
 
+    promoted_students = []
     for course in courses:
         course_id = course["course_id"]
 
@@ -318,9 +343,29 @@ def enroll_from_waitlist():
                 cursor.close()
 
                 db.commit()
+                promoted_students.append(student_id)
             except sqlite3.Error as e:
                 db.rollback()
                 current_app.logger.error(f"Database error: {e}")
                 raise sqlite3.Error("Error: could not enroll in course from waitlist")
             finally:
                 cursor.close()
+    
+    return promoted_students
+
+
+def promote_waitlist():    
+    promoted_students = enroll_from_waitlist()
+    for student in promoted_students:
+        try:
+            courses = schedule_methods.get_courses_from_list(student, "enrollment")
+            workload = logic.total_hours_per_week(courses)
+            burnout_data = logic.calculate_burnout_risk(courses)
+            burnout = burnout_data[0]
+            burnout_explanation = logic.generate_burnout_explanation(burnout_data[1])
+            impact = logic.calculate_academic_impact(courses, student)
+            impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
+            recommendation = logic.generate_recommendation(workload, burnout, impact)
+            analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation)
+        except sqlite3.Error as e:
+            current_app.logger.error(f"Database error: {e}")
