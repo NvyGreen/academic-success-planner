@@ -477,17 +477,17 @@ def analytics_page():
         num_schedules = analytics.get_num_schedules(session["user_id"])
         latest = analytics.get_latest_activity(session["user_id"])
 
-        if len(latest) == 0:
-            num_schedules = "-"
+        if not latest:
+            num_schedules = 0
 
-            workload_hours = "-"
-            burnout_risk = "-"
-            academic_impact = "-"
-            recommendation_count = "-"
+            workload_hours = 0
+            burnout_risk = 0
+            academic_impact = 0
+            recommendation_count = 0
 
-            workload_classification = "Light"
-            burnout_estimation = "Low"
-            impact_classification = "Low"
+            workload_classification = "-"
+            burnout_estimation = "-"
+            impact_classification = "-"
 
             burnout_explanation = "-"
             impact_explanation = "-"
