@@ -144,39 +144,19 @@
             </div>
 
             <ul class="recommendation-list">
-                <li class="recommendation-item">
-                    <div class="recommendation-item__icon">⇄</div>
-                    <div class="recommendation-item__content">
-                        <div class="recommendation-item__title">Swap CS143A for INF121</div>
-                        <div class="recommendation-item__subtitle">Reduce workload and burnout risk</div>
-                    </div>
-                    <div class="recommendation-item__meta">
-                        <span class="badge badge--green">Applied</span>
-                        <span class="recommendation-item__date">Jun 15, 2026</span>
-                    </div>
-                </li>
-                <li class="recommendation-item">
-                    <div class="recommendation-item__icon">⇄</div>
-                    <div class="recommendation-item__content">
-                        <div class="recommendation-item__title">Swap MATH108 for STAT116</div>
-                        <div class="recommendation-item__subtitle">Improve academic impact</div>
-                    </div>
-                    <div class="recommendation-item__meta">
-                        <span class="badge badge--yellow">Viewed</span>
-                        <span class="recommendation-item__date">Jun 10, 2026</span>
-                    </div>
-                </li>
-                <li class="recommendation-item">
-                    <div class="recommendation-item__icon">⊖</div>
-                    <div class="recommendation-item__content">
-                        <div class="recommendation-item__title">Drop HIST101</div>
-                        <div class="recommendation-item__subtitle">Lower workload</div>
-                    </div>
-                    <div class="recommendation-item__meta">
-                        <span class="badge badge--gray">Dismissed</span>
-                        <span class="recommendation-item__date">Jun 8, 2026</span>
-                    </div>
-                </li>
+                {% for rec in past_recommendations %}
+                    <li class="recommendation-item">
+                        <div class="recommendation-item__icon">⇄</div>
+                        <div class="recommendation-item__content">
+                            <div class="recommendation-item__title">{{ rec[0] }}</div>
+                            <div class="recommendation-item__subtitle">Placeholder</div>
+                        </div>
+                        <div class="recommendation-item__meta">
+                            <span class="badge badge--yellow">Viewed</span>
+                            <span class="recommendation-item__date">{{ rec[1] }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
             </ul>
         </div>
 

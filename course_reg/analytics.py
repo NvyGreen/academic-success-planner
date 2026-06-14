@@ -5,12 +5,12 @@ from course_reg.db import get_db
 
 
 
-def save_metrics(student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation_count):
+def save_metrics(student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation):
     cursor = None
     try:
         db = get_db()
-        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendations, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendations, :timestamp);"""
-        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendations": recommendation_count, "timestamp": datetime.isoformat(datetime.now())})
+        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :timestamp);"""
+        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
     except sqlite3.Error as e:
         db.rollback()
@@ -21,7 +21,7 @@ def save_metrics(student_id, workload_score, burnout_score, burnout_explanation,
             cursor.close()
 
 
-def get_num_scheudles(student_id):
+def get_num_schedules(student_id):
     cursor = None
     try:
         db = get_db()
@@ -45,33 +45,13 @@ def get_latest_activity(student_id):
     cursor = None
     try:
         db = get_db()
-        query = """SELECT workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendations, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 1;"""
+        query = """SELECT workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 1;"""
         cursor = db.execute(query, {"student_id": student_id})
         latest_activity = cursor.fetchone()
         return latest_activity
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not fetch latest metrics")
-    finally:
-        if cursor is not None:
-            cursor.close()
-
-
-def get_all_recommendations_count(student_id):
-    cursor = None
-    try:
-        db = get_db()
-        query = """SELECT SUM(recommendations) FROM metric WHERE student_id = :student_id;"""
-        cursor = db.execute(query, {"student_id": student_id})
-        num_recommendations = cursor.fetchone()
-        if len(num_recommendations) == 0:
-            num_recommendations = 0
-        else:
-            num_recommendations = num_recommendations[0]
-        return num_recommendations
-    except sqlite3.Error as e:
-        current_app.logger.error(f"Database error: {e}")
-        raise sqlite3.Error("Error: Could not fetch number of recommendations")
     finally:
         if cursor is not None:
             cursor.close()
@@ -153,6 +133,29 @@ def get_all_dates(student_id):
             dates.append(f"{date.strftime('%b')} {date.day}")
 
         return dates
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch impact scores")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def get_all_recommendations(student_id):
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT recommendation, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC;"""
+        cursor = db.execute(query, {"student_id": student_id})
+        recommendations_raw = cursor.fetchall()
+
+        recommendations = []
+        for raw_rec in recommendations_raw:
+            date = datetime.fromisoformat(raw_rec["timestamp"])
+            rec_tup = (raw_rec["recommendation"], f"{date.strftime('%b')} {date.day}, {date.year}")
+            recommendations.append(rec_tup)
+
+        return recommendations
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not fetch impact scores")

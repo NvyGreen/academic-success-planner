@@ -65,8 +65,8 @@ def check_dirty_metrics():
                 burnout_explanation = logic.generate_burnout_explanation(burnout_data[1])
                 impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
                 impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
-                recommendation_count = session.pop("pending_recommendation_count", 0)
-                analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation_count)
+                recommendation = logic.generate_recommendation(workload, burnout, impact)
+                analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation)
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
 
@@ -474,7 +474,7 @@ def preview_quarter():
 @login_required
 def analytics_page():
     try:
-        num_schedules = analytics.get_num_scheudles(session["user_id"])
+        num_schedules = analytics.get_num_schedules(session["user_id"])
         latest = analytics.get_latest_activity(session["user_id"])
 
         if len(latest) == 0:
@@ -493,12 +493,13 @@ def analytics_page():
             impact_explanation = "-"
             recommendation = "-"
 
+            past_recommendations = []
             latest_activity = "-"
         else:
             workload_hours = round(latest["workload_score"], 2)
             burnout_risk = round(latest["burnout_score"], 2)
             academic_impact = round(latest["impact_score"], 2)
-            recommendation_count = latest["recommendations"]
+            recommendation_count = num_schedules
 
             workload_classification = logic.classify_workload(workload_hours)
             burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
@@ -506,8 +507,9 @@ def analytics_page():
 
             burnout_explanation = latest["burnout_explanation"]
             impact_explanation = latest["impact_explanation"]
-            recommendation = logic.generate_recommendation(workload_hours, burnout_risk, academic_impact)
+            recommendation = latest["recommendation"]
 
+            past_recommendations = analytics.get_all_recommendations(session["user_id"])
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
             latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
     except sqlite3.Error as e:
@@ -527,6 +529,7 @@ def analytics_page():
         impact_explanation = "-"
         recommendation = "-"
 
+        past_recommendations = []
         latest_activity = "-"
 
     return render_template(
@@ -543,6 +546,7 @@ def analytics_page():
         impact_explanation=impact_explanation,
         recommendation_count=recommendation_count,
         recommendation=recommendation,
+        past_recommendations=past_recommendations,
         latest_activity=latest_activity
     )
 
@@ -551,7 +555,7 @@ def analytics_page():
 @login_required
 def analytics_history():
     try:
-        num_schedules = analytics.get_num_scheudles(session["user_id"])
+        num_schedules = analytics.get_num_schedules(session["user_id"])
         num_recommendations = analytics.get_all_recommendations_count(session["user_id"])
         workloads = analytics.get_all_workloads(session["user_id"])
         burnout_scores = analytics.get_all_burnout_scores(session["user_id"])
