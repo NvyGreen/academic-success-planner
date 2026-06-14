@@ -27,7 +27,7 @@
             <div class="insight-card__label">Burnout Risk</div>
             <div class="insight-card__value insight-card__value--{{ burnout_estimation|lower }}">{{ burnout_estimation }}</div>
             <div class="insight-card__note">Score: {{ burnout_risk }} / 5</div>
-            <div class="insight-card__note">Explanation</div>
+            <div class="insight-card__note">{{ burnout_explanation }}</div>
             <div class="progress-bar">
                 <div class="progress-bar__fill progress-bar__fill--{{ burnout_estimation|lower }}" style="width: {{ (burnout_risk / 5 * 100)|round|int }}%"></div>
             </div>
@@ -38,6 +38,7 @@
             <div class="insight-card__label">Academic Impact</div>
             <div class="insight-card__value insight-card__value--{{ impact_classification|lower|replace(' ', '-') }}">{{ impact_classification }}</div>
             <div class="insight-card__note">Impact Score: {{ academic_impact }}</div>
+            <div class="insight-card__note">{{ impact_explanation }}</div>
             <div class="progress-bar">
                 <div class="progress-bar__fill progress-bar__fill--{{ impact_classification|lower|replace(' ', '-') }}" style="width: {{ (academic_impact / 2.0 * 100)|round|int }}%"></div>
             </div>

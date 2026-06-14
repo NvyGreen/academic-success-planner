@@ -60,11 +60,13 @@ def check_dirty_metrics():
         if not isinstance(session.get("user_courses"), str):
             try:
                 workload = logic.total_hours_per_week(session["user_courses"])
-                burnout, burnout_explanation = logic.calculate_burnout_risk(session["user_courses"])
+                burnout_data = logic.calculate_burnout_risk(session["user_courses"])
+                burnout = burnout_data[0]
+                burnout_explanation = logic.generate_burnout_explanation(burnout_data[1])
                 impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
                 impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
                 recommendation_count = session.pop("pending_recommendation_count", 0)
-                analytics.save_metrics(session["user_id"], workload, burnout, impact, recommendation_count)
+                analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation_count)
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
 
@@ -487,6 +489,10 @@ def analytics_page():
             burnout_estimation = "Low"
             impact_classification = "Low"
 
+            burnout_explanation = "-"
+            impact_explanation = "-"
+            recommendation = "-"
+
             latest_activity = "-"
         else:
             workload_hours = round(latest["workload_score"], 2)
@@ -498,7 +504,8 @@ def analytics_page():
             burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
             impact_classification = logic.classify_academic_impact(academic_impact)
 
-            burnout_explanation = None
+            burnout_explanation = latest["burnout_explanation"]
+            impact_explanation = latest["impact_explanation"]
             recommendation = logic.generate_recommendation(workload_hours, burnout_risk, academic_impact)
 
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
@@ -515,6 +522,9 @@ def analytics_page():
         workload_classification = "Light"
         burnout_estimation = "Low"
         impact_classification = "Low"
+
+        burnout_explanation = "-"
+        impact_explanation = "-"
         recommendation = "-"
 
         latest_activity = "-"
@@ -527,8 +537,10 @@ def analytics_page():
         workload_classification=workload_classification,
         burnout_risk=burnout_risk,
         burnout_estimation=burnout_estimation,
+        burnout_explanation=burnout_explanation,
         academic_impact=academic_impact,
         impact_classification=impact_classification,
+        impact_explanation=impact_explanation,
         recommendation_count=recommendation_count,
         recommendation=recommendation,
         latest_activity=latest_activity
