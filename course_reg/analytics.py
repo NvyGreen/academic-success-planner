@@ -131,7 +131,7 @@ def get_all_dates(student_id):
         return dates
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise sqlite3.Error("Error: Could not fetch impact scores")
+        raise sqlite3.Error("Error: Could not fetch dates")
     finally:
         if cursor is not None:
             cursor.close()
@@ -154,7 +154,7 @@ def get_all_recommendations(student_id):
         return recommendations
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
-        raise sqlite3.Error("Error: Could not fetch impact scores")
+        raise sqlite3.Error("Error: Could not fetch recommendations")
     finally:
         if cursor is not None:
             cursor.close()
