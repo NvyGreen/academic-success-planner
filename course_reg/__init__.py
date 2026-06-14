@@ -1,6 +1,4 @@
 import os
-import sqlite3
-import flask
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv

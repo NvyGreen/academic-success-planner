@@ -3,8 +3,6 @@ from datetime import datetime
 import json
 from urllib.parse import urlparse, urljoin
 import sqlite3
-from threading import Timer
-import schedule
 from passlib.hash import pbkdf2_sha256
 from flask import (
     Blueprint,

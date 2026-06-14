@@ -4,7 +4,6 @@ from flask import current_app
 from course_reg.db import get_db
 
 
-
 def save_metrics(student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation):
     cursor = None
     try:
