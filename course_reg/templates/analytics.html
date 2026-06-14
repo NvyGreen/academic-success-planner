@@ -8,8 +8,13 @@
 <div class="analytics">
 
     <div class="analytics__header">
-        <h1>Schedule Insights</h1>
-        <p>AI-powered analysis of your current schedule</p>
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <a href="{{ url_for('pages.user_courses') }}" class="back-link">←</a>
+            <div>
+                <h1>Schedule Insights</h1>
+                <p>AI-powered analysis of your current schedule</p>
+            </div>
+        </div>
     </div>
 
     <div class="insight-cards">
