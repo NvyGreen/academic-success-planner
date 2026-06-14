@@ -703,7 +703,7 @@ def wait_course(code):
     else:
         if code not in session["user_waitlist"]:
             try:
-                error = register_methods.waitlist_course(session["user_id"], code)
+                register_methods.waitlist_course(session["user_id"], code)
             except sqlite3.Error as e:
                 flash(str(e), "error")
                 return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
@@ -730,7 +730,7 @@ def drop_wait(code):
     else:
         if code in session["user_waitlist"]:
             try:
-                error = register_methods.drop_waitlist(session["user_id"], code)
+                register_methods.drop_waitlist(session["user_id"], code)
             except sqlite3.Error as e:
                 flash(str(e), "error")
                 return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
