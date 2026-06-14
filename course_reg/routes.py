@@ -75,9 +75,6 @@ def check_dirty_metrics():
         session["metrics_dirty"] = False
 
 
-
-
-
 @pages.route("/")
 @login_required
 def index():
@@ -241,7 +238,29 @@ def login():
             session["user_id"] = user_id
             session["email"] = user_email
 
-            return redirect(url_for(".index"))
+            try:
+                session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+            except sqlite3.Error as e:
+                session["user_courses"] = str(e)
+            session["unreged_courses"] = {}
+
+            try:
+                session["user_waitlist"] = schedule_methods.get_courses_from_list(session["user_id"], "student_waitlist")
+            except sqlite3.Error as e:
+                session["user_waitlist"] = str(e)
+
+            session["temp_courses"] = []
+            session["old_courses"] = []
+            session["load_bearing"] = False
+            session["cancel"] = False
+            
+            if session.get("filter_courses"):
+                session.pop("filter_courses")
+            
+            if session.get("filter_criteria"):
+                session.pop("filter_criteria")
+
+            return redirect(url_for(".user_courses"))
         
         flash("Login credentials not correct")
 
