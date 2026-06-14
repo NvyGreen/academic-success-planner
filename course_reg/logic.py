@@ -38,6 +38,9 @@ def classify_workload(final_score):
         return "Overloaded"
 
 def total_hours_per_week(courses):
+    if not courses:
+        return 0
+    
     cursor = None
     try:
         db = get_db()
@@ -72,6 +75,9 @@ def total_hours_per_week(courses):
 
 # Burnout Estimation
 def calculate_burnout_risk(courses):
+    if not courses:
+        return (0, {"num_courses": 0, "workload": "-", "num_difficult": 0})
+    
     burnout_score = 0
     factors = {}
     cursor = None
@@ -225,12 +231,12 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
 
 
 def get_total_credits(courses):
+    if not courses:
+        return 0
+    
     cursor = None
     try:
         db = get_db()
-        if not courses:
-            return 0
-
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
         query = f"SELECT SUM(credits) FROM course WHERE course_code IN ({placeholders})"
         values = {f"code_{i}": code for i, code in enumerate(courses)}
