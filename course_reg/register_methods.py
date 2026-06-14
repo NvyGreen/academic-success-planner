@@ -12,13 +12,13 @@ def get_course_description(course_id):
         dept_info = cursor.fetchone()
         cursor.close()
         if dept_info is None:
-            sqlite3.Error("Error: Could not register for courses")
+            raise sqlite3.Error("Error: Could not register for courses")
 
         query = """SELECT abbreviation FROM department WHERE department_id = :department_id;"""
         cursor = db.execute(query, {"department_id": dept_info["department_id"]})
         abbreviation = cursor.fetchone()
         if abbreviation is None:
-            sqlite3.Error("Error: Could not register for courses")
+            raise sqlite3.Error("Error: Could not register for courses")
         abbreviation = abbreviation["abbreviation"]
         course_desc = abbreviation + " " + dept_info["course_number"] + " (" + dept_info["type"] + ")"
     except sqlite3.Error as e:
