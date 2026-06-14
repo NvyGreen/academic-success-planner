@@ -368,7 +368,9 @@ details.panel--collapsible[open] .panel__summary-arrow {
     gap: 24px;
 }
 
-.two-column .panel { margin-bottom: 0; }
+.two-column .panel { margin-bottom: 24px; }
+
+.two-column:last-of-type .panel { margin-bottom: 0; }
 
 /* ---- Activity stats ------------------------------------------------ */
 
@@ -383,6 +385,7 @@ details.panel--collapsible[open] .panel__summary-arrow {
     border: 1px solid var(--color-border);
     border-radius: 10px;
     padding: 14px;
+    position: relative;
 }
 
 .activity-stat__icon {
@@ -406,6 +409,10 @@ details.panel--collapsible[open] .panel__summary-arrow {
     color: #9ca3af;
 }
 
+.activity-stat__badge {
+    margin-top: 8px;
+}
+
 .link-arrow {
     font-size: 13px;
     font-weight: 600;
@@ -414,6 +421,69 @@ details.panel--collapsible[open] .panel__summary-arrow {
 }
 
 .link-arrow:hover { text-decoration: underline; }
+
+/* ---- Trend charts ---------------------------------------------------- */
+
+.trend-charts {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.trend-chart__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.trend-chart__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.trend-chart__empty {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+    border-radius: 8px;
+}
+
+.sparkline {
+    width: 100%;
+    height: 60px;
+    display: block;
+}
+
+.sparkline__line {
+    fill: none;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.sparkline__line--blue { stroke: var(--color-blue); }
+.sparkline__line--orange { stroke: var(--color-orange); }
+
+/* Trend direction pills */
+
+.trend-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+}
+
+.trend-pill--positive { background: var(--color-severity-low-bg); color: var(--color-severity-low); }
+.trend-pill--negative { background: var(--color-severity-vhigh-bg); color: var(--color-severity-vhigh); }
+.trend-pill--neutral { background: var(--color-gray-bg); color: var(--color-gray-text); }
 
 /* ---- Recommendation list -------------------------------------------- */
 

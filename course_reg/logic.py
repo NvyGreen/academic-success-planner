@@ -222,3 +222,79 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
 
     # Light
     return "Add or swap in a hard course!"
+
+
+def get_total_credits(courses):
+    cursor = None
+    try:
+        db = get_db()
+        if not courses:
+            return 0
+
+        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+        query = f"SELECT SUM(credits) FROM course WHERE course_code IN ({placeholders})"
+        values = {f"code_{i}": code for i, code in enumerate(courses)}
+        cursor = db.execute(query, values)
+        total = cursor.fetchone()[0]
+        return total if total is not None else 0
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not calculate total credits")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def classify_difficulty_ratio(num_difficult, num_courses):
+    if num_courses == 0:
+        return "Low"
+
+    ratio = num_difficult / num_courses
+
+    if ratio >= BURNOUT_COURSES_VHIGH_THRESHOLD:
+        return "Very High"
+    elif ratio >= BURNOUT_COURSES_HIGH_THRESHOLD:
+        return "High"
+    elif ratio >= BURNOUT_COURSES_MEDIUM_THRESHOLD:
+        return "Medium"
+    else:
+        return "Low"
+
+
+def generate_sparkline_points(values, width=240, height=60, padding=6):
+    if not values:
+        return ""
+
+    if len(values) == 1:
+        values = values * 2
+
+    min_val = min(values)
+    max_val = max(values)
+    value_range = max_val - min_val if max_val != min_val else 1
+
+    step = (width - 2 * padding) / (len(values) - 1)
+
+    points = []
+    for i, value in enumerate(values):
+        x = padding + i * step
+        y = height - padding - ((value - min_val) / value_range) * (height - 2 * padding)
+        points.append(f"{x:.1f},{y:.1f}")
+
+    return " ".join(points)
+
+
+def get_trend_direction(values, lower_is_better=True):
+    if len(values) < 2:
+        return ("Not enough data yet", "neutral")
+
+    delta = values[-1] - values[-2]
+
+    if delta == 0:
+        return ("Stable", "neutral")
+
+    improving = (delta < 0) if lower_is_better else (delta > 0)
+
+    if improving:
+        return ("Improving", "positive")
+    else:
+        return ("Worsening", "negative")

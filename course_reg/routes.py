@@ -512,6 +512,29 @@ def analytics_page():
             past_recommendations = analytics.get_all_recommendations(session["user_id"])
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
             latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
+
+        # Current schedule details
+        if isinstance(session.get("user_courses"), str) or not session.get("user_courses"):
+            total_credits = "-"
+            num_difficult = "-"
+            num_courses = "-"
+            difficulty_classification = "Low"
+        else:
+            total_credits = logic.get_total_credits(session["user_courses"])
+            _, factors = logic.calculate_burnout_risk(session["user_courses"])
+            num_difficult = factors["num_difficult"]
+            num_courses = factors["num_courses"]
+            difficulty_classification = logic.classify_difficulty_ratio(num_difficult, num_courses)
+
+        # Trends over time
+        workload_history = analytics.get_all_workloads(session["user_id"])
+        burnout_history = analytics.get_all_burnout_scores(session["user_id"])
+
+        workload_sparkline = logic.generate_sparkline_points(workload_history)
+        burnout_sparkline = logic.generate_sparkline_points(burnout_history)
+
+        workload_trend, workload_trend_class = logic.get_trend_direction(workload_history, lower_is_better=True)
+        burnout_trend, burnout_trend_class = logic.get_trend_direction(burnout_history, lower_is_better=True)
     except sqlite3.Error as e:
         flash(str(e), "error")
         num_schedules = "-"
@@ -532,6 +555,18 @@ def analytics_page():
         past_recommendations = []
         latest_activity = "-"
 
+        total_credits = "-"
+        num_difficult = "-"
+        num_courses = "-"
+        difficulty_classification = "Low"
+
+        workload_history = []
+        burnout_history = []
+        workload_sparkline = ""
+        burnout_sparkline = ""
+        workload_trend, workload_trend_class = "-", "neutral"
+        burnout_trend, burnout_trend_class = "-", "neutral"
+
     return render_template(
         "analytics.html",
         title="Schedule Insights",
@@ -547,7 +582,19 @@ def analytics_page():
         recommendation_count=recommendation_count,
         recommendation=recommendation,
         past_recommendations=past_recommendations,
-        latest_activity=latest_activity
+        latest_activity=latest_activity,
+        total_credits=total_credits,
+        num_difficult=num_difficult,
+        num_courses=num_courses,
+        difficulty_classification=difficulty_classification,
+        workload_history=workload_history,
+        burnout_history=burnout_history,
+        workload_sparkline=workload_sparkline,
+        burnout_sparkline=burnout_sparkline,
+        workload_trend=workload_trend,
+        workload_trend_class=workload_trend_class,
+        burnout_trend=burnout_trend,
+        burnout_trend_class=burnout_trend_class
     )
 
 
@@ -556,7 +603,7 @@ def analytics_page():
 def analytics_history():
     try:
         num_schedules = analytics.get_num_schedules(session["user_id"])
-        num_recommendations = analytics.get_all_recommendations_count(session["user_id"])
+        num_recommendations = num_schedules
         workloads = analytics.get_all_workloads(session["user_id"])
         burnout_scores = analytics.get_all_burnout_scores(session["user_id"])
         impact_scores = analytics.get_all_impact_scores(session["user_id"])

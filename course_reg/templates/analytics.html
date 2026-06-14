@@ -105,6 +105,28 @@
         </div>
     </details>
 
+    <div class="panel">
+        <h2>📦 Current Schedule Details</h2>
+
+        <div class="activity-stats">
+            <div class="activity-stat">
+                <div class="activity-stat__icon">🎓</div>
+                <div class="activity-stat__value">{{ total_credits }}</div>
+                <div class="activity-stat__label">Total Planned Units</div>
+            </div>
+            <div class="activity-stat">
+                <div class="activity-stat__icon">⚠️</div>
+                <div class="activity-stat__value">{{ num_difficult }} / {{ num_courses }}</div>
+                <div class="activity-stat__label">Difficult Courses</div>
+                {% if num_courses != "-" %}
+                    <span class="badge badge--{{ difficulty_classification|lower|replace(' ', '-') }} activity-stat__badge">{{ difficulty_classification }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    </div>
+
     <div class="two-column">
 
         <div class="panel">
