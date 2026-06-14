@@ -147,7 +147,7 @@ def generate_burnout_explanation(factors):
     elif factors["num_courses"] < AVG_COURSES:
         return "Not a lot of courses."
     
-    if factors["workload"] == "Overloaded" or (factors["num_difficult"] / factors["num_courses"]) == BURNOUT_COURSES_VHIGH_THRESHOLD:
+    if factors["workload"] == "Overloaded" or (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_VHIGH_THRESHOLD:
         return "Too many hard courses."
     elif factors["workload"] == "Heavy" or (factors["num_difficult"] / factors["num_courses"]) >= BURNOUT_COURSES_HIGH_THRESHOLD:
         return "A good amout of hard courses."
