@@ -13,7 +13,7 @@ load_dotenv()
 csrf = CSRFProtect()
 
 def create_app():
-    if os.environ.get("SECRET_KEY") is None or os.environ.get("SQLITE3_DB") is None or os.environ.get("SEED_EMAIL") or os.environ.get("SEED_PWD") is None:
+    if os.environ.get("SECRET_KEY") is None or os.environ.get("SQLITE3_DB") is None or os.environ.get("SEED_EMAIL") is None or os.environ.get("SEED_PWD") is None:
         raise ValueError("Environment variables variables not configured")
     
     app = Flask(__name__)
