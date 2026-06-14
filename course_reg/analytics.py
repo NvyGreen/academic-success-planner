@@ -28,11 +28,7 @@ def get_num_schedules(student_id):
         query = """SELECT COUNT(*) FROM metric WHERE student_id = :student_id;"""
         cursor = db.execute(query, {"student_id": student_id})
         num_schedules = cursor.fetchone()
-        if len(num_schedules) == 0:
-            num_schedules = 0
-        else:
-            num_schedules = num_schedules[0]
-        return num_schedules
+        return num_schedules[0]
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not fetch number of schedules")

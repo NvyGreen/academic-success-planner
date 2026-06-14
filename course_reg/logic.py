@@ -107,9 +107,7 @@ def calculate_burnout_risk(courses):
     factors["num_courses"] = num_courses
     
     workload = total_hours_per_week(courses)
-    if isinstance(workload, str):
-        return "Error: Could not calculate workload"
-    elif workload > WORKLOAD_HEAVY_THRESHOLD:
+    if workload > WORKLOAD_HEAVY_THRESHOLD:
         burnout_score += 3
         factors["workload"] = "Overloaded"
     elif workload > WORKLOAD_BALANCED_THRESHOLD:

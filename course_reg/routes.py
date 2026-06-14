@@ -392,7 +392,7 @@ def filter_courses_advanced():
             session["filter_courses"] = filter_methods.get_courses_adv(filters, session["temp_courses"], session["user_courses"], session["user_waitlist"])
         except sqlite3.Error as e:
             flash(str(e), "error")
-            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses")) or url_for(".filter_courses_advanced")
+            return safe_redirect(request.args.get("current_page"), fallback=url_for(".filter_courses"))
         
         return redirect(url_for(".course_listing"))
 
