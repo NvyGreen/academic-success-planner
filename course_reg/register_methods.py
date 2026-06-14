@@ -170,10 +170,12 @@ def drop_course(user_id, course_code):
         
         query = """DELETE FROM enrollment WHERE student_id = :student_id AND course_id = :course_id;"""
         cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
+        deleted = cursor.rowcount
         cursor.close()
 
-        query = """UPDATE course SET num_enrolled = num_enrolled - 1 WHERE course_id = :course_id;"""
-        cursor = db.execute(query, {"course_id": course_id})
+        if deleted:
+            query = """UPDATE course SET num_enrolled = num_enrolled - 1 WHERE course_id = :course_id;"""
+            cursor = db.execute(query, {"course_id": course_id})
 
         db.commit()
     except sqlite3.Error as e:
