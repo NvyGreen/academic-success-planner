@@ -672,9 +672,9 @@ def drop_course(code):
                     break
 
         try:
-            error = register_methods.drop_course(session["user_id"], code)
+            register_methods.drop_course(session["user_id"], code)
         except sqlite3.Error as e:
-            flash(error, "error")
+            flash(str(e), "error")
             return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
 
         session["metrics_dirty"] = True
