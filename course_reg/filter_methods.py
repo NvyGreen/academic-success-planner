@@ -4,7 +4,7 @@ from flask import current_app
 from course_reg.db import get_db
 
 
-BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id WHERE """
+BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, (SELECT GROUP_CONCAT(i.last_name || ', ' || SUBSTR(i.first_name, 1, 1) || '.', '; ') FROM course_instructor ci JOIN instructor i ON ci.instructor_id = i.instructor_id WHERE ci.course_id = course.course_id) AS instructors, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course WHERE """
 MODIFIER = "course."
 
 NO_GE_CAT = 1
@@ -77,8 +77,8 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
 
     courses = []
     for raw_course in courses_raw:
-        added = (raw_course[-1] in temp_courses) or (raw_course[-1] in reg_courses)
-        waitlisted = raw_course[-1] in waitlist
+        added = (raw_course["course_code"] in temp_courses) or (raw_course["course_code"] in reg_courses)
+        waitlisted = raw_course["course_code"] in waitlist
         course = clean_course(raw_course, added, waitlisted)
         courses.append(course)
     return courses
@@ -138,7 +138,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
         else:
             query += add_condition
         
-        query += """instructor.last_name = :instructor"""
+        query += """EXISTS (SELECT 1 FROM course_instructor ci JOIN instructor i ON ci.instructor_id = i.instructor_id WHERE ci.course_id = course.course_id AND i.last_name = :instructor)"""
         values["instructor"] = filters.instructor
     
     return query, first_condition
@@ -250,8 +250,8 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
 
     courses = []
     for raw_course in courses_raw:
-        added = (raw_course[-1] in temp_courses) or (raw_course[-1] in reg_courses)
-        waitlisted = raw_course[-1] in waitlist
+        added = (raw_course["course_code"] in temp_courses) or (raw_course["course_code"] in reg_courses)
+        waitlisted = raw_course["course_code"] in waitlist
         course = clean_course(raw_course, added, waitlisted)
         courses.append(course)
     return courses
@@ -373,8 +373,6 @@ def get_criteria_adv(filters):
 def clean_course(raw_course, added: bool, waitlisted: bool):
     course = []
 
-    # (course_id, department_id, course_number, course_name, type, days, start_time, end_time, final_id, first_name, last_name, is_online, building_code, room, credits, num_enrolled, capacity, waitlist, cancelled)
-
     # Add/Drop/Wait
     if added:
         course.append("Registered")
@@ -382,23 +380,23 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
         course.append("Waitlisted")
     else:
         course.append("Neither")
-    
+
     clean_common(raw_course, course)
 
     # Status
-    if raw_course[18] == 1:
+    if raw_course["cancelled"] == 1:
         course.append("CANCELLED")
-    elif raw_course[15] < raw_course[16]:      # num_enrolled < capacity?
+    elif raw_course["num_enrolled"] < raw_course["capacity"]:
         course.append("Open")
-    elif raw_course[17] >= 0:                  # waitlist >= 0?
+    elif raw_course["waitlist"] >= 0:
         course.append("Waitlist")
-    elif raw_course[15] > raw_course[16]:      # num_enrolled > capacity
+    elif raw_course["num_enrolled"] > raw_course["capacity"]:
         course.append("OVER")
     else:
         course.append("FULL")
-    
-    course.append(raw_course[19])
-    
+
+    course.append(raw_course["course_code"])
+
     return course
 
 def clean_wait(raw_course, user_id):
@@ -409,8 +407,9 @@ def clean_wait(raw_course, user_id):
     try:
         db = get_db()
         clean_common(raw_course, course)
-        cursor = db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course[0]})
-        student_pos = cursor.fetchone()[0]
+        cursor = db.execute("""SELECT position FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id""", {"student_id": user_id, "course_id": raw_course["course_id"]})
+        pos_row = cursor.fetchone()
+        student_pos = pos_row[0] if pos_row else None
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not fetch courses")
@@ -419,7 +418,7 @@ def clean_wait(raw_course, user_id):
             cursor.close()
 
     course.append(student_pos)
-    course.append(raw_course[19])
+    course.append(raw_course["course_code"])
 
     return course
 
@@ -431,12 +430,14 @@ def clean_common(raw_course, course):
             SELECT d.abbreviation, f.start_datetime, f.end_datetime
             FROM course as c
             JOIN department as d ON c.department_id = d.department_id
-            JOIN final as f on c.final_id = f.final_id
+            LEFT JOIN final as f on c.final_id = f.final_id
             WHERE c.course_id = :course_id;
         """
         db = get_db()
         cursor = db.execute(my_query, {"course_id": raw_course["course_id"]})
         data = cursor.fetchone()
+        if data is None:
+            raise sqlite3.Error("Error: could not fetch courses")
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not fetch courses")
@@ -445,17 +446,17 @@ def clean_common(raw_course, course):
             cursor.close()
 
     # Abbreviation
-    course.append(data["abbreviation"] + " " + raw_course[2])    # department + course_number
-    course.append(raw_course[3])    # course_name
-    course.append(raw_course[4])    # type
-    course.append(raw_course[5])    # days
+    course.append(data["abbreviation"] + " " + raw_course["course_number"])    # department + course_number
+    course.append(raw_course["course_name"])    # course_name
+    course.append(raw_course["type"])    # type
+    course.append(raw_course["days"])    # days
 
     # Times
-    if raw_course[6] is None or raw_course[7] is None:
+    if raw_course["start_time"] is None or raw_course["end_time"] is None:
         course.append(None)
     else:
-        start_time = datetime.fromisoformat(raw_course[6]).strftime("%I:%M %p")
-        end_time = datetime.fromisoformat(raw_course[7]).strftime("%I:%M %p")
+        start_time = datetime.fromisoformat(raw_course["start_time"]).strftime("%I:%M %p")
+        end_time = datetime.fromisoformat(raw_course["end_time"]).strftime("%I:%M %p")
         course.append(start_time + "-" + end_time)
 
     if data["start_datetime"] is None:
@@ -468,17 +469,17 @@ def clean_common(raw_course, course):
 
         course.append(final_day + ", " + final_date + ", " + final_start + "-" + final_end)
 
-    # Instructor
-    course.append(raw_course["last_name"] + ", " + raw_course["first_name"][:1] + ".")    # instructor.last_name, instructor.first_initial.
+    # Instructor(s)
+    course.append(raw_course["instructors"])    # "Last, F." (or "Last, F.; Other, G." when co-taught)
 
     # Location
-    if (raw_course[11] == 1):
-            course.append("Online")
+    if raw_course["is_online"] == 1:
+        course.append("Online")
     else:
-        course.append(raw_course[12] + " " + raw_course[13])    # building_code room
-    
-    course.append(raw_course[14])    # credits
-    course.append(str(raw_course[15]) + " / " + str(raw_course[16]))    # num_enrolled / capacity
+        course.append(raw_course["building_code"] + " " + raw_course["room"])    # building_code room
+
+    course.append(raw_course["credits"])    # credits
+    course.append(str(raw_course["num_enrolled"]) + " / " + str(raw_course["capacity"]))    # num_enrolled / capacity
 
 def get_criteria_common(criteria, filters):
     cursor = None

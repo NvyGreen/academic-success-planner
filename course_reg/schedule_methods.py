@@ -32,7 +32,7 @@ def get_short_courses(course_codes):
         return []
 
     placeholders = ", ".join([f":code_{i}" for i in range(len(course_codes))])
-    query = f"SELECT department.abbreviation, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, instructor.first_name, instructor.last_name, course.is_online, course.building_code, course.room, course.course_id FROM course_instructor JOIN course ON course_instructor.course_id = course.course_id JOIN instructor ON course_instructor.instructor_id = instructor.instructor_id JOIN department ON course.department_id = department.department_id WHERE course_code IN ({placeholders})"
+    query = f"SELECT department.abbreviation, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, (SELECT GROUP_CONCAT(i.last_name || ', ' || SUBSTR(i.first_name, 1, 1) || '.', '; ') FROM course_instructor ci JOIN instructor i ON ci.instructor_id = i.instructor_id WHERE ci.course_id = course.course_id) AS instructors, course.is_online, course.building_code, course.room, course.course_id FROM course JOIN department ON course.department_id = department.department_id WHERE course_code IN ({placeholders})"
     values = {f"code_{i}": code for i, code in enumerate(course_codes)}
     cursor = None
 
@@ -68,7 +68,7 @@ def get_short_courses(course_codes):
             end_time = end_dt.strftime("%I:%M %p").lstrip("0")
             course.append(start_time + " - " + end_time)
 
-        course.append(raw_course["last_name"] + ", " + raw_course["first_name"][0] + ".")    # last_name, first_init
+        course.append(raw_course["instructors"])    # last_name, first_init (or "; "-joined when co-taught)
 
         if (raw_course["is_online"] == 1):
             course.append("Online")
