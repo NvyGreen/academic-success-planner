@@ -98,7 +98,7 @@ def calculate_burnout_risk(courses):
 
     num_courses = 0
     for course in course_data:
-        if course[0] > 0:
+        if course["credits"] > 0:
             num_courses += 1
 
     if num_courses >= 4:
@@ -121,7 +121,7 @@ def calculate_burnout_risk(courses):
 
     num_difficult = 0
     for course in course_data:
-        if course[1] >= 4:
+        if course["difficulty_score"] >= 3:
             burnout_score += 1
             num_difficult += 1
     
