@@ -289,11 +289,9 @@ def enroll_from_waitlist():
     cursor = None
     try:
         db = get_db()
-        query = """SELECT course_id FROM course WHERE num_enrolled < capacity;"""
+        query = """SELECT course_id, num_enrolled, capacity FROM course WHERE num_enrolled < capacity;"""
         cursor = db.execute(query)
         courses = cursor.fetchall()
-        if not courses:
-            return
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: could not enroll in course from waitlist")
@@ -304,26 +302,26 @@ def enroll_from_waitlist():
     promoted_students = []
     for course in courses:
         course_id = course["course_id"]
+        open_seats = course["capacity"] - course["num_enrolled"]
 
-        # Check if students in waitlist
-        try:
-            db = get_db()
-            query = """SELECT student_id FROM student_waitlist WHERE course_id = :course_id AND position = 1;"""
-            cursor = db.execute(query, {"course_id": course_id})
-            student_id = cursor.fetchone()
-        except sqlite3.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            raise sqlite3.Error("Error: could not enroll in course from waitlist")
-        finally:
-            cursor.close()
-
-        if student_id:
-            student_id = student_id["student_id"]
-
+        # Fill each open seat from the front of the waitlist until the course
+        # is full or the waitlist runs out.
+        for _ in range(open_seats):
+            cursor = None
             try:
-                # Drop from waitlist
                 db = get_db()
 
+                query = """SELECT student_id FROM student_waitlist WHERE course_id = :course_id AND position = 1;"""
+                cursor = db.execute(query, {"course_id": course_id})
+                student_row = cursor.fetchone()
+                cursor.close()
+
+                if student_row is None:
+                    break  # waitlist empty - nothing more to promote for this course
+
+                student_id = student_row["student_id"]
+
+                # Drop from waitlist and shift everyone behind them up one spot
                 query = """DELETE FROM student_waitlist WHERE student_id = :student_id AND course_id = :course_id;"""
                 cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
                 cursor.close()
@@ -339,6 +337,7 @@ def enroll_from_waitlist():
                 # Add to enrollment
                 query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
                 cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+                cursor.close()
 
                 query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
                 cursor = db.execute(query, {"course_id": course_id})
@@ -351,14 +350,15 @@ def enroll_from_waitlist():
                 current_app.logger.error(f"Database error: {e}")
                 raise sqlite3.Error("Error: could not enroll in course from waitlist")
             finally:
-                cursor.close()
-    
+                if cursor is not None:
+                    cursor.close()
+
     return promoted_students
 
 
 def promote_waitlist():    
     promoted_students = enroll_from_waitlist()
-    for student in promoted_students:
+    for student in set(promoted_students):
         try:
             courses = schedule_methods.get_courses_from_list(student, "enrollment")
             workload = logic.total_hours_per_week(courses)
