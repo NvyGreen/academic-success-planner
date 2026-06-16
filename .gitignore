@@ -4,3 +4,5 @@
 .venv
 .CourseRegProject
 *.db-journal
+*.db-wal
+*.db-shm

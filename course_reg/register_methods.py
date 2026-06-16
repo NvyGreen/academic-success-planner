@@ -74,12 +74,17 @@ def register_courses(user_id, course_codes):
         else:
             try:
                 db = get_db()
-                query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
+                # INSERT OR IGNORE makes re-registration idempotent: the UNIQUE
+                # index on (student_id, course_id) drops a duplicate, and we only
+                # bump num_enrolled when a row was actually inserted.
+                query = """INSERT OR IGNORE INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
                 cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
+                inserted = cursor.rowcount
                 cursor.close()
 
-                query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
-                cursor = db.execute(query, {"course_id": course_id})
+                if inserted:
+                    query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
+                    cursor = db.execute(query, {"course_id": course_id})
 
                 db.commit()
             except sqlite3.Error as e:
@@ -174,8 +179,10 @@ def drop_course(user_id, course_code):
         cursor.close()
 
         if deleted:
-            query = """UPDATE course SET num_enrolled = num_enrolled - 1 WHERE course_id = :course_id;"""
-            cursor = db.execute(query, {"course_id": course_id})
+            # Decrement by the number of rows actually removed so the counter stays
+            # correct even if duplicate enrollments ever slipped in.
+            query = """UPDATE course SET num_enrolled = num_enrolled - :deleted WHERE course_id = :course_id;"""
+            cursor = db.execute(query, {"course_id": course_id, "deleted": deleted})
 
         db.commit()
     except sqlite3.Error as e:
@@ -334,14 +341,16 @@ def enroll_from_waitlist():
                 cursor = db.execute(query, {"course_id": course_id})
                 cursor.close()
 
-                # Add to enrollment
-                query = """INSERT INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
+                # Add to enrollment (idempotent; only bump the counter on a real insert)
+                query = """INSERT OR IGNORE INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
                 cursor = db.execute(query, {"student_id": student_id, "course_id": course_id})
+                inserted = cursor.rowcount
                 cursor.close()
 
-                query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
-                cursor = db.execute(query, {"course_id": course_id})
-                cursor.close()
+                if inserted:
+                    query = """UPDATE course SET num_enrolled = num_enrolled + 1 WHERE course_id = :course_id;"""
+                    cursor = db.execute(query, {"course_id": course_id})
+                    cursor.close()
 
                 db.commit()
                 promoted_students.append(student_id)

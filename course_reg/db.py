@@ -7,6 +7,11 @@ def get_db():
     if 'db' not in flask.g:
         flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"])
         flask.g.db.execute("""PRAGMA foreign_keys = ON;""")
+        # WAL lets reads proceed concurrently with a writer (only writer-vs-writer
+        # serializes), which suits this read-heavy app. busy_timeout makes a
+        # connection wait for a lock instead of failing immediately.
+        flask.g.db.execute("""PRAGMA journal_mode = WAL;""")
+        flask.g.db.execute("""PRAGMA busy_timeout = 5000;""")
         flask.g.db.row_factory = sqlite3.Row
     return flask.g.db
 
@@ -190,6 +195,20 @@ def init_db(db):
             FOREIGN KEY("course_id") REFERENCES "course"("course_id"),
             FOREIGN KEY("student_id") REFERENCES "student"("student_id")
         );
+    """)
+
+    # Prevent duplicate enrollments (a student in the same course twice), which
+    # would desync course.num_enrolled under concurrent registration.
+    db.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS "idx_enrollment_student_course"
+        ON "enrollment" ("student_id", "course_id");
+    """)
+
+    # Analytics reads metric history per student ordered by time; this index turns
+    # those full table scans into fast range scans as the table grows.
+    db.execute("""
+        CREATE INDEX IF NOT EXISTS "idx_metric_student_timestamp"
+        ON "metric" ("student_id", "timestamp");
     """)
 
     db.commit()
