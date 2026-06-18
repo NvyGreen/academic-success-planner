@@ -1,16 +1,19 @@
 import sqlite3
+from collections import namedtuple
 from flask import current_app
 from course_reg.db import get_db
 
+BurnoutComparison = namedtuple('BurnoutComparison', ['course_name', 'difficulty', 'estimated_hours_per_week'])
+
 def find_highest_burnout(courses):
     if not courses:
-        return None
+        return
     
     cursor = None
     try:
         db = get_db()
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
-        query = f"SELECT credits, difficulty_score FROM course WHERE course_code IN ({placeholders})"
+        query = f"""SELECT d.abbreviation, c.course_number, c.difficulty_score, c.estimated_hours_per_week FROM course c JOIN department d ON c.department_id = d.department_id WHERE course_code IN ({placeholders})"""
         values = {f"code_{i}": code for i, code in enumerate(courses)}
         cursor = db.execute(query, values)
         course_data = cursor.fetchall()
@@ -20,3 +23,12 @@ def find_highest_burnout(courses):
     finally:
         if cursor is not None:
             cursor.close()
+    
+    max_course = BurnoutComparison('Easy lab', 1, 0.0)
+    for course in course_data:
+        if course['difficulty'] > max_course.difficulty:
+            max_course = BurnoutComparison(f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
+        elif course['difficulty'] == max_course.difficulty and course['estimated_hours_per_week'] == max_course.estimated_hours_per_week:
+            max_course = BurnoutComparison(f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
+    
+    return max_course
