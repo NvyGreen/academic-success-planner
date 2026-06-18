@@ -2,7 +2,7 @@ import sqlite3
 from collections import namedtuple
 from flask import current_app
 from course_reg.db import get_db
-from course_reg.register_methods import check_prereqs
+from course_reg import register_methods
 from course_reg import logic
 
 BurnoutComparison = namedtuple('BurnoutComparison', ['course_id','course_name', 'difficulty', 'estimated_hours_per_week'])
@@ -81,7 +81,7 @@ def choose_drop_or_swap(courses):
     return "Balanced"
 
 
-def find_course_to_swap(user_id, old_course: BurnoutComparison):
+def find_course_to_swap(user_id, old_course: BurnoutComparison) -> BurnoutComparison:
     course_dep, course_num = old_course.course_name.split()
     cursor = None
 
@@ -126,7 +126,7 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison):
                 raise sqlite3.Error("Could not find school")
             
             query = """
-                SELECT c.course_id, d.abbreviation, c.course_number
+                SELECT c.course_id, d.abbreviation, c.course_number, c.difficulty_score, c.estimated_hours_per_week
                 FROM course c
                 JOIN department d ON c.department_id = d.department_id
                 WHERE s.school_id = :school_id
@@ -149,9 +149,9 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison):
     
     potential_swaps = {}
     for course in course_data:
-        prereqs_check = check_prereqs(user_id, course["course_id"])
+        prereqs_check = register_methods.check_prereqs(user_id, course["course_id"])
         if len(prereqs_check) == 0:
-            potential_swaps[course["course_id"]] = f"{course["abbreviation"]} {course["course_number"]}"
+            potential_swaps[course["course_id"]] = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
     
     closest = min(prereqs_check.keys(), key=lambda n: abs(n - old_course.course_id))
     return potential_swaps[closest]
@@ -166,9 +166,68 @@ def generate_detailed_recommendation(user_id, courses):
         try:
             old_course = find_highest_burnout(courses)
             new_course = find_course_to_swap(user_id, old_course)
-            return f"Swap {old_course.course_name} with {new_course}"
+            return f"Swap {old_course.course_name} with {new_course.course_name}"
         except sqlite3.Error as e:
             pass
 
     drop_course = find_highest_workload(courses)
     return f"Drop {drop_course.course_name}"
+
+
+def get_course_codes_from_ids(course_ids: list[int]) -> list[int]:
+    query = """SELECT course_code FROM course WHERE """
+    placeholders = ", ".join([f":id_{i}" for i in range(len(course_ids))])
+    query += f"course_id IN ({placeholders})"
+    values = {f"id_{i}": course_id for i, course_id in enumerate(course_ids)}
+    cursor = None
+
+    try:
+        db = get_db()
+        cursor = db.execute(query, values)
+        courses_raw = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch course codes from IDs")
+    finally:
+        if cursor is not None:
+            cursor.close()
+    
+    course_codes = []
+    for code in courses_raw:
+        course_codes.append(code["course_code"])
+    
+    return course_codes
+
+
+def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutComparison):
+    cursor = None
+    try:
+        db = get_db()        
+        query = """SELECT coreq_id FROM corequisite WHERE course_id = :old_id;"""
+        cursor = db.execute(query, {"old_id": old_course.course_id})
+        old_coreqs = cursor.fetchall()
+        old_courses = [old_course.course_id]
+        for coreq in old_coreqs:
+            old_courses.append(coreq["coreq_id"])
+        old_course_codes = get_course_codes_from_ids(old_courses)
+
+        query = """SELECT coreq_id FROM corequisite WHERE course_id = :new_id;"""
+        cursor = db.execute(query, {"new_id": new_course.course_id})
+        new_coreqs = cursor.fetchall()
+        new_courses = [new_course.course_id]
+        for coreq in new_coreqs:
+            new_courses.append(coreq["coreq_id"])
+        new_course_codes = get_course_codes_from_ids(new_courses)
+
+        for code in old_course_codes:
+            register_methods.drop_course(user_id, code)
+        
+        register_methods.register_courses(user_id, new_course_codes)
+
+    except sqlite3.Error as e:
+        db.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not swap courses")
+    finally:
+        if cursor is not None:
+            cursor.close()
