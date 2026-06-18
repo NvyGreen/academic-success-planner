@@ -34,7 +34,7 @@ def find_highest_burnout(courses):
         elif course['difficulty'] == max_course.difficulty and course['estimated_hours_per_week'] == max_course.estimated_hours_per_week:
             max_course = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
     
-    return max_course.course_name
+    return max_course
 
 
 def find_highest_workload(courses):
@@ -61,7 +61,7 @@ def find_highest_workload(courses):
         if course['estimated_hours_per_week'] > max_course.estimated_hours_per_week:
             max_course = WorkloadComparison(f"{course['abbreviation']} {course['course_number']}", course['estimated_hours_per_week'])
     
-    return max_course.course_name
+    return max_course
 
 
 def choose_drop_or_swap(courses):
@@ -155,3 +155,20 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison):
     
     closest = min(prereqs_check.keys(), key=lambda n: abs(n - old_course.course_id))
     return potential_swaps[closest]
+
+
+def generate_detailed_recommendation(user_id, courses):
+    rec_type = choose_drop_or_swap(courses)
+
+    if rec_type == "Balanced":
+        return "Light/Balanced schedule"
+    elif rec_type == "Swap":
+        try:
+            old_course = find_highest_burnout(courses)
+            new_course = find_course_to_swap(user_id, old_course)
+            return f"Swap {old_course.course_name} with {new_course}"
+        except sqlite3.Error as e:
+            pass
+
+    drop_course = find_highest_workload(courses)
+    return f"Drop {drop_course.course_name}"
