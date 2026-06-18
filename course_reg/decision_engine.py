@@ -2,6 +2,7 @@ import sqlite3
 from collections import namedtuple
 from flask import current_app
 from course_reg.db import get_db
+from course_reg import logic
 
 BurnoutComparison = namedtuple('BurnoutComparison', ['course_name', 'difficulty', 'estimated_hours_per_week'])
 WorkloadComparison = namedtuple('WorkloadComparison', ['course_name', 'estimated_hours_per_week'])
@@ -60,4 +61,20 @@ def find_highest_workload(courses):
             max_course = WorkloadComparison(f"{course['abbreviation']} {course['course_number']}", course['estimated_hours_per_week'])
     
     return max_course.course_name
-            
+
+
+def choose_drop_or_swap(courses):
+    workload = logic.total_hours_per_week(courses)
+    burnout = logic.calculate_burnout_risk(courses)
+
+    if workload > logic.WORKLOAD_HEAVY_THRESHOLD and burnout > logic.BURNOUT_COURSES_HIGH_THRESHOLD:
+        if workload > (10 * burnout - 5):
+            return "Drop"
+        else:
+            return "Swap"
+    elif workload > logic.WORKLOAD_HEAVY_THRESHOLD:
+        return "Drop"
+    elif burnout > logic.BURNOUT_COURSES_HIGH_THRESHOLD:
+        return "Swap"
+    
+    return "Balanced"
