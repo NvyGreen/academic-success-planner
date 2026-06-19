@@ -16,6 +16,11 @@ class WorkloadComparison(NamedTuple):
     course_name: str
     estimated_hours_per_week: float
 
+class ScheduleComparison(NamedTuple):
+    workload: float
+    burnout: float
+    impact: float
+
 
 def find_highest_burnout(courses):
     if not courses:
@@ -240,3 +245,20 @@ def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutCompa
     finally:
         if cursor is not None:
             cursor.close()
+
+
+def compare_schedules(user_id: int, courses: list[int], old_course: int, new_course: int=-1):
+    old_schedule = ScheduleComparison(logic.total_hours_per_week(courses), logic.calculate_burnout_risk(courses)[0], logic.calculate_academic_impact(courses, user_id))
+
+    course_ids = [old_course]
+    if new_course != -1:
+        course_ids.append(new_course)
+    course_codes = get_course_codes_from_ids(course_ids)
+    new_courses = courses.copy()
+    new_courses.remove(course_codes[0])
+    if len(course_codes) > 1:
+        new_courses.append(course_codes[1])
+    
+    new_schedule = ScheduleComparison(logic.total_hours_per_week(new_course), logic.calculate_academic_impact(new_courses), logic.calculate_academic_impact(new_courses))
+
+    return old_schedule.workload - new_schedule.workload, old_schedule.burnout - new_schedule.burnout, old_schedule.impact - new_schedule.impact
