@@ -2,6 +2,7 @@ from datetime import datetime
 import sqlite3
 from flask import current_app
 from course_reg.db import get_db
+from course_reg import models
 
 
 BASE_QUERY = """SELECT course.course_id, course.department_id, course.course_number, course.course_name, course.type, course.days, course.start_time, course.end_time, course.final_id, (SELECT GROUP_CONCAT(i.last_name || ', ' || SUBSTR(i.first_name, 1, 1) || '.', '; ') FROM course_instructor ci JOIN instructor i ON ci.instructor_id = i.instructor_id WHERE ci.course_id = course.course_id) AS instructors, course.is_online, course.building_code, course.room, course.credits, course.num_enrolled, course.capacity, course.waitlist, course.cancelled, course.course_code FROM course WHERE """
@@ -9,12 +10,11 @@ MODIFIER = "course."
 
 NO_GE_CAT = 1
 
-def prep_ge():
+def prep_ge() -> list[tuple[int, str]]:
     cursor = None
     try:
         db = get_db()
         cursor = db.execute("SELECT * FROM ge_category;")
-        # (category_id, label, name)
         ge_categories = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -25,20 +25,19 @@ def prep_ge():
 
     ge_dropdown = []
     for category in ge_categories:
-        if category[0] == 1:
-            ge_dropdown.append((category[0], " "))
+        if category["category_id"] == 1:
+            ge_dropdown.append((category["category_id"], " "))
         else:
-            ge_dropdown.append((category[0], "GE " + category[1] + ": " + category[2]))
+            ge_dropdown.append((category["category_id"], "GE " + category["label"] + ": " + category["name"]))
     
     return ge_dropdown
 
 
-def prep_departments():
+def prep_departments() -> list[tuple[str, str]]:
     cursor = None
     try:
         db = get_db()
         cursor = db.execute("SELECT * FROM department;")
-        # (department_id, abbreviation, name)
         dep_list = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -49,12 +48,12 @@ def prep_departments():
 
     dep_dropdown = [("0", " ")]
     for department in dep_list:
-        dep_dropdown.append((department[0], department[1] + ": " + department[2]))
+        dep_dropdown.append((str(department["department_id"]), department["abbreviation"] + ": " + department["name"]))
     
     return dep_dropdown
 
 
-def get_courses(filters, temp_courses, reg_courses, waitlist): 
+def get_courses(filters: models.Filters, temp_courses: list[int], reg_courses: list[int], waitlist: list[int]) -> list[list]: 
     query = BASE_QUERY   
     values = dict()
     add_condition = """ AND """
@@ -84,7 +83,7 @@ def get_courses(filters, temp_courses, reg_courses, waitlist):
     return courses
 
 
-def get_courses_common(filters, query, values, first_condition, add_condition):
+def get_courses_common(filters: models.Filters, query: str, values: dict, first_condition: bool, add_condition: str) -> tuple[str, bool]:
     # General Education Category
     if filters.ge_cat != NO_GE_CAT:
         first_condition = False
@@ -144,7 +143,7 @@ def get_courses_common(filters, query, values, first_condition, add_condition):
     return query, first_condition
 
 
-def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
+def get_courses_adv(filters: models.AdvancedFilters, temp_courses: list[int], reg_courses: list[int], waitlist: list[int]) -> list[list]:
     query = BASE_QUERY
     values = dict()
     add_condition = """ AND """
@@ -257,7 +256,7 @@ def get_courses_adv(filters, temp_courses, reg_courses, waitlist):
     return courses
 
 
-def get_courses_from_codes(course_codes):
+def get_courses_from_codes(course_codes: list[int]) -> list[list]:
     query = BASE_QUERY
     if len(course_codes) == 0:
         return []
@@ -284,7 +283,7 @@ def get_courses_from_codes(course_codes):
     return courses
 
 
-def get_user_waitlist(user_id, course_codes):
+def get_user_waitlist(user_id: int, course_codes: list[int]) -> list[list]:
     if len(course_codes) == 0:
         return []
 
@@ -312,14 +311,14 @@ def get_user_waitlist(user_id, course_codes):
     return courses
 
 
-def get_criteria(filters):
+def get_criteria(filters: models.Filters) -> list[str]:
     criteria = []
     get_criteria_common(criteria, filters)    
     criteria.append("Exclude cancelled courses")    
     return criteria
 
 
-def get_criteria_adv(filters):
+def get_criteria_adv(filters: models.AdvancedFilters) -> list[str]:
     criteria = []
     get_criteria_common(criteria, filters)
         
@@ -370,7 +369,7 @@ def get_criteria_adv(filters):
     return criteria
 
 
-def clean_course(raw_course, added: bool, waitlisted: bool):
+def clean_course(raw_course: sqlite3.Row, added: bool, waitlisted: bool) -> list:
     course = []
 
     # Add/Drop/Wait
@@ -399,7 +398,8 @@ def clean_course(raw_course, added: bool, waitlisted: bool):
 
     return course
 
-def clean_wait(raw_course, user_id):
+
+def clean_wait(raw_course: sqlite3.Row, user_id: int) -> list:
     course = []
     course.append("Waitlisted")
     cursor = None
@@ -422,7 +422,8 @@ def clean_wait(raw_course, user_id):
 
     return course
 
-def clean_common(raw_course, course):
+
+def clean_common(raw_course: sqlite3.Row, course: list):
     # Get course data
     cursor = None
     try:
@@ -481,7 +482,8 @@ def clean_common(raw_course, course):
     course.append(raw_course["credits"])    # credits
     course.append(str(raw_course["num_enrolled"]) + " / " + str(raw_course["capacity"]))    # num_enrolled / capacity
 
-def get_criteria_common(criteria, filters):
+
+def get_criteria_common(criteria: list[str], filters: models.Filters):
     cursor = None
     if filters.ge_cat != NO_GE_CAT:
         try:

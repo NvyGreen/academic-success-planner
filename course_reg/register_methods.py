@@ -6,7 +6,7 @@ import course_reg.logic as logic
 import course_reg.analytics as analytics
 
 
-def get_course_description(course_id):
+def get_course_description(course_id: int) -> str:
     query = """SELECT department_id, course_number, type FROM course WHERE course_id = :course_id;"""
     cursor = None
     try:
@@ -34,7 +34,7 @@ def get_course_description(course_id):
     return course_desc
 
 
-def register_courses(user_id, course_codes):
+def register_courses(user_id: int, course_codes: list[int]) -> dict:
     if len(course_codes) == 0:
         return {}
     
@@ -100,7 +100,7 @@ def register_courses(user_id, course_codes):
     return unreged_courses
 
 
-def check_coreqs(course_id, all_ids):
+def check_coreqs(course_id: int, all_ids: list[int]) -> list[int]:
     cursor = None
     try:
         db = get_db()
@@ -126,7 +126,7 @@ def check_coreqs(course_id, all_ids):
     return unfilled_coreqs
 
 
-def check_prereqs(user_id, course_id):
+def check_prereqs(user_id: int, course_id: int) -> list[int]:
     cursor = None
     try:
         db = get_db()
@@ -161,7 +161,7 @@ def check_prereqs(user_id, course_id):
     return unfilled_prereqs
 
 
-def drop_course(user_id, course_code):
+def drop_course(user_id: int, course_code: int):
     cursor = None
     try:
         db = get_db()
@@ -194,7 +194,7 @@ def drop_course(user_id, course_code):
             cursor.close()
 
 
-def waitlist_course(user_id, course_code):
+def waitlist_course(user_id: int, course_code: int):
     cursor = None
     try:
         db = get_db()
@@ -230,7 +230,7 @@ def waitlist_course(user_id, course_code):
             cursor.close()
 
 
-def drop_waitlist(user_id, course_code):
+def drop_waitlist(user_id: int, course_code: int):
     cursor = None
     try:
         db = get_db()
@@ -271,25 +271,25 @@ def drop_waitlist(user_id, course_code):
             cursor.close()
 
 
-def get_students():
-    cursor = None
-    try:
-        db = get_db()
-        query = """SELECT student_id FROM student;"""
-        cursor = db.execute(query)
-        ids_raw = cursor.fetchall()
+# def get_students():
+#     cursor = None
+#     try:
+#         db = get_db()
+#         query = """SELECT student_id FROM student;"""
+#         cursor = db.execute(query)
+#         ids_raw = cursor.fetchall()
 
-        ids = []
-        for raw_id in ids_raw:
-            ids.append(raw_id[0])
+#         ids = []
+#         for raw_id in ids_raw:
+#             ids.append(raw_id[0])
         
-        return ids
-    except sqlite3.Error as e:
-        current_app.logger.error(f"Database error: {e}")
-        raise sqlite3.Error("Error: Could not get student IDs")
-    finally:
-        if cursor is not None:
-            cursor.close()
+#         return ids
+#     except sqlite3.Error as e:
+#         current_app.logger.error(f"Database error: {e}")
+#         raise sqlite3.Error("Error: Could not get student IDs")
+#     finally:
+#         if cursor is not None:
+#             cursor.close()
 
 
 def enroll_from_waitlist():

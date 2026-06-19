@@ -27,7 +27,7 @@ SLOT_LOOKUP = [
     22
 ]
 
-def get_short_courses(course_codes):
+def get_short_courses(course_codes: list[int]) -> list:
     if len(course_codes) == 0:
         return []
 
@@ -82,7 +82,7 @@ def get_short_courses(course_codes):
     return courses
 
 
-def get_short_courses_final(course_codes):
+def get_short_courses_final(course_codes: list[int]) -> list:
     if len(course_codes) == 0:
         return []
 
@@ -133,7 +133,7 @@ def get_short_courses_final(course_codes):
     return courses
 
 
-def create_calendar(courses, cal_type):
+def create_calendar(courses: list[list], cal_type: str) -> list[list]:
     calendar = [["", "Mon", "Tue", "Wed", "Thu", "Fri"]]
     times = [
         "7 AM",
@@ -169,7 +169,7 @@ def create_calendar(courses, cal_type):
     return calendar
 
 
-def add_course_to_calendar(course, calendar):
+def add_course_to_calendar(course: list, calendar: list[list]):
     days = course[DAYS_INDEX]
     time_str = course[TIMES_INDEX]
 
@@ -211,7 +211,7 @@ def add_course_to_calendar(course, calendar):
                 calendar[start_slot + r][col] = "SKIP"
 
 
-def add_final_to_calendar(course, calendar):
+def add_final_to_calendar(course: list, calendar: list[list]):
     time_str = course[FINAL_TIME_INDEX]  # "Tue, 12:30 PM - 1:50 PM" or None
 
     if not time_str:
@@ -253,7 +253,7 @@ def add_final_to_calendar(course, calendar):
             calendar[start_slot + r][col] = "SKIP"
 
 
-def get_courses_from_list(user_id, table):
+def get_courses_from_list(user_id: int, table: str) -> list[int]:
     query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
     cursor = None
     try:

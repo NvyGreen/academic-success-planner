@@ -27,7 +27,7 @@ AVG_COURSES = 4
 
 
 # Workload Estimation
-def classify_workload(final_score):
+def classify_workload(final_score: float) -> str:
     if final_score <= WORKLOAD_LIGHT_THRESHOLD:
         return "Light"
     elif final_score <= WORKLOAD_BALANCED_THRESHOLD:
@@ -37,7 +37,7 @@ def classify_workload(final_score):
     else:
         return "Overloaded"
 
-def total_hours_per_week(courses):
+def total_hours_per_week(courses: list[int]) -> float:
     if not courses:
         return 0
     
@@ -74,7 +74,7 @@ def total_hours_per_week(courses):
 
 
 # Burnout Estimation
-def calculate_burnout_risk(courses):
+def calculate_burnout_risk(courses: list[int]) -> tuple[int, dict]:
     if not courses:
         return (0, {"num_courses": 0, "workload": "-", "num_difficult": 0})
     
@@ -129,7 +129,7 @@ def calculate_burnout_risk(courses):
     
     return (burnout_score, factors)
 
-def estimate_burnout_risk(score):
+def estimate_burnout_risk(score: int) -> str:
     if score >= BURNOUT_HIGH_THRESHOLD:
         return "High"
     elif score >= BURNOUT_MEDIUM_THRESHOLD:
@@ -138,7 +138,7 @@ def estimate_burnout_risk(score):
         return "Low"
 
 
-def generate_burnout_explanation(factors):
+def generate_burnout_explanation(factors: dict) -> str:
     if factors["num_courses"] == 0:
         return "No courses added."
     
@@ -159,7 +159,7 @@ def generate_burnout_explanation(factors):
 
 # GPA / Academic Impact Estimation
 
-def calculate_academic_impact(courses, user_id):
+def calculate_academic_impact(courses: list[int], user_id: int) -> float:
     cursor = None
     try:
         db = get_db()
@@ -180,7 +180,7 @@ def calculate_academic_impact(courses, user_id):
     
     return estimate
 
-def classify_academic_impact(score):
+def classify_academic_impact(score: float) -> str:
     if score < IMPACT_MEDIUM_THRESHOLD:
         return "Low"
     elif score < IMPACT_HIGH_THRESHOLD:
@@ -190,7 +190,7 @@ def classify_academic_impact(score):
     else:
         return "Very High"
 
-def generate_impact_explanation(desc):
+def generate_impact_explanation(desc: str) -> str:
     if desc == "Low":
         return "Few/Easy courses"
     elif desc == "Medium":
@@ -202,7 +202,7 @@ def generate_impact_explanation(desc):
 
 
 # Recommendation generation
-def generate_recommendation(workload_score, burnout_score, academic_impact):
+def generate_recommendation(workload_score: float, burnout_score: float, academic_impact: float) -> str:
     # Overloaded
     if workload_score > WORKLOAD_HEAVY_THRESHOLD or burnout_score >= BURNOUT_HIGH_THRESHOLD or academic_impact >= IMPACT_VHIGH_THRESHOLD:
         if workload_score > WORKLOAD_HEAVY_THRESHOLD:
@@ -229,7 +229,7 @@ def generate_recommendation(workload_score, burnout_score, academic_impact):
     return "Add or swap in a hard course!"
 
 
-def get_total_credits(courses):
+def get_total_credits(courses: list[int]) -> int:
     if not courses:
         return 0
     
@@ -250,7 +250,7 @@ def get_total_credits(courses):
             cursor.close()
 
 
-def classify_difficulty_ratio(num_difficult, num_courses):
+def classify_difficulty_ratio(num_difficult: int, num_courses: int) -> str:
     if num_courses == 0:
         return "Low"
 
@@ -266,7 +266,7 @@ def classify_difficulty_ratio(num_difficult, num_courses):
         return "Low"
 
 
-def generate_sparkline_points(values, width=240, height=60, padding=6):
+def generate_sparkline_points(values: list[float], width=240, height=60, padding=6) -> str:
     if not values:
         return ""
 
@@ -288,7 +288,7 @@ def generate_sparkline_points(values, width=240, height=60, padding=6):
     return " ".join(points)
 
 
-def get_trend_direction(values, lower_is_better=True):
+def get_trend_direction(values: list[float], lower_is_better=True) -> tuple[str, str]:
     if len(values) < 2:
         return ("Not enough data yet", "neutral")
 

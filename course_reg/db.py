@@ -1,9 +1,10 @@
 import sqlite3
+from typing import Optional
 import flask
 
 NO_WAITLIST = -1
 
-def get_db():
+def get_db() -> sqlite3.Connection:
     if 'db' not in flask.g:
         flask.g.db = sqlite3.connect(flask.current_app.config["SQLITE3_DB"])
         flask.g.db.execute("""PRAGMA foreign_keys = ON;""")
@@ -16,14 +17,14 @@ def get_db():
     return flask.g.db
 
 
-def tables_exist(db):
+def tables_exist(db: sqlite3.Connection) -> bool:
     result = db.execute("""
         SELECT name FROM sqlite_master WHERE type='table' AND name='course'
     """).fetchone()
     return result is not None
 
 
-def init_db(db):
+def init_db(db: sqlite3.Connection):
     db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (
             "final_id" INTEGER,
@@ -214,7 +215,7 @@ def init_db(db):
     db.commit()
 
 
-def seed_db(db, seed_email, seed_pwd):
+def seed_db(db: sqlite3.Connection, seed_email: str, seed_pwd: str):
     data = [
         (None, None),
         ("2024-12-08T10:30:00.000Z", "2024-12-08T12:30:00.000Z"),
@@ -460,7 +461,7 @@ def seed_db(db, seed_email, seed_pwd):
 
 
 
-def close_db(exception):
+def close_db(exception: Optional[BaseException]):
     db = flask.g.pop('db', None)
     if db is not None:
         if exception is not None:

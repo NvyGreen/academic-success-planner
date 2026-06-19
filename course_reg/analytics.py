@@ -1,10 +1,11 @@
 import sqlite3
+from typing import Optional
 from datetime import datetime
 from flask import current_app
 from course_reg.db import get_db
 
 
-def save_metrics(student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation):
+def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str):
     cursor = None
     try:
         db = get_db()
@@ -20,7 +21,7 @@ def save_metrics(student_id, workload_score, burnout_score, burnout_explanation,
             cursor.close()
 
 
-def get_num_schedules(student_id):
+def get_num_schedules(student_id: int) -> int:
     cursor = None
     try:
         db = get_db()
@@ -36,7 +37,7 @@ def get_num_schedules(student_id):
             cursor.close()
 
 
-def get_latest_activity(student_id):
+def get_latest_activity(student_id: int) -> Optional[sqlite3.Row]:
     cursor = None
     try:
         db = get_db()
@@ -52,7 +53,7 @@ def get_latest_activity(student_id):
             cursor.close()
 
 
-def get_all_workloads(student_id):
+def get_all_workloads(student_id: int) -> list[float]:
     cursor = None
     try:
         db = get_db()
@@ -73,7 +74,7 @@ def get_all_workloads(student_id):
             cursor.close()
 
 
-def get_all_burnout_scores(student_id):
+def get_all_burnout_scores(student_id: int) -> list[float]:
     cursor = None
     try:
         db = get_db()
@@ -94,7 +95,7 @@ def get_all_burnout_scores(student_id):
             cursor.close()
 
 
-def get_all_impact_scores(student_id):
+def get_all_impact_scores(student_id: int) -> list[float]:
     cursor = None
     try:
         db = get_db()
@@ -114,7 +115,7 @@ def get_all_impact_scores(student_id):
         if cursor is not None:
             cursor.close()
 
-def get_all_dates(student_id):
+def get_all_dates(student_id: int) -> list[str]:
     cursor = None
     try:
         db = get_db()
@@ -136,7 +137,7 @@ def get_all_dates(student_id):
             cursor.close()
 
 
-def get_all_recommendations(student_id):
+def get_all_recommendations(student_id: int) -> list[tuple[str, str]]:
     cursor = None
     try:
         db = get_db()
