@@ -1,12 +1,21 @@
 import sqlite3
-from collections import namedtuple
+from typing import NamedTuple
 from flask import current_app
 from course_reg.db import get_db
 from course_reg import register_methods
 from course_reg import logic
 
-BurnoutComparison = namedtuple('BurnoutComparison', ['course_id','course_name', 'difficulty', 'estimated_hours_per_week'])
-WorkloadComparison = namedtuple('WorkloadComparison', ['course_name', 'estimated_hours_per_week'])
+
+class BurnoutComparison(NamedTuple):
+    course_id: int
+    course_name: str
+    difficulty: str
+    estimated_hours_per_week: float
+
+class WorkloadComparison(NamedTuple):
+    course_name: str
+    estimated_hours_per_week: float
+
 
 def find_highest_burnout(courses):
     if not courses:
