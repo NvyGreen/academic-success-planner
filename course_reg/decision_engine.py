@@ -247,7 +247,7 @@ def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutCompa
             cursor.close()
 
 
-def compare_schedules(user_id: int, courses: list[int], old_course: int, new_course: int=-1):
+def get_old_and_new_schedule_stats(user_id: int, courses: list[int], old_course: int, new_course: int=-1) -> tuple[ScheduleComparison, ScheduleComparison]:
     old_schedule = ScheduleComparison(logic.total_hours_per_week(courses), logic.calculate_burnout_risk(courses)[0], logic.calculate_academic_impact(courses, user_id))
 
     course_ids = [old_course]
@@ -261,4 +261,35 @@ def compare_schedules(user_id: int, courses: list[int], old_course: int, new_cou
     
     new_schedule = ScheduleComparison(logic.total_hours_per_week(new_course), logic.calculate_academic_impact(new_courses), logic.calculate_academic_impact(new_courses))
 
-    return old_schedule.workload - new_schedule.workload, old_schedule.burnout - new_schedule.burnout, old_schedule.impact - new_schedule.impact
+    return old_schedule, new_schedule
+
+
+def compare_schedules(old_schedule: ScheduleComparison, new_schedule: ScheduleComparison) -> ScheduleComparison:
+    return ScheduleComparison(old_schedule.workload - new_schedule.workload, old_schedule.burnout - new_schedule.burnout, old_schedule.impact - new_schedule.impact)
+
+
+def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: ScheduleComparison):
+    difference = compare_schedules(old_schedule, new_schedule)
+    old_burnout_cat = logic.estimate_burnout_risk(old_schedule.burnout)
+    new_burnout_cat = logic.estimate_burnout_risk(new_schedule.burnout)
+
+    bullet_summary = []
+    if difference.workload > 0:
+        bullet_summary.append(f"Reduces weekly workload by ~{difference.workload} hours")
+    if difference.burnout > 1 and new_schedule.burnout < logic.BURNOUT_HIGH_THRESHOLD:
+        bullet_summary.append(f"Lowers burnout risk from {old_burnout_cat} to {new_burnout_cat}")
+    if difference.impact < 0:
+        bullet_summary.append("Improves academic impact")
+
+
+    table_summary = [["Metric", "Current Schedule", "With Recommendation", "Change"]]
+
+    table_summary.append(["Workload", f"{old_schedule.workload} hrs/week", f"{new_schedule.workload} hrs/week", f"{difference.workload * -1:+} hrs"])
+
+    table_summary.append(["Burnout Risk", f"{old_burnout_cat} ({old_schedule.burnout})", f"{new_burnout_cat} ({new_schedule.burnout})", f"{difference.burnout * -1:+}"])
+
+    old_impact_cat = logic.classify_academic_impact(old_schedule.impact)
+    new_impact_cat = logic.classify_academic_impact(new_schedule.impact)
+    table_summary.append(["Academic", f"{old_impact_cat} ({old_schedule.impact})", f"{new_impact_cat} ({new_schedule.impact})", f"{difference.impact * -1:+}"])
+
+    return bullet_summary, table_summary
