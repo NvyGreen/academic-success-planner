@@ -9,7 +9,7 @@ from course_reg import logic
 class BurnoutComparison(NamedTuple):
     course_id: int
     course_name: str
-    difficulty: str
+    difficulty: int
     estimated_hours_per_week: float
 
 class WorkloadComparison(NamedTuple):
@@ -22,7 +22,7 @@ class ScheduleComparison(NamedTuple):
     impact: float
 
 
-def find_highest_burnout(courses):
+def find_highest_burnout(courses: list[int]) -> BurnoutComparison:
     if not courses:
         return
     
@@ -41,17 +41,17 @@ def find_highest_burnout(courses):
         if cursor is not None:
             cursor.close()
     
-    max_course = BurnoutComparison(0, 'Easy lab', 1, 0.0)
+    max_course = BurnoutComparison(0, 'Easy lab', 0, -1.0)
     for course in course_data:
-        if course['difficulty'] > max_course.difficulty:
-            max_course = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
-        elif course['difficulty'] == max_course.difficulty and course['estimated_hours_per_week'] == max_course.estimated_hours_per_week:
-            max_course = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
+        if course['difficulty_score'] > max_course.difficulty:
+            max_course = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty_score'], course['estimated_hours_per_week'])
+        elif course['difficulty_score'] == max_course.difficulty and course['estimated_hours_per_week'] > max_course.estimated_hours_per_week:
+            max_course = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty_score'], course['estimated_hours_per_week'])
     
     return max_course
 
 
-def find_highest_workload(courses):
+def find_highest_workload(courses: list[int]) -> WorkloadComparison:
     if not courses:
         return
 
@@ -70,7 +70,7 @@ def find_highest_workload(courses):
         if cursor is not None:
             cursor.close()
     
-    max_course = WorkloadComparison('Easy lab', 0.0)
+    max_course = WorkloadComparison('Easy lab', -1.0)
     for course in course_data:
         if course['estimated_hours_per_week'] > max_course.estimated_hours_per_week:
             max_course = WorkloadComparison(f"{course['abbreviation']} {course['course_number']}", course['estimated_hours_per_week'])
@@ -78,40 +78,49 @@ def find_highest_workload(courses):
     return max_course
 
 
-def choose_drop_or_swap(courses):
+def choose_drop_or_swap(courses: list[int]) -> str:
     workload = logic.total_hours_per_week(courses)
-    burnout = logic.calculate_burnout_risk(courses)
+    burnout = logic.calculate_burnout_risk(courses)[0]
 
-    if workload > logic.WORKLOAD_HEAVY_THRESHOLD and burnout > logic.BURNOUT_COURSES_HIGH_THRESHOLD:
+    if workload > logic.WORKLOAD_HEAVY_THRESHOLD and burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
         if workload > (10 * burnout - 5):
             return "Drop"
         else:
             return "Swap"
     elif workload > logic.WORKLOAD_HEAVY_THRESHOLD:
         return "Drop"
-    elif burnout > logic.BURNOUT_COURSES_HIGH_THRESHOLD:
+    elif burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
         return "Swap"
     
     return "Balanced"
 
 
-def find_course_to_swap(user_id, old_course: BurnoutComparison) -> BurnoutComparison:
-    course_dep, course_num = old_course.course_name.split()
+def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[int]) -> BurnoutComparison:
+    course_dep, course_num = old_course.course_name.rsplit(" ", 1)
     cursor = None
 
     try:
         db = get_db()
-        query = """
-            SELECT c.course_id, d.abbreviation, c.course_number
+        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+        query = f"""
+            SELECT c.course_id, d.abbreviation, c.course_number, c.difficulty_score, c.estimated_hours_per_week
             FROM course c
             JOIN department d ON c.department_id = d.department_id
             WHERE d.abbreviation = :abbreviation
             AND (c.difficulty_score < :difficulty_score
                 OR c.estimated_hours_per_week < :estimated_hours_per_week)
             AND c.course_number <> :course_number
-            AND c.credits <> 0;
+            AND c.credits <> 0
+            AND c.course_code NOT IN ({placeholders});
         """
-        cursor = db.execute(query, {"abbreviation": course_dep, "difficulty_score": old_course.difficulty, "estimated_hours_per_week": old_course.estimated_hours_per_week, "course_number": course_num})
+
+        values = {f"code_{i}": code for i, code in enumerate(courses)}
+        values["abbreviation"] = course_dep
+        values["difficulty_score"] = old_course.difficulty
+        values["estimated_hours_per_week"] = old_course.estimated_hours_per_week
+        values["course_number"] = course_num
+
+        cursor = db.execute(query, values)
         course_data = cursor.fetchall()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -120,7 +129,7 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison) -> BurnoutCompar
         if cursor is not None:
             cursor.close()
     
-    if len(course_data == 0):
+    if len(course_data) == 0:
         # TODO: Check school next
         try:
             db = get_db()
@@ -139,17 +148,27 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison) -> BurnoutCompar
             else:
                 raise sqlite3.Error("Could not find school")
             
-            query = """
+            placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+            query = f"""
                 SELECT c.course_id, d.abbreviation, c.course_number, c.difficulty_score, c.estimated_hours_per_week
                 FROM course c
                 JOIN department d ON c.department_id = d.department_id
+                JOIN school s ON d.school_id = s.school_id
                 WHERE s.school_id = :school_id
                 AND (c.difficulty_score < :difficulty_score
                     OR c.estimated_hours_per_week < :estimated_hours_per_week)
                 AND c.course_number <> :course_number
-                AND c.credits <> 0;
+                AND c.credits <> 0
+                AND c.course_code NOT IN ({placeholders});
             """
-            cursor = db.execute(query, {"school_id": school_id, "difficulty_score": old_course.difficulty, "estimated_hours_per_week": old_course.estimated_hours_per_week, "course_number": course_num})
+
+            values = {f"code_{i}": code for i, code in enumerate(courses)}
+            values["school_id"] = school_id
+            values["difficulty_score"] = old_course.difficulty
+            values["estimated_hours_per_week"] = old_course.estimated_hours_per_week
+            values["course_number"] = course_num
+
+            cursor = db.execute(query, values)
             course_data = cursor.fetchall()
 
             if len(course_data) == 0:
@@ -165,13 +184,16 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison) -> BurnoutCompar
     for course in course_data:
         prereqs_check = register_methods.check_prereqs(user_id, course["course_id"])
         if len(prereqs_check) == 0:
-            potential_swaps[course["course_id"]] = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty'], course['estimated_hours_per_week'])
+            potential_swaps[course["course_id"]] = BurnoutComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['difficulty_score'], course['estimated_hours_per_week'])
     
-    closest = min(prereqs_check.keys(), key=lambda n: abs(n - old_course.course_id))
-    return potential_swaps[closest]
+    try:
+        closest = min(potential_swaps.keys(), key=lambda n: abs(n - old_course.course_id))
+        return potential_swaps[closest]
+    except ValueError:
+        raise sqlite3.Error("Error: Could not find course to swap")
 
 
-def generate_detailed_recommendation(user_id, courses):
+def generate_detailed_recommendation(user_id: int, courses: list[int]) -> str:
     rec_type = choose_drop_or_swap(courses)
 
     if rec_type == "Balanced":
@@ -179,16 +201,25 @@ def generate_detailed_recommendation(user_id, courses):
     elif rec_type == "Swap":
         try:
             old_course = find_highest_burnout(courses)
-            new_course = find_course_to_swap(user_id, old_course)
+            new_course = find_course_to_swap(user_id, old_course, courses)
             return f"Swap {old_course.course_name} with {new_course.course_name}"
         except sqlite3.Error as e:
-            pass
+            current_app.logger.error(f"Database error: {e}")
+        except AttributeError as e:
+            current_app.logger.error(f"Attribute Error: {e}")
 
-    drop_course = find_highest_workload(courses)
-    return f"Drop {drop_course.course_name}"
+    try:
+        drop_course = find_highest_workload(courses)
+        return f"Drop {drop_course.course_name}"
+    except AttributeError as e:
+        current_app.logger.error(f"Attribute Error: {e}")
+        return "No courses added!"
 
 
 def get_course_codes_from_ids(course_ids: list[int]) -> list[int]:
+    if len(course_ids) == 0:
+        return []
+    
     query = """SELECT course_code FROM course WHERE """
     placeholders = ", ".join([f":id_{i}" for i in range(len(course_ids))])
     query += f"course_id IN ({placeholders})"
@@ -233,10 +264,12 @@ def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutCompa
             new_courses.append(coreq["coreq_id"])
         new_course_codes = get_course_codes_from_ids(new_courses)
 
+        unreged_courses = register_methods.register_courses(user_id, new_course_codes)
+        if isinstance(unreged_courses, dict) and len(unreged_courses) > 0:
+            raise sqlite3.Error("Error: Could not swap courses")
+
         for code in old_course_codes:
             register_methods.drop_course(user_id, code)
-        
-        register_methods.register_courses(user_id, new_course_codes)
 
     except sqlite3.Error as e:
         db.rollback()
@@ -259,7 +292,7 @@ def get_old_and_new_schedule_stats(user_id: int, courses: list[int], old_course:
     if len(course_codes) > 1:
         new_courses.append(course_codes[1])
     
-    new_schedule = ScheduleComparison(logic.total_hours_per_week(new_course), logic.calculate_academic_impact(new_courses), logic.calculate_academic_impact(new_courses))
+    new_schedule = ScheduleComparison(logic.total_hours_per_week(new_courses), logic.calculate_burnout_risk(new_courses)[0], logic.calculate_academic_impact(new_courses, user_id))
 
     return old_schedule, new_schedule
 
@@ -275,7 +308,7 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
 
     bullet_summary = []
     if difference.workload > 0:
-        bullet_summary.append(f"Reduces weekly workload by ~{difference.workload} hours")
+        bullet_summary.append(f"Reduces weekly workload by ~{round(difference.workload, 2)} hours")
     if difference.burnout > 1 and new_schedule.burnout < logic.BURNOUT_HIGH_THRESHOLD:
         bullet_summary.append(f"Lowers burnout risk from {old_burnout_cat} to {new_burnout_cat}")
     if difference.impact < 0:
