@@ -9,13 +9,29 @@ def save_metrics(student_id: int, workload_score: float, burnout_score: float, b
     cursor = None
     try:
         db = get_db()
-        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, why_rec, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :why_rec, :timestamp);"""
-        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "why_rec": why_rec, "timestamp": datetime.isoformat(datetime.now())})
+        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, why_rec, status, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :why_rec, :status, :timestamp);"""
+        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "why_rec": why_rec, "status": "Viewed", "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
     except sqlite3.Error as e:
         db.rollback()
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not save metrics")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def edit_rec_status(metric_id: int, new_status: str):
+    cursor = None
+    try:
+        db = get_db()
+        query = """UPDATE metric SET status = :new_status WHERE metric_id = :metric_id;"""
+        cursor = db.execute(query, {"new_status": new_status, "metric_id": metric_id})
+        db.commit()
+    except sqlite3.Error as e:
+        db.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: could not edit recommendation status")
     finally:
         if cursor is not None:
             cursor.close()
