@@ -94,6 +94,9 @@ def init_db(db: sqlite3.Connection):
             "impact_score" REAL,
             "impact_explanation" TEXT,
             "recommendation" TEXT,
+            "rec_type" TEXT,
+            "why_rec" TEXT,
+            "status" TEXT,
             "timestamp" TEXT,
             PRIMARY KEY("metric_id"),
             FOREIGN KEY("student_id") REFERENCES "student"("student_id")
