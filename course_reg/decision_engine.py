@@ -309,10 +309,18 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
     bullet_summary = []
     if difference.workload > 0:
         bullet_summary.append(f"Reduces weekly workload by ~{round(difference.workload, 2)} hours")
+    elif difference.workload < 0:
+        bullet_summary.append(f"Increases weekly workload by ~{round(difference.workload, 2) * -1} hours")
+    
     if difference.burnout > 1 and new_schedule.burnout < logic.BURNOUT_HIGH_THRESHOLD:
         bullet_summary.append(f"Lowers burnout risk from {old_burnout_cat} to {new_burnout_cat}")
+    elif difference.burnout < -1 and new_schedule.burnout >= logic.BURNOUT_HIGH_THRESHOLD:
+        bullet_summary.append(f"Increases burnout risk from {old_burnout_cat} to {new_burnout_cat}")
+
     if difference.impact < 0:
         bullet_summary.append("Improves academic impact")
+    elif difference.impact > 0:
+        bullet_summary.append("Decreases academic impact")
 
 
     table_summary = [["Metric", "Current Schedule", "With Recommendation", "Change"]]
