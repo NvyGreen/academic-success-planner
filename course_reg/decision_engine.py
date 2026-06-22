@@ -13,6 +13,7 @@ class BurnoutComparison(NamedTuple):
     estimated_hours_per_week: float
 
 class WorkloadComparison(NamedTuple):
+    course_id: int
     course_name: str
     estimated_hours_per_week: float
 
@@ -59,7 +60,7 @@ def find_highest_workload(courses: list[int]) -> WorkloadComparison:
     try:
         db = get_db()
         placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
-        query = f"""SELECT d.abbreviation, c.course_number, c.estimated_hours_per_week FROM course c JOIN department d ON c.department_id = d.department_id WHERE course_code IN ({placeholders})"""
+        query = f"""SELECT c.course_id, d.abbreviation, c.course_number, c.estimated_hours_per_week FROM course c JOIN department d ON c.department_id = d.department_id WHERE course_code IN ({placeholders})"""
         values = {f"code_{i}": code for i, code in enumerate(courses)}
         cursor = db.execute(query, values)
         course_data = cursor.fetchall()
@@ -70,10 +71,10 @@ def find_highest_workload(courses: list[int]) -> WorkloadComparison:
         if cursor is not None:
             cursor.close()
     
-    max_course = WorkloadComparison('Easy lab', -1.0)
+    max_course = WorkloadComparison(0, 'Easy lab', -1.0)
     for course in course_data:
         if course['estimated_hours_per_week'] > max_course.estimated_hours_per_week:
-            max_course = WorkloadComparison(f"{course['abbreviation']} {course['course_number']}", course['estimated_hours_per_week'])
+            max_course = WorkloadComparison(course['course_id'], f"{course['abbreviation']} {course['course_number']}", course['estimated_hours_per_week'])
     
     return max_course
 
@@ -193,27 +194,29 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[in
         raise sqlite3.Error("Error: Could not find course to swap")
 
 
-def generate_detailed_recommendation(user_id: int, courses: list[int]) -> str:
+def generate_detailed_recommendation(user_id: int, courses: list[int]) -> tuple[str, str, int, int]:
     rec_type = choose_drop_or_swap(courses)
 
     if rec_type == "Balanced":
-        return "Light/Balanced schedule"
+        return "Light/Balanced schedule", rec_type, -1, -1
     elif rec_type == "Swap":
         try:
             old_course = find_highest_burnout(courses)
             new_course = find_course_to_swap(user_id, old_course, courses)
-            return f"Swap {old_course.course_name} with {new_course.course_name}"
+            return f"Swap {old_course.course_name} with {new_course.course_name}", rec_type, old_course.course_id, new_course.course_id
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")
         except AttributeError as e:
             current_app.logger.error(f"Attribute Error: {e}")
 
     try:
+        rec_type = "Drop"
         drop_course = find_highest_workload(courses)
-        return f"Drop {drop_course.course_name}"
+        return f"Drop {drop_course.course_name}", rec_type, drop_course.course_id, -1
     except AttributeError as e:
+        rec_type = "Balanced"
         current_app.logger.error(f"Attribute Error: {e}")
-        return "No courses added!"
+        return "No courses added!", rec_type, -1, -1
 
 
 def get_course_codes_from_ids(course_ids: list[int]) -> list[int]:
@@ -283,15 +286,25 @@ def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutCompa
 def get_old_and_new_schedule_stats(user_id: int, courses: list[int], old_course: int, new_course: int=-1) -> tuple[ScheduleComparison, ScheduleComparison]:
     old_schedule = ScheduleComparison(logic.total_hours_per_week(courses), logic.calculate_burnout_risk(courses)[0], logic.calculate_academic_impact(courses, user_id))
 
-    course_ids = [old_course]
-    if new_course != -1:
-        course_ids.append(new_course)
-    course_codes = get_course_codes_from_ids(course_ids)
+    # No recommended change (a Balanced schedule passes old_course=-1), or the old
+    # course id doesn't resolve to a currently-enrolled course (e.g. the 'Easy lab'
+    # placeholder id): nothing to swap out, so the "new" schedule equals the old.
+    if old_course == -1:
+        return old_schedule, old_schedule
+
+    old_codes = get_course_codes_from_ids([old_course])
+    if not old_codes or old_codes[0] not in courses:
+        return old_schedule, old_schedule
+
+    # Resolve old/new codes separately - get_course_codes_from_ids uses IN (...),
+    # whose row order doesn't track the input order, so we can't index positionally.
     new_courses = courses.copy()
-    new_courses.remove(course_codes[0])
-    if len(course_codes) > 1:
-        new_courses.append(course_codes[1])
-    
+    new_courses.remove(old_codes[0])
+    if new_course != -1:
+        new_codes = get_course_codes_from_ids([new_course])
+        if new_codes:
+            new_courses.append(new_codes[0])
+
     new_schedule = ScheduleComparison(logic.total_hours_per_week(new_courses), logic.calculate_burnout_risk(new_courses)[0], logic.calculate_academic_impact(new_courses, user_id))
 
     return old_schedule, new_schedule

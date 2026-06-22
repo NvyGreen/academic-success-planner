@@ -153,7 +153,7 @@ def get_all_dates(student_id: int) -> list[str]:
             cursor.close()
 
 
-def get_all_recommendations(student_id: int) -> list[tuple[str, str]]:
+def get_all_recommendations(student_id: int) -> list[tuple[str, str, str, str]]:
     cursor = None
     try:
         db = get_db()

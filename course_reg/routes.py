@@ -65,13 +65,8 @@ def check_dirty_metrics():
                 burnout_explanation = logic.generate_burnout_explanation(burnout_data[1])
                 impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
                 impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
-                recommendation = decision_engine.generate_detailed_recommendation(session["user_id"], session["user_courses"])
-                rec_type = decision_engine.choose_drop_or_swap(session["user_courses"])
-                if rec_type != "Balanced":
-                    old_course = decision_engine.find_highest_workload(session["user_courses"])
-                    new_course = -1
-                    if rec_type == "Swap":
-                        new_course = decision_engine.find_course_to_swap(session["user_id"], old_course, session["user_courses"])
+                recommendation, rec_type, old_course, new_course = decision_engine.generate_detailed_recommendation(session["user_id"], session["user_courses"])
+                if old_course != -1:
                     schedule_stats = decision_engine.get_old_and_new_schedule_stats(session["user_id"], session["user_courses"], old_course, new_course)
                     why_rec = ", ".join(decision_engine.generate_change_summary(schedule_stats[0], schedule_stats[1])[1])
                 else:
