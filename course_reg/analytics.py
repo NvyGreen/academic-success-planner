@@ -5,12 +5,12 @@ from flask import current_app
 from course_reg.db import get_db
 
 
-def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str):
+def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str, rec_type: str, why_rec: str):
     cursor = None
     try:
         db = get_db()
-        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :timestamp);"""
-        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "timestamp": datetime.isoformat(datetime.now())})
+        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, why_rec, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :why_rec, :timestamp);"""
+        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "why_rec": why_rec, "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
     except sqlite3.Error as e:
         db.rollback()
@@ -141,14 +141,14 @@ def get_all_recommendations(student_id: int) -> list[tuple[str, str]]:
     cursor = None
     try:
         db = get_db()
-        query = """SELECT recommendation, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC;"""
+        query = """SELECT recommendation, rec_type, why_rec, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC;"""
         cursor = db.execute(query, {"student_id": student_id})
         recommendations_raw = cursor.fetchall()
 
         recommendations = []
         for raw_rec in recommendations_raw:
             date = datetime.fromisoformat(raw_rec["timestamp"])
-            rec_tup = (raw_rec["recommendation"], f"{date.strftime('%b')} {date.day}, {date.year}")
+            rec_tup = (raw_rec["recommendation"], raw_rec["rec_type"], raw_rec["why_rec"], f"{date.strftime('%b')} {date.day}, {date.year}")
             recommendations.append(rec_tup)
 
         return recommendations

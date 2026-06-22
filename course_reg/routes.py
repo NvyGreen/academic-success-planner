@@ -17,7 +17,7 @@ from flask import (
 from course_reg.db import get_db
 from course_reg.forms import LoginForm, FilterForm, AdvancedFilterForm
 from course_reg.models import Filters, AdvancedFilters
-from course_reg import analytics, filter_methods, schedule_methods, register_methods, logic
+from course_reg import analytics, decision_engine, filter_methods, schedule_methods, register_methods, logic
 
 
 pages = Blueprint(
@@ -65,8 +65,18 @@ def check_dirty_metrics():
                 burnout_explanation = logic.generate_burnout_explanation(burnout_data[1])
                 impact = logic.calculate_academic_impact(session["user_courses"], session["user_id"])
                 impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
-                recommendation = logic.generate_recommendation(workload, burnout, impact)
-                analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation)
+                recommendation = decision_engine.generate_detailed_recommendation(session["user_id"], session["user_courses"])
+                rec_type = decision_engine.choose_drop_or_swap(session["user_courses"])
+                if rec_type != "Balanced":
+                    old_course = decision_engine.find_highest_workload(session["user_courses"])
+                    new_course = -1
+                    if rec_type == "Swap":
+                        new_course = decision_engine.find_course_to_swap(session["user_id"], old_course, session["user_courses"])
+                    schedule_stats = decision_engine.get_old_and_new_schedule_stats(session["user_id"], session["user_courses"], old_course, new_course)
+                    why_rec = ", ".join(decision_engine.generate_change_summary(schedule_stats[0], schedule_stats[1])[1])
+                else:
+                    why_rec = "Courses are fair"
+                analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, why_rec)
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
 
