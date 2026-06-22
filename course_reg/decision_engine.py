@@ -301,24 +301,28 @@ def compare_schedules(old_schedule: ScheduleComparison, new_schedule: ScheduleCo
     return ScheduleComparison(old_schedule.workload - new_schedule.workload, old_schedule.burnout - new_schedule.burnout, old_schedule.impact - new_schedule.impact)
 
 
-def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: ScheduleComparison):
+def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: ScheduleComparison) -> tuple[list[str], list[str], list[list[str]]]:
     difference = compare_schedules(old_schedule, new_schedule)
     old_burnout_cat = logic.estimate_burnout_risk(old_schedule.burnout)
     new_burnout_cat = logic.estimate_burnout_risk(new_schedule.burnout)
 
     bullet_summary = []
+    why_summary = []
     if difference.workload > 0:
         bullet_summary.append(f"Reduces weekly workload by ~{round(difference.workload, 2)} hours")
+        why_summary.append("improves workload balance")
     elif difference.workload < 0:
         bullet_summary.append(f"Increases weekly workload by ~{round(difference.workload, 2) * -1} hours")
     
     if difference.burnout > 1 and new_schedule.burnout < logic.BURNOUT_HIGH_THRESHOLD:
         bullet_summary.append(f"Lowers burnout risk from {old_burnout_cat} to {new_burnout_cat}")
+        why_summary.append("reduces burnout risk")
     elif difference.burnout < -1 and new_schedule.burnout >= logic.BURNOUT_HIGH_THRESHOLD:
         bullet_summary.append(f"Increases burnout risk from {old_burnout_cat} to {new_burnout_cat}")
 
     if difference.impact < 0:
         bullet_summary.append("Improves academic impact")
+        why_summary.append("improves academic impact")
     elif difference.impact > 0:
         bullet_summary.append("Decreases academic impact")
 
@@ -333,4 +337,4 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
     new_impact_cat = logic.classify_academic_impact(new_schedule.impact)
     table_summary.append(["Academic", f"{old_impact_cat} ({old_schedule.impact})", f"{new_impact_cat} ({new_schedule.impact})", f"{difference.impact * -1:+}"])
 
-    return bullet_summary, table_summary
+    return bullet_summary, why_summary, table_summary
