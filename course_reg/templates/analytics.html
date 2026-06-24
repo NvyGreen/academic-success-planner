@@ -157,14 +157,19 @@
             <ul class="recommendation-list">
                 {% for rec in past_recommendations %}
                     <li class="recommendation-item">
-                        <div class="recommendation-item__icon">⇄</div>
+                        <div class="recommendation-item__icon">
+                            {% if rec[1] == 'Swap' %}⇄
+                            {% elif rec[1] == 'Drop' %}🗑
+                            {% elif rec[1] == 'Balanced' %}⚖
+                            {% endif %}
+                        </div>
                         <div class="recommendation-item__content">
                             <div class="recommendation-item__title">{{ rec[0] }}</div>
-                            <div class="recommendation-item__subtitle">Placeholder</div>
+                            <div class="recommendation-item__subtitle">{{ rec[2] }}</div>
                         </div>
                         <div class="recommendation-item__meta">
-                            <span class="badge badge--yellow">Viewed</span>
-                            <span class="recommendation-item__date">{{ rec[3] }}</span>
+                            <span class="badge badge--yellow">{{ rec[3] }}</span>
+                            <span class="recommendation-item__date">{{ rec[4] }}</span>
                         </div>
                     </li>
                 {% endfor %}

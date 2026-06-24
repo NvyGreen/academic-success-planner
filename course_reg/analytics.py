@@ -153,18 +153,18 @@ def get_all_dates(student_id: int) -> list[str]:
             cursor.close()
 
 
-def get_all_recommendations(student_id: int) -> list[tuple[str, str, str, str]]:
+def get_all_recommendations(student_id: int) -> list[tuple[str, str, str, str, str]]:
     cursor = None
     try:
         db = get_db()
-        query = """SELECT recommendation, rec_type, why_summary, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC;"""
+        query = """SELECT recommendation, rec_type, why_summary, status, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC;"""
         cursor = db.execute(query, {"student_id": student_id})
         recommendations_raw = cursor.fetchall()
 
         recommendations = []
         for raw_rec in recommendations_raw:
             date = datetime.fromisoformat(raw_rec["timestamp"])
-            rec_tup = (raw_rec["recommendation"], raw_rec["rec_type"], raw_rec["why_summary"], f"{date.strftime('%b')} {date.day}, {date.year}")
+            rec_tup = (raw_rec["recommendation"], raw_rec["rec_type"], raw_rec["why_summary"], raw_rec['status'], f"{date.strftime('%b')} {date.day}, {date.year}")
             recommendations.append(rec_tup)
 
         return recommendations

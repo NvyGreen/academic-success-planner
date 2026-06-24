@@ -74,8 +74,8 @@ def check_dirty_metrics():
                     table_summary = decision_engine.serialize_matrix(raw_table)
                 else:
                     bullet_summary = "No changes necessary"
-                    why_summary = "Courses are fair"
-                    table_summary = f"Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({burnout}),{logic.estimate_burnout_risk(burnout)} ({burnout}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({impact}),{logic.classify_academic_impact(impact)} ({impact}),0"
+                    why_summary = "there is a good balance of courses"
+                    table_summary = f"Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({round(burnout, 2)}),{logic.estimate_burnout_risk(burnout)} ({round(burnout, 2)}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({round(impact, 2)}),{logic.classify_academic_impact(impact)} ({round(impact, 2)}),0"
                 analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary)
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
