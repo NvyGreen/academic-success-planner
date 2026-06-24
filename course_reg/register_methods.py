@@ -377,9 +377,14 @@ def promote_waitlist():
             recommendation, rec_type, old_course, new_course = decision_engine.generate_detailed_recommendation(student, courses)
             if old_course != -1:
                 schedule_stats = decision_engine.get_old_and_new_schedule_stats(student, courses, old_course, new_course)
-                why_rec = ", ".join(decision_engine.generate_change_summary(schedule_stats[0], schedule_stats[1])[1])
+                raw_bullet, raw_why, raw_table = decision_engine.generate_change_summary(schedule_stats[0], schedule_stats[1])
+                bullet_summary = decision_engine.serialize_list(raw_bullet)
+                why_summary = decision_engine.serialize_list(raw_why)
+                table_summary = decision_engine.serialize_matrix(raw_table)
             else:
-                why_rec = "Courses are fair"
-            analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, why_rec)
+                bullet_summary = "No changes necessary"
+                why_summary = "Courses are fair"
+                table_summary = f"Metric,Current Schedule,With Recommendation,Change;Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({burnout}),{logic.estimate_burnout_risk(burnout)} ({burnout}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({impact}),{logic.classify_academic_impact(impact)} ({impact}),0"
+            analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary)
         except sqlite3.Error as e:
             current_app.logger.error(f"Database error: {e}")

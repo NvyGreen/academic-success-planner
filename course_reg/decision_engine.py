@@ -286,9 +286,6 @@ def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutCompa
 def get_old_and_new_schedule_stats(user_id: int, courses: list[int], old_course: int, new_course: int=-1) -> tuple[ScheduleComparison, ScheduleComparison]:
     old_schedule = ScheduleComparison(logic.total_hours_per_week(courses), logic.calculate_burnout_risk(courses)[0], logic.calculate_academic_impact(courses, user_id))
 
-    # No recommended change (a Balanced schedule passes old_course=-1), or the old
-    # course id doesn't resolve to a currently-enrolled course (e.g. the 'Easy lab'
-    # placeholder id): nothing to swap out, so the "new" schedule equals the old.
     if old_course == -1:
         return old_schedule, old_schedule
 
@@ -296,8 +293,6 @@ def get_old_and_new_schedule_stats(user_id: int, courses: list[int], old_course:
     if not old_codes or old_codes[0] not in courses:
         return old_schedule, old_schedule
 
-    # Resolve old/new codes separately - get_course_codes_from_ids uses IN (...),
-    # whose row order doesn't track the input order, so we can't index positionally.
     new_courses = courses.copy()
     new_courses.remove(old_codes[0])
     if new_course != -1:
@@ -351,3 +346,28 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
     table_summary.append(["Academic", f"{old_impact_cat} ({old_schedule.impact})", f"{new_impact_cat} ({new_schedule.impact})", f"{difference.impact * -1:+}"])
 
     return bullet_summary, why_summary, table_summary
+
+
+def serialize_list(arr: list[str]) -> str:
+    return ",".join(arr)
+
+
+def deserialize_list(text: str) -> list[str]:
+    return text.split(",")
+
+
+def serialize_matrix(matrix: list[list[str]]) -> str:
+    arr = []
+    for row in matrix:
+        arr.append(",".join(row))
+    
+    return ";".join(arr)
+
+
+def deserialize_matrix(text: str) -> list[list[str]]:
+    arr = text.split(";")
+    matrix = []
+    for line in arr:
+        matrix.append(line.split(","))
+    
+    return matrix
