@@ -75,7 +75,7 @@ def check_dirty_metrics():
                 else:
                     bullet_summary = "No changes necessary"
                     why_summary = "Courses are fair"
-                    table_summary = f"Metric,Current Schedule,With Recommendation,Change;Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({burnout}),{logic.estimate_burnout_risk(burnout)} ({burnout}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({impact}),{logic.classify_academic_impact(impact)} ({impact}),0"
+                    table_summary = f"Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({burnout}),{logic.estimate_burnout_risk(burnout)} ({burnout}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({impact}),{logic.classify_academic_impact(impact)} ({impact}),0"
                 analytics.save_metrics(session["user_id"], workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary)
             except sqlite3.Error as e:
                 current_app.logger.error(f"Database error: {e}")
@@ -516,6 +516,10 @@ def analytics_page():
 
             past_recommendations = []
             latest_activity = "-"
+
+            bullet_summary = []
+            why_summary = ""
+            table_summary = []
         else:
             workload_hours = round(latest["workload_score"], 2)
             burnout_risk = round(latest["burnout_score"], 2)
@@ -533,6 +537,21 @@ def analytics_page():
             past_recommendations = analytics.get_all_recommendations(session["user_id"])
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
             latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
+
+            bullet_summary = decision_engine.deserialize_list(latest["bullet_summary"] or "")
+            why_summary_raw = latest["why_summary"]
+            table_summary = decision_engine.deserialize_matrix(latest["table_summary"] or "")
+
+            why_summary = "Our engine analyzed your schedule and found that "
+            if latest["rec_type"] == "Balanced":
+                why_summary += why_summary_raw
+            else:
+                why_summary_raw = decision_engine.deserialize_list(why_summary_raw)
+                if latest["rec_type"] == "Swap":
+                    why_summary += "this swap " + " and ".join(why_summary_raw)
+                else:
+                    why_summary += "this drop " + " and ".join(why_summary_raw)
+            why_summary += "."
 
         # Current schedule details
         if isinstance(session.get("user_courses"), str) or not session.get("user_courses"):
@@ -615,7 +634,10 @@ def analytics_page():
         workload_trend=workload_trend,
         workload_trend_class=workload_trend_class,
         burnout_trend=burnout_trend,
-        burnout_trend_class=burnout_trend_class
+        burnout_trend_class=burnout_trend_class,
+        bullet_summary=bullet_summary,
+        why_summary=why_summary,
+        table_summary=table_summary
     )
 
 

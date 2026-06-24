@@ -63,13 +63,13 @@
             <span>Why This Recommendation?</span>
             <span class="panel__summary-arrow">▾</span>
         </summary>
-        <p class="panel__subtitle">Our engine analyzed your schedule and found that this swap improves your workload balance and reduces burnout risk.</p>
+        <p class="panel__subtitle">{{ why_summary }}</p>
 
         <div class="panel__grid">
             <ul class="reason-list">
-                <li><span class="check">✓</span> Reduces weekly workload by ~6 hours</li>
-                <li><span class="check">✓</span> Lowers burnout risk from High to Moderate</li>
-                <li><span class="check">✓</span> Improves workload balance across the week</li>
+                {% for bullet in bullet_summary %}
+                    <li><span class="check">✓</span> {{ bullet }}</li>
+                {% endfor %}
             </ul>
 
             <table class="comparison-table">
@@ -82,24 +82,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Workload</td>
-                        <td>31 hrs/week</td>
-                        <td>25 hrs/week</td>
-                        <td class="change change--positive">-6 hrs</td>
-                    </tr>
-                    <tr>
-                        <td>Burnout Risk</td>
-                        <td>High (0.72)</td>
-                        <td>Moderate (0.48)</td>
-                        <td class="change change--positive">-0.24</td>
-                    </tr>
-                    <tr>
-                        <td>Academic Impact</td>
-                        <td>Moderate (-0.15)</td>
-                        <td>Positive (+0.08)</td>
-                        <td class="change change--positive">+0.23</td>
-                    </tr>
+                    {% for row in table_summary %}
+                        <tr>
+                            {% for item in row %}
+                                <td>{{ item }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -9,7 +9,7 @@ def save_metrics(student_id: int, workload_score: float, burnout_score: float, b
     cursor = None
     try:
         db = get_db()
-        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, status, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :bullet_summary, :why_summary, :rec_summary, :status, :timestamp);"""
+        query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, status, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :bullet_summary, :why_summary, :table_summary, :status, :timestamp);"""
         cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "bullet_summary": bullet_summary, "why_summary": why_summary, "table_summary": table_summary, "status": "Viewed", "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
     except sqlite3.Error as e:

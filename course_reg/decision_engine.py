@@ -335,7 +335,7 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
         bullet_summary.append("Decreases academic impact")
 
 
-    table_summary = [["Metric", "Current Schedule", "With Recommendation", "Change"]]
+    table_summary = []
 
     table_summary.append(["Workload", f"{old_schedule.workload} hrs/week", f"{new_schedule.workload} hrs/week", f"{difference.workload * -1:+} hrs"])
 
@@ -353,7 +353,7 @@ def serialize_list(arr: list[str]) -> str:
 
 
 def deserialize_list(text: str) -> list[str]:
-    return text.split(",")
+    return text.split(",") if text else []
 
 
 def serialize_matrix(matrix: list[list[str]]) -> str:
@@ -365,6 +365,8 @@ def serialize_matrix(matrix: list[list[str]]) -> str:
 
 
 def deserialize_matrix(text: str) -> list[list[str]]:
+    if not text:
+        return []
     arr = text.split(";")
     matrix = []
     for line in arr:
