@@ -39,7 +39,7 @@ def init_db(db: sqlite3.Connection):
             "version" INTEGER,
             PRIMARY KEY("activity_id")
         );
-""")
+    """)
     
     db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (

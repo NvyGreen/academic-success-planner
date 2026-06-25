@@ -174,3 +174,92 @@ def get_all_recommendations(student_id: int) -> list[tuple[str, str, str, str, s
     finally:
         if cursor is not None:
             cursor.close()
+
+
+def save_activity(activity_type: str, description: str, details: str, total_impact: str, workload_change=float('-inf'), burnout_change=float('-inf'), impact_change=float('-inf')):
+    cursor = None
+    try:
+        db = get_db()
+        cursor = db.execute("""SELECT version FROM activity ORDER BY timestamp DESC LIMIT 1;""")
+        latest_version = cursor.fetchone()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not save latest activity")
+    finally:
+        if cursor is not None:
+            cursor.close()
+    
+    timestamp = datetime.isoformat(datetime.now())
+    values = {"type": activity_type, "description": description, "details": details, "total_impact": total_impact, "timestamp": timestamp}
+
+    if workload_change == float('-inf'):
+        values["workload_change"] = None
+    
+    if burnout_change == float('-inf'):
+        values["burnout_change"] = None
+    
+    if impact_change == float('-inf'):
+        values["impact_change"] = None
+    
+    if not latest_version:
+        values["version"] = 1
+    elif activity_type == "Evaluation":
+        values["version"] = latest_version + 1
+    else:
+        values["version"] = latest_version
+    
+    try:
+        query = """INSERT INTO activity (timestamp, type, description, details, workload_change, burnout_change, impact_change, total_impact, version) VALUES (:timestamp, :type, :description, :details, :workload_change, :burnout_change, :impact_change, :total_impact, :version)"""
+        cursor.execute(query, values)
+        db.commit()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not save latest activity")
+    finally:
+        db.rollback()
+        if cursor is not None:
+            cursor.close()
+
+
+def get_improvement_summary():
+    cursor = None
+    try:
+        db = get_db()
+        cursor = db.execute("""SELECT workload_change, burnout_change, impact_change FROM activity ORDER BY timestamp DESC LIMIT 1;""")
+        latest_improvement = cursor.fetchone()
+
+        if not latest_improvement:
+            null_values = tuple(None for _ in cursor.description)
+            row = sqlite3.Row(cursor, null_values)
+            return row
+        return latest_improvement
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not get latest improvement")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def get_latest_activity():
+    cursor = None
+    try:
+        db = get_db()
+        cursor = db.execute("""SELECT timestamp, type, description, details, total_impact, version FROM activity ORDER BY timestamp DESC LIMIT 5;""")
+        activity_raw = cursor.fetchone()
+
+        activities = []
+        for raw_activity in activity_raw:
+            dt = datetime.fromisoformat(raw_activity["timestamp"])
+            timestamp = dt.strftime("%b %#d, %Y %I:%M %p")
+            version = f"V{raw_activity["version"]}"
+
+            activities.append([timestamp, raw_activity["type"], raw_activity["description"], raw_activity["details"], raw_activity["total_impact"], version])
+        
+        return activities
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not get latest activity")
+    finally:
+        if cursor is not None:
+            cursor.close()
