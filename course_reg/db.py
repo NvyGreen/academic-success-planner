@@ -26,6 +26,19 @@ def tables_exist(db: sqlite3.Connection) -> bool:
 
 def init_db(db: sqlite3.Connection):
     db.execute("""
+        CREATE TABLE IF NOT EXISTS "activity" (
+            "activity_id" INTEGER,
+            "timestamp"	TEXT,
+            "type"	TEXT,
+            "description"	TEXT,
+            "details"	TEXT,
+            "impact"	TEXT,
+            "version"	INTEGER,
+            PRIMARY KEY("activity_id")
+        );
+""")
+    
+    db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (
             "final_id" INTEGER,
             "start_datetime" TEXT,

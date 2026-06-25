@@ -496,7 +496,7 @@ def preview_quarter():
 def analytics_page():
     try:
         num_schedules = analytics.get_num_schedules(session["user_id"])
-        latest = analytics.get_latest_activity(session["user_id"])
+        latest = analytics.get_latest_metric(session["user_id"])
 
         if not latest:
             num_schedules = 0

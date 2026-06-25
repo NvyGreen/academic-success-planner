@@ -1,0 +1,7 @@
+{
+    // Jinja templates embed `{{ ... }}` inside <script>/<style> blocks, which the
+    // built-in HTML language service flags as invalid JS/CSS. Flask renders these
+    // server-side, so it's a false positive - turn off embedded validation here.
+    "html.validate.scripts": false,
+    "html.validate.styles": false
+}

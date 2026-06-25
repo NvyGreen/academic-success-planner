@@ -53,7 +53,7 @@ def get_num_schedules(student_id: int) -> int:
             cursor.close()
 
 
-def get_latest_activity(student_id: int) -> Optional[sqlite3.Row]:
+def get_latest_metric(student_id: int) -> Optional[sqlite3.Row]:
     cursor = None
     try:
         db = get_db()
