@@ -24,23 +24,7 @@ def tables_exist(db: sqlite3.Connection) -> bool:
     return result is not None
 
 
-def init_db(db: sqlite3.Connection):
-    db.execute("""
-        CREATE TABLE IF NOT EXISTS "activity" (
-            "activity_id" INTEGER,
-            "timestamp" TEXT,
-            "type" TEXT,
-            "description" TEXT,
-            "details" TEXT,
-            "workload_change" REAL,
-            "burnout_change" REAL,
-            "impact_change" REAL,
-            "total_impact" TEXT,
-            "version" INTEGER,
-            PRIMARY KEY("activity_id")
-        );
-    """)
-    
+def init_db(db: sqlite3.Connection):    
     db.execute("""
         CREATE TABLE IF NOT EXISTS "final" (
             "final_id" INTEGER,
@@ -117,6 +101,24 @@ def init_db(db: sqlite3.Connection):
             "status" TEXT,
             "timestamp" TEXT,
             PRIMARY KEY("metric_id"),
+            FOREIGN KEY("student_id") REFERENCES "student"("student_id")
+        );
+    """)
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS "activity" (
+            "activity_id" INTEGER,
+            "student_id" INTEGER,
+            "timestamp" TEXT,
+            "type" TEXT,
+            "description" TEXT,
+            "details" TEXT,
+            "workload_change" REAL,
+            "burnout_change" REAL,
+            "impact_change" REAL,
+            "total_impact" TEXT,
+            "version" INTEGER,
+            PRIMARY KEY("activity_id"),
             FOREIGN KEY("student_id") REFERENCES "student"("student_id")
         );
     """)

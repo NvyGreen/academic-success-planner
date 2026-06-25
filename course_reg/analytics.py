@@ -176,7 +176,7 @@ def get_all_recommendations(student_id: int) -> list[tuple[str, str, str, str, s
             cursor.close()
 
 
-def save_activity(activity_type: str, description: str, details: str, total_impact: str, workload_change=float('-inf'), burnout_change=float('-inf'), impact_change=float('-inf')):
+def save_activity(student_id: int, activity_type: str, description: str, details: str, total_impact: str, workload_change=float('-inf'), burnout_change=float('-inf'), impact_change=float('-inf')):
     cursor = None
     try:
         db = get_db()
@@ -190,42 +190,41 @@ def save_activity(activity_type: str, description: str, details: str, total_impa
             cursor.close()
     
     timestamp = datetime.isoformat(datetime.now())
-    values = {"type": activity_type, "description": description, "details": details, "total_impact": total_impact, "timestamp": timestamp}
+    values = {"student_id": student_id, "type": activity_type, "description": description, "details": details, "total_impact": total_impact, "timestamp": timestamp}
 
-    if workload_change == float('-inf'):
-        values["workload_change"] = None
-    
-    if burnout_change == float('-inf'):
-        values["burnout_change"] = None
-    
-    if impact_change == float('-inf'):
-        values["impact_change"] = None
+    values["workload_change"] = workload_change if workload_change != float('-inf') else None
+    values["burnout_change"] = burnout_change if burnout_change != float('-inf') else None
+    values["impact_change"] = impact_change if impact_change != float('-inf') else None
     
     if not latest_version:
         values["version"] = 1
+        if activity_type == "Evaluation":
+            values["description"] += str(values["version"])
     elif activity_type == "Evaluation":
-        values["version"] = latest_version + 1
+        values["version"] = latest_version["version"] + 1
+        values["description"] += str(values["version"])
     else:
-        values["version"] = latest_version
+        values["version"] = latest_version["version"]
     
     try:
-        query = """INSERT INTO activity (timestamp, type, description, details, workload_change, burnout_change, impact_change, total_impact, version) VALUES (:timestamp, :type, :description, :details, :workload_change, :burnout_change, :impact_change, :total_impact, :version)"""
-        cursor.execute(query, values)
+        query = """INSERT INTO activity (student_id, timestamp, type, description, details, workload_change, burnout_change, impact_change, total_impact, version) VALUES (:student_id, :timestamp, :type, :description, :details, :workload_change, :burnout_change, :impact_change, :total_impact, :version)"""
+        cursor = db.execute(query, values)
         db.commit()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
+        db.rollback()
         raise sqlite3.Error("Error: Could not save latest activity")
     finally:
-        db.rollback()
         if cursor is not None:
             cursor.close()
 
 
-def get_improvement_summary():
+def get_improvement_summary(student_id: int):
     cursor = None
     try:
         db = get_db()
-        cursor = db.execute("""SELECT workload_change, burnout_change, impact_change FROM activity ORDER BY timestamp DESC LIMIT 1;""")
+        query = """SELECT workload_change, burnout_change, impact_change FROM activity WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 1;"""
+        cursor = db.execute(query, {"student_id": student_id})
         latest_improvement = cursor.fetchone()
 
         if not latest_improvement:
@@ -241,12 +240,13 @@ def get_improvement_summary():
             cursor.close()
 
 
-def get_latest_activity():
+def get_latest_activity(student_id: int):
     cursor = None
     try:
         db = get_db()
-        cursor = db.execute("""SELECT timestamp, type, description, details, total_impact, version FROM activity ORDER BY timestamp DESC LIMIT 5;""")
-        activity_raw = cursor.fetchone()
+        query = """SELECT timestamp, type, description, details, total_impact, version FROM activity WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 5;"""
+        cursor = db.execute(query, {"student_id": student_id})
+        activity_raw = cursor.fetchall()
 
         activities = []
         for raw_activity in activity_raw:
