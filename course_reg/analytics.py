@@ -219,7 +219,7 @@ def save_activity(student_id: int, activity_type: str, description: str, details
             cursor.close()
 
 
-def get_improvement_summary(student_id: int):
+def get_improvement_summary(student_id: int) -> sqlite3.Row:
     cursor = None
     try:
         db = get_db()
@@ -240,7 +240,7 @@ def get_improvement_summary(student_id: int):
             cursor.close()
 
 
-def get_latest_activity(student_id: int):
+def get_latest_activity(student_id: int) -> list[list]:
     cursor = None
     try:
         db = get_db()

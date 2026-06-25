@@ -201,6 +201,7 @@
 }
 
 .improvement-row__value--positive { color: var(--color-green); }
+.improvement-row__value--negative { color: #e0413f; }
 
 .overall-progress {
     background: var(--color-green-bg);
@@ -208,6 +209,9 @@
     padding: 12px 14px;
     margin-top: 12px;
 }
+
+.overall-progress--negative { background: #fde7e7; }
+.overall-progress--neutral { background: var(--color-yellow-bg); }
 
 .overall-progress__row {
     display: flex;

@@ -8,6 +8,7 @@ def add_new_schedule(student, courses):
     impact = logic.calculate_academic_impact(courses, student)
     impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
     recommendation, rec_type, old_course, new_course = decision_engine.generate_detailed_recommendation(student, courses)
+    details = f"{workload} hrs/wk, Burnout: {logic.estimate_burnout_risk(burnout)}"
 
     if old_course != -1:
         schedule_stats = decision_engine.get_old_and_new_schedule_stats(student, courses, old_course, new_course)
@@ -23,11 +24,11 @@ def add_new_schedule(student, courses):
     else:
         bullet_summary = "No changes necessary"
         why_summary = "there is a good balance of courses"
-        table_summary = f"Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({burnout}),{logic.estimate_burnout_risk(burnout)} ({round(burnout, 2)}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({impact}),{logic.classify_academic_impact(impact)} ({round(impact, 2)}),0"
+        table_summary = f"Workload,{workload} hrs/week,{workload} hrs/week,0 hrs;Burnout Risk,{logic.estimate_burnout_risk(burnout)} ({burnout}),{logic.estimate_burnout_risk(burnout)} ({round(burnout, 2)}),0;Academic Impact,{logic.classify_academic_impact(impact)} ({round(impact, 2)}),{logic.classify_academic_impact(impact)} ({round(impact, 2)}),0"
 
-        workload_change = float('-inf')
-        burnout_change = float('-inf')
-        impact_change = float('-inf')
+        workload_change = 0
+        burnout_change = 0
+        impact_change = 0
     
     analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary)
-    analytics.save_activity(student, "Evaluation", "Schedule Version ", recommendation, "TODO", workload_change, burnout_change, impact_change)
+    analytics.save_activity(student, "Evaluation", "Schedule Version ", recommendation, details, workload_change, burnout_change, impact_change)

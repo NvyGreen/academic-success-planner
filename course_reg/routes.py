@@ -634,6 +634,19 @@ def analytics_history():
         burnout_scores = analytics.get_all_burnout_scores(session["user_id"])
         impact_scores = analytics.get_all_impact_scores(session["user_id"])
         dates = analytics.get_all_dates(session["user_id"])
+
+        workload_change, burnout_change, impact_change = analytics.get_improvement_summary(session["user_id"])
+        activities = analytics.get_latest_activity(session["user_id"])
+
+        # "Needs Improvement" only when the current schedule's workload AND burnout
+        # are both in the top tier (Overloaded / High) per logic.py thresholds.
+        current_workload = workloads[-1] if workloads else None
+        current_burnout = burnout_scores[-1] if burnout_scores else None
+        needs_improvement = (
+            current_workload is not None and current_burnout is not None
+            and current_workload > logic.WORKLOAD_HEAVY_THRESHOLD
+            and current_burnout >= logic.BURNOUT_HIGH_THRESHOLD
+        )
     except sqlite3.Error as e:
         flash(str(e), "error")
         num_schedules = "-"
@@ -643,6 +656,12 @@ def analytics_history():
         impact_scores = []
         dates = []
 
+        workload_change = None
+        burnout_change = None
+        impact_change = None
+        activities = []
+        needs_improvement = False
+
     return render_template(
         "analytics_history.html",
         title="Activity History",
@@ -651,7 +670,12 @@ def analytics_history():
         workloads=json.dumps(workloads),
         burnout_scores=json.dumps(burnout_scores),
         impact_scores=json.dumps(impact_scores),
-        dates=json.dumps(dates)
+        dates=json.dumps(dates),
+        workload_change=workload_change,
+        burnout_change=burnout_change,
+        impact_change=impact_change,
+        activities=activities,
+        needs_improvement=needs_improvement
     )
 
 

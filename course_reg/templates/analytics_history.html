@@ -82,33 +82,58 @@
             <div class="improvement-row">
                 <div>
                     <div class="improvement-row__label">Workload Improvement</div>
-                    <div class="improvement-row__detail">37 → 26 hrs/week</div>
+                    <!-- <div class="improvement-row__detail">37 → 26 hrs/week</div> -->
                 </div>
-                <div class="improvement-row__value improvement-row__value--positive">-11 hrs/week</div>
+                {% if workload_change is none %}
+                    <div class="improvement-row__value">No changes made yet</div>
+                {% else %}
+                    <div class="improvement-row__value {{ 'improvement-row__value--positive' if workload_change >= 0 else 'improvement-row__value--negative' }}">{{ workload_change | round(2) }} hrs/week</div>
+                {% endif %}
             </div>
 
             <div class="improvement-row">
                 <div>
                     <div class="improvement-row__label">Burnout Risk Improvement</div>
-                    <div class="improvement-row__detail">0.78 → 0.18</div>
+                    <!-- <div class="improvement-row__detail">0.78 → 0.18</div> -->
                 </div>
-                <div class="improvement-row__value improvement-row__value--positive">-0.60</div>
+                {% if burnout_change is none %}
+                    <div class="improvement-row__value">No changes made yet</div>
+                {% else %}
+                    <div class="improvement-row__value {{ 'improvement-row__value--positive' if burnout_change >= 0 else 'improvement-row__value--negative' }}">{{ burnout_change | round(2) }}</div>
+                {% endif %}
             </div>
 
             <div class="improvement-row">
                 <div>
                     <div class="improvement-row__label">Academic Impact Improvement</div>
-                    <div class="improvement-row__detail">-0.25 → 0.15</div>
+                    <!-- <div class="improvement-row__detail">-0.25 → 0.15</div> -->
                 </div>
-                <div class="improvement-row__value improvement-row__value--positive">+0.40</div>
+                {% if impact_change is none %}
+                    <div class="improvement-row__value">No changes made yet</div>
+                {% else %}
+                    <div class="improvement-row__value {{ 'improvement-row__value--positive' if impact_change <= 0 else 'improvement-row__value--negative' }}">{{ impact_change | round(2) }}</div>
+                {% endif %}
             </div>
 
-            <div class="overall-progress">
+            {% set no_data = workload_change is none and burnout_change is none and impact_change is none %}
+            <div class="overall-progress {{ 'overall-progress--neutral' if no_data else ('overall-progress--negative' if needs_improvement else '') }}">
                 <div class="overall-progress__row">
                     <span>Overall Progress</span>
-                    <span class="badge badge--green">Great Progress</span>
+                    {% if no_data %}
+                        <span class="badge badge--yellow">No Data Yet</span>
+                    {% elif needs_improvement %}
+                        <span class="badge badge--red">Needs Improvement</span>
+                    {% else %}
+                        <span class="badge badge--green">Great Progress</span>
+                    {% endif %}
                 </div>
-                <p>You've made strong improvements!</p>
+                {% if no_data %}
+                    <p>No changes have been made yet — apply some recommendations to start tracking your progress.</p>
+                {% elif needs_improvement %}
+                    <p>Your workload and burnout risk are both running high — consider applying a recommendation to lighten your schedule.</p>
+                {% else %}
+                    <p>Your workload and burnout risk are in a healthy range — keep it up!</p>
+                {% endif %}
             </div>
         </div>
 
@@ -148,54 +173,24 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Jun 15, 2026 10:24 AM</td>
-                    <td><span class="badge badge--green">✓ Applied</span></td>
-                    <td><strong>Swap CS143A for INF121</strong></td>
-                    <td>Reduced workload and burnout risk</td>
-                    <td>-6 hrs, -0.24 burnout</td>
-                    <td><span class="version-tag">V3</span></td>
-                </tr>
-                <tr>
-                    <td>Jun 10, 2026 09:15 PM</td>
-                    <td><span class="badge badge--orange">👁 Viewed</span></td>
-                    <td><strong>Swap MATH108 for STAT116</strong></td>
-                    <td>Improve academic impact</td>
-                    <td>+0.08 impact</td>
-                    <td><span class="version-tag">V2</span></td>
-                </tr>
-                <tr>
-                    <td>Jun 8, 2026 04:42 PM</td>
-                    <td><span class="badge badge--red">⊘ Dismissed</span></td>
-                    <td><strong>Drop HIST101</strong></td>
-                    <td>Lower workload</td>
-                    <td>-3 hrs</td>
-                    <td><span class="version-tag">V2</span></td>
-                </tr>
-                <tr>
-                    <td>Jun 5, 2026 11:30 AM</td>
-                    <td><span class="badge badge--blue">📋 Evaluation</span></td>
-                    <td><strong>Schedule Version 2</strong></td>
-                    <td>5 courses, 15 credits</td>
-                    <td>31 hrs/week, Burnout: Moderate</td>
-                    <td><span class="version-tag">V2</span></td>
-                </tr>
-                <tr>
-                    <td>May 30, 2026 08:50 PM</td>
-                    <td><span class="badge badge--green">✓ Applied</span></td>
-                    <td><strong>Move ICS161 to Winter</strong></td>
-                    <td>Better workload distribution</td>
-                    <td>-2 hrs, -0.12 burnout</td>
-                    <td><span class="version-tag">V2</span></td>
-                </tr>
-                <tr>
-                    <td>May 20, 2026 07:10 PM</td>
-                    <td><span class="badge badge--blue">📋 Evaluation</span></td>
-                    <td><strong>Schedule Version 1</strong></td>
-                    <td>5 courses, 15 credits</td>
-                    <td>37 hrs/week, Burnout: High</td>
-                    <td><span class="version-tag">V1</span></td>
-                </tr>
+                {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity[0] }}</td>
+                        {% if activity[1] == "Applied" %}
+                            <td><span class="badge badge--green">✓ Applied</span></td>
+                        {% elif activity[1] == "Dismissed" %}
+                            <td><span class="badge badge--red">⊘ Dismissed</span></td>
+                        {% elif activity[1] == "Evaluation" %}
+                            <td><span class="badge badge--blue">📋 Evaluation</span></td>
+                        {% else %}
+                            <td><span class="badge badge--orange">👁 Viewed</span></td>
+                        {% endif %}
+                        <td><strong>{{ activity[2] }}</strong></td>
+                        <td>{{ activity[3] }}</td>
+                        <td>{{ activity[4] }}</td>
+                        <td><span class="version-tag">{{ activity[5] }}</span></td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
 
