@@ -28,12 +28,15 @@ def init_db(db: sqlite3.Connection):
     db.execute("""
         CREATE TABLE IF NOT EXISTS "activity" (
             "activity_id" INTEGER,
-            "timestamp"	TEXT,
-            "type"	TEXT,
-            "description"	TEXT,
-            "details"	TEXT,
-            "impact"	TEXT,
-            "version"	INTEGER,
+            "timestamp" TEXT,
+            "type" TEXT,
+            "description" TEXT,
+            "details" TEXT,
+            "workload_change" REAL,
+            "burnout_change" REAL,
+            "impact_change" REAL,
+            "total_impact" TEXT,
+            "version" INTEGER,
             PRIMARY KEY("activity_id")
         );
 """)
