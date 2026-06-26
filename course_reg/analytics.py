@@ -5,12 +5,12 @@ from flask import current_app
 from course_reg.db import get_db
 
 
-def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str, rec_type: str, bullet_summary: str, why_summary: str, table_summary: str):
+def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str, rec_type: str, bullet_summary: str, why_summary: str, table_summary: str, status: str):
     cursor = None
     try:
         db = get_db()
         query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, status, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :bullet_summary, :why_summary, :table_summary, :status, :timestamp);"""
-        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "bullet_summary": bullet_summary, "why_summary": why_summary, "table_summary": table_summary, "status": "Viewed", "timestamp": datetime.isoformat(datetime.now())})
+        cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "bullet_summary": bullet_summary, "why_summary": why_summary, "table_summary": table_summary, "status": status, "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
     except sqlite3.Error as e:
         db.rollback()
@@ -180,7 +180,7 @@ def save_activity(student_id: int, activity_type: str, description: str, details
     cursor = None
     try:
         db = get_db()
-        cursor = db.execute("""SELECT version FROM activity ORDER BY timestamp DESC LIMIT 1;""")
+        cursor = db.execute("""SELECT version FROM activity WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 1;""", {"student_id": student_id})
         latest_version = cursor.fetchone()
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
@@ -198,8 +198,7 @@ def save_activity(student_id: int, activity_type: str, description: str, details
     
     if not latest_version:
         values["version"] = 1
-        if activity_type == "Evaluation":
-            values["description"] += str(values["version"])
+        values["description"] += str(values["version"])
     elif activity_type == "Evaluation":
         values["version"] = latest_version["version"] + 1
         values["description"] += str(values["version"])

@@ -521,15 +521,15 @@ def analytics_page():
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
             latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
 
-            bullet_summary = decision_engine.deserialize_list(latest["bullet_summary"] or "")
+            bullet_summary = utility.deserialize_list(latest["bullet_summary"] or "")
             why_summary_raw = latest["why_summary"]
-            table_summary = decision_engine.deserialize_matrix(latest["table_summary"] or "")
+            table_summary = utility.deserialize_matrix(latest["table_summary"] or "")
 
             why_summary = "Our engine analyzed your schedule and found that "
             if latest["rec_type"] == "Balanced":
                 why_summary += why_summary_raw
             else:
-                why_summary_raw = decision_engine.deserialize_list(why_summary_raw)
+                why_summary_raw = utility.deserialize_list(why_summary_raw)
                 if latest["rec_type"] == "Swap":
                     why_summary += "this swap " + " and ".join(why_summary_raw)
                 else:
