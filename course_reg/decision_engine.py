@@ -2,8 +2,7 @@ import sqlite3
 from typing import NamedTuple
 from flask import current_app
 from course_reg.db import get_db
-from course_reg import register_methods
-from course_reg import logic
+from course_reg import analytics, logic, register_methods
 
 
 class BurnoutComparison(NamedTuple):
@@ -247,42 +246,6 @@ def get_course_codes_from_ids(course_ids: list[int]) -> list[int]:
     return course_codes
 
 
-def swap_course(user_id, old_course: BurnoutComparison, new_course: BurnoutComparison):
-    cursor = None
-    try:
-        db = get_db()        
-        query = """SELECT coreq_id FROM corequisite WHERE course_id = :old_id;"""
-        cursor = db.execute(query, {"old_id": old_course.course_id})
-        old_coreqs = cursor.fetchall()
-        old_courses = [old_course.course_id]
-        for coreq in old_coreqs:
-            old_courses.append(coreq["coreq_id"])
-        old_course_codes = get_course_codes_from_ids(old_courses)
-
-        query = """SELECT coreq_id FROM corequisite WHERE course_id = :new_id;"""
-        cursor = db.execute(query, {"new_id": new_course.course_id})
-        new_coreqs = cursor.fetchall()
-        new_courses = [new_course.course_id]
-        for coreq in new_coreqs:
-            new_courses.append(coreq["coreq_id"])
-        new_course_codes = get_course_codes_from_ids(new_courses)
-
-        unreged_courses = register_methods.register_courses(user_id, new_course_codes)
-        if isinstance(unreged_courses, dict) and len(unreged_courses) > 0:
-            raise sqlite3.Error("Error: Could not swap courses")
-
-        for code in old_course_codes:
-            register_methods.drop_course(user_id, code)
-
-    except sqlite3.Error as e:
-        db.rollback()
-        current_app.logger.error(f"Database error: {e}")
-        raise sqlite3.Error("Error: Could not swap courses")
-    finally:
-        if cursor is not None:
-            cursor.close()
-
-
 def get_old_and_new_schedule_stats(user_id: int, courses: list[int], old_course: int, new_course: int=-1) -> tuple[ScheduleComparison, ScheduleComparison]:
     old_schedule = ScheduleComparison(logic.total_hours_per_week(courses), logic.calculate_burnout_risk(courses)[0], logic.calculate_academic_impact(courses, user_id))
 
@@ -346,3 +309,70 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
     table_summary.append(["Academic", f"{old_impact_cat} ({old_schedule.impact})", f"{new_impact_cat} ({new_schedule.impact})", f"{difference.impact * -1:+}"])
 
     return bullet_summary, why_summary, table_summary
+
+
+def swap_course(user_id, old_course: int, new_course: int):
+    cursor = None
+    try:
+        db = get_db()        
+        query = """SELECT coreq_id FROM corequisite WHERE course_id = :old_id;"""
+        cursor = db.execute(query, {"old_id": old_course})
+        old_coreqs = cursor.fetchall()
+        old_courses = [old_course]
+        for coreq in old_coreqs:
+            old_courses.append(coreq["coreq_id"])
+        old_course_codes = get_course_codes_from_ids(old_courses)
+
+        query = """SELECT coreq_id FROM corequisite WHERE course_id = :new_id;"""
+        cursor = db.execute(query, {"new_id": new_course})
+        new_coreqs = cursor.fetchall()
+        new_courses = [new_course]
+        for coreq in new_coreqs:
+            new_courses.append(coreq["coreq_id"])
+        new_course_codes = get_course_codes_from_ids(new_courses)
+
+        unreged_courses = register_methods.register_courses(user_id, new_course_codes)
+        if isinstance(unreged_courses, dict) and len(unreged_courses) > 0:
+            raise sqlite3.Error("Error: Could not swap courses")
+
+        for code in old_course_codes:
+            register_methods.drop_course(user_id, code)
+
+    except sqlite3.Error as e:
+        db.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not swap courses")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def apply_rec(metric_id: int) -> bool:
+    cursor = None
+    try:
+        db = get_db()
+        cursor = db.execute("""SELECT student_id, rec_type, old_course_id, new_course_id FROM metric WHERE metric_id = :metric_id;""", {"metric_id": metric_id})
+        metric = cursor.fetchone()
+        if not metric:
+            raise sqlite3.Error(f"Error: Could not apply recommendation")
+
+        load_bearing = False
+        if metric["rec_type"] == "Swap":
+            swap_course(metric["student_id"], metric["old_course_id"], metric["new_course_id"])
+            load_bearing = True
+        elif metric["rec_type"] == "Drop":
+            # drop_course expects a course_code, but old_course_id is a course id.
+            codes = get_course_codes_from_ids([metric["old_course_id"]])
+            if codes:
+                register_methods.drop_course(metric["student_id"], codes[0])
+
+        analytics.edit_rec_status(metric_id, "Applied")
+        db.commit()
+        return load_bearing
+    except sqlite3.Error as e:
+        db.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error(f"Error: Could not apply recommendation")
+    finally:
+        if cursor is not None:
+            cursor.close()

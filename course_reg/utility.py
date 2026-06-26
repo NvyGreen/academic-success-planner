@@ -47,7 +47,7 @@ def add_new_schedule(student, courses):
 
         rec_impact = bullet_summary
     
-    analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, "Viewed")
+    analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, old_course, new_course, "Viewed")
     analytics.save_activity(student, "Evaluation", "Schedule Version ", details, sched_impact, workload_change, burnout_change, impact_change)
     analytics.save_activity(student, "Viewed", recommendation, why_summary, rec_impact, workload_change, burnout_change, impact_change)
 

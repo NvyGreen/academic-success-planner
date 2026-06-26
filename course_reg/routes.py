@@ -484,6 +484,7 @@ def analytics_page():
         if not latest:
             num_schedules = 0
 
+            metric_id = -1
             workload_hours = 0
             burnout_risk = 0
             academic_impact = 0
@@ -504,6 +505,7 @@ def analytics_page():
             why_summary = ""
             table_summary = []
         else:
+            metric_id = latest["metric_id"]
             workload_hours = round(latest["workload_score"], 2)
             burnout_risk = round(latest["burnout_score"], 2)
             academic_impact = round(latest["impact_score"], 2)
@@ -562,6 +564,7 @@ def analytics_page():
         flash(str(e), "error")
         num_schedules = "-"
 
+        metric_id = -1
         workload_hours = "-"
         burnout_risk = "-"
         academic_impact = "-"
@@ -594,6 +597,7 @@ def analytics_page():
         "analytics.html",
         title="Schedule Insights",
         num_schedules=num_schedules,
+        metric_id=metric_id,
         workload_hours=workload_hours,
         workload_classification=workload_classification,
         burnout_risk=burnout_risk,
@@ -786,6 +790,31 @@ def drop_wait(code):
             session.modified = True
     
     return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
+
+
+@pages.post("/apply-recommendation/<int:metric_id>")
+@login_required
+def apply_recommendation(metric_id):
+    try:
+        session["load_bearing"] = decision_engine.apply_rec(metric_id)
+        session.modified = True
+    except sqlite3.Error as e:
+        flash(str(e), "error")
+        return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
+    return safe_redirect(request.form.get("current_page"), fallback=url_for(".analytics_page"))
+
+
+@pages.post("/dismiss-recommendation/<int:metric_id>")
+@login_required
+def dismiss_recommendation(metric_id):
+    try:
+        analytics.edit_rec_status(metric_id, "Dismissed")
+        session["load_bearing"] = False
+        session.modified = True
+    except sqlite3.Error as e:
+        flash(str(e), "error")
+        return safe_redirect(request.form.get("current_page"), fallback=url_for(".filter_courses"))
+    return safe_redirect(request.form.get("current_page"), fallback=url_for(".analytics_page"))
 
 
 @pages.get("/cancel-filter")

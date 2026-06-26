@@ -230,6 +230,27 @@
 
 .btn--outline-blue:hover { background: var(--color-blue-bg); }
 
+.btn--purple {
+    background: var(--color-purple);
+    border-color: var(--color-purple);
+    color: #fff;
+}
+
+.btn--purple:hover { filter: brightness(0.92); }
+
+.btn--outline-gray {
+    background: var(--color-panel);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.btn--outline-gray:hover { background: var(--color-bg); }
+
+.insight-card__actions {
+    display: flex;
+    gap: 8px;
+}
+
 /* ---- Panels ------------------------------------------------------- */
 
 .panel {

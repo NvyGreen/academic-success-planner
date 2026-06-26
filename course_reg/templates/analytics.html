@@ -53,7 +53,20 @@
             <div class="insight-card__icon insight-card__icon--purple">◎</div>
             <div class="insight-card__label">Recommendation</div>
             <div class="insight-card__value insight-card__value--purple">{{ recommendation }}</div>
-            <button class="btn btn--outline-purple">View Details</button>
+            {% if metric_id != -1 %}
+            <div class="insight-card__actions">
+                <form method="post" action="{{ url_for('pages.apply_recommendation', metric_id=metric_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="current_page" value="{{ request.path }}">
+                    <button class="btn btn--purple" type="submit">Apply</button>
+                </form>
+                <form method="post" action="{{ url_for('pages.dismiss_recommendation', metric_id=metric_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="current_page" value="{{ request.path }}">
+                    <button class="btn btn--outline-gray" type="submit">Dismiss</button>
+                </form>
+            </div>
+            {% endif %}
         </div>
 
     </div>

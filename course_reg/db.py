@@ -98,6 +98,8 @@ def init_db(db: sqlite3.Connection):
             "bullet_summary" TEXT,
             "why_summary" TEXT,
             "table_summary" TEXT,
+            "old_course_id" INTEGER,
+            "new_course_id" INTEGER,
             "status" TEXT,
             "timestamp" TEXT,
             PRIMARY KEY("metric_id"),
