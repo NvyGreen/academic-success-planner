@@ -29,11 +29,11 @@ def add_new_schedule(student, courses):
 
         rec_impact_list = []
         if workload_change > 0:
-            rec_impact_list.append(f"{workload_change * -1:+} hrs")
+            rec_impact_list.append(f"{round(workload_change * -1, 2):+} hrs")
         if burnout_change > 0:
-            rec_impact_list.append(f"{burnout_change * -1:+} burnout")
+            rec_impact_list.append(f"{round(burnout_change * -1, 2):+} burnout")
         if impact_change < 0:
-            rec_impact_list.append(f"{impact_change * -1:+} impact")
+            rec_impact_list.append(f"{round(impact_change, 2) * -1:+} impact")
         
         rec_impact = serialize_list(rec_impact_list)
     else:

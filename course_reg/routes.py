@@ -797,6 +797,10 @@ def drop_wait(code):
 def apply_recommendation(metric_id):
     try:
         session["load_bearing"] = decision_engine.apply_rec(metric_id)
+        # The apply changed enrollment in the DB - re-sync the session that drives
+        # the UI, and mark metrics dirty so Insights recompute for the new schedule.
+        session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
+        session["metrics_dirty"] = True
         session.modified = True
     except sqlite3.Error as e:
         flash(str(e), "error")

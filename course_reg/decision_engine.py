@@ -300,13 +300,13 @@ def generate_change_summary(old_schedule: ScheduleComparison, new_schedule: Sche
 
     table_summary = []
 
-    table_summary.append(["Workload", f"{old_schedule.workload} hrs/week", f"{new_schedule.workload} hrs/week", f"{difference.workload * -1:+} hrs"])
+    table_summary.append(["Workload", f"{round(old_schedule.workload, 2)} hrs/week", f"{round(new_schedule.workload, 2)} hrs/week", f"{round(difference.workload * -1, 2):+} hrs"])
 
-    table_summary.append(["Burnout Risk", f"{old_burnout_cat} ({old_schedule.burnout})", f"{new_burnout_cat} ({new_schedule.burnout})", f"{difference.burnout * -1:+}"])
+    table_summary.append(["Burnout Risk", f"{old_burnout_cat} ({round(old_schedule.burnout, 2)})", f"{new_burnout_cat} ({round(new_schedule.burnout, 2)})", f"{round(difference.burnout * -1, 2):+}"])
 
     old_impact_cat = logic.classify_academic_impact(old_schedule.impact)
     new_impact_cat = logic.classify_academic_impact(new_schedule.impact)
-    table_summary.append(["Academic", f"{old_impact_cat} ({old_schedule.impact})", f"{new_impact_cat} ({new_schedule.impact})", f"{difference.impact * -1:+}"])
+    table_summary.append(["Academic", f"{old_impact_cat} ({round(old_schedule.impact, 2)})", f"{new_impact_cat} ({round(new_schedule.impact, 2)})", f"{round(difference.impact * -1, 2):+}"])
 
     return bullet_summary, why_summary, table_summary
 
