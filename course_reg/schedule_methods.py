@@ -254,12 +254,16 @@ def add_final_to_calendar(course: list, calendar: list[list]):
 
 
 def get_courses_from_list(user_id: int, table: str) -> list[int]:
-    query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
     cursor = None
     try:
         db = get_db()
         if table not in ["enrollment", "student_waitlist"]:
             raise sqlite3.Error("Wrong table")
+        # Build the query only after the table name passes the allowlist, so the
+        # interpolated {table} can never be an untrusted value. Defense-in-depth:
+        # execution was already gated by the check above, so this is a readability
+        # / order-of-operations tidy, not a fix for a live injection.
+        query = f"""SELECT course.course_code FROM {table} JOIN course ON {table}.course_id = course.course_id WHERE {table}.student_id = :student_id;"""
         cursor = db.execute(query, {"student_id": user_id})
         codes_tup = cursor.fetchall()
     except sqlite3.Error as e:
