@@ -97,14 +97,19 @@ def calculate_burnout_risk(courses: list[int]) -> tuple[int, dict]:
             cursor.close()
 
     num_courses = 0
+    num_difficult = 0
     for course in course_data:
         if course["credits"] > 0:
             num_courses += 1
+            if course["difficulty_score"] >= 3:
+                num_difficult += 1
+                burnout_score += 1
 
     if num_courses >= 4:
         burnout_score += 1
     
     factors["num_courses"] = num_courses
+    factors["num_difficult"] = num_difficult
     
     workload = total_hours_per_week(courses)
     if workload > WORKLOAD_HEAVY_THRESHOLD:
@@ -119,13 +124,6 @@ def calculate_burnout_risk(courses: list[int]) -> tuple[int, dict]:
     else:
         factors["workload"] = "Light"
 
-    num_difficult = 0
-    for course in course_data:
-        if course["difficulty_score"] >= 3:
-            burnout_score += 1
-            num_difficult += 1
-    
-    factors["num_difficult"] = num_difficult
     
     return (burnout_score, factors)
 
