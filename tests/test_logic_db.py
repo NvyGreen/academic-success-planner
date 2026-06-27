@@ -19,7 +19,7 @@ import pytest
 
 @pytest.fixture
 def app_ctx(tmp_path, monkeypatch):
-    src = os.environ.get("EVAL_SEED_DB", "/home/claude/work2.db")
+    src = os.environ["EVAL_SEED_DB"]
     test_db = tmp_path / "unit_db.db"
     shutil.copy(src, test_db)
     monkeypatch.setenv("SQLITE3_DB", str(test_db))

@@ -49,7 +49,7 @@ COMPLETED_COURSE_ID = 58    # COMPSCI 118 — the course the engine would return
 @pytest.fixture
 def app_with_db(tmp_path, monkeypatch):
     """Build the app pointed at a disposable copy of the seeded DB."""
-    src = os.environ.get("EVAL_SEED_DB", "/home/claude/work2.db")
+    src = os.environ["EVAL_SEED_DB"]
     test_db = tmp_path / "swap_test.db"
     shutil.copy(src, test_db)
 
