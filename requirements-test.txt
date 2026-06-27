@@ -1,0 +1,4 @@
+# Test tier — runtime deps plus the test runner. CI installs exactly this file
+# (runtime + pytest, no load-testing tools on the critical path).
+-r requirements.txt
+pytest==9.1.0

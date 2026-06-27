@@ -1,0 +1,4 @@
+# Full local dev environment — runtime + tests + load-testing.
+# One-command setup:  pip install -r requirements-dev.txt
+-r requirements-test.txt
+locust==2.44.3
