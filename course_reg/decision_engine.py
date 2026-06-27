@@ -2,7 +2,7 @@ import sqlite3
 from typing import NamedTuple
 from flask import current_app
 from course_reg.db import get_db
-from course_reg import analytics, logic, register_methods
+from course_reg import analytics, logic, register_methods, schedule_methods, utility
 
 
 class BurnoutComparison(NamedTuple):
@@ -367,6 +367,8 @@ def apply_rec(metric_id: int) -> bool:
                 register_methods.drop_course(metric["student_id"], codes[0])
 
         analytics.edit_rec_status(metric_id, "Applied")
+        new_courses = schedule_methods.get_courses_from_list(metric["student_id"], "enrollment")
+        utility.update_recommendation_application(metric["student_id"], new_courses)
         db.commit()
         return load_bearing
     except sqlite3.Error as e:

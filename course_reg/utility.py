@@ -1,9 +1,31 @@
 import sqlite3
+from typing import NamedTuple
 from flask import current_app
 from course_reg import logic, decision_engine, analytics
 from course_reg.db import get_db
 
-def add_new_schedule(student, courses):
+
+class ScheduleStats(NamedTuple):
+    student: int
+    workload: float
+    burnout: float
+    impact: float
+    burnout_explanation: str
+    impact_explanation: str
+    recommendation: str
+    rec_type: str
+    bullet_summary: str
+    why_summary: str
+    table_summary: str
+    old_course: int
+    new_course: int
+    rec_impact: str
+    workload_change: float
+    burnout_change: float
+    impact_change: float
+
+
+def get_schedule_stats(student, courses):
     workload = logic.total_hours_per_week(courses)
     burnout_data = logic.calculate_burnout_risk(courses)
     burnout = burnout_data[0]
@@ -11,9 +33,7 @@ def add_new_schedule(student, courses):
     impact = logic.calculate_academic_impact(courses, student)
     impact_explanation = logic.generate_impact_explanation(logic.classify_academic_impact(impact))
     recommendation, rec_type, old_course, new_course = decision_engine.generate_detailed_recommendation(student, courses)
-    num_courses, credits = get_schedule_stats(courses)
-    details = f"{num_courses} courses, {credits} credits"
-    sched_impact = f"{workload} hrs/wk, Burnout: {logic.estimate_burnout_risk(burnout)}"
+    num_courses, credits = get_schedule_hours_credits(courses)
 
     if old_course != -1:
         schedule_stats = decision_engine.get_old_and_new_schedule_stats(student, courses, old_course, new_course)
@@ -33,7 +53,7 @@ def add_new_schedule(student, courses):
         if burnout_change > 0:
             rec_impact_list.append(f"{round(burnout_change * -1, 2):+} burnout")
         if impact_change < 0:
-            rec_impact_list.append(f"{round(impact_change, 2) * -1:+} impact")
+            rec_impact_list.append(f"{round(impact_change * -1, 2):+} impact")
         
         rec_impact = serialize_list(rec_impact_list)
     else:
@@ -47,12 +67,45 @@ def add_new_schedule(student, courses):
 
         rec_impact = bullet_summary
     
-    analytics.save_metrics(student, workload, burnout, burnout_explanation, impact, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, old_course, new_course, "Viewed")
-    analytics.save_activity(student, "Evaluation", "Schedule Version ", details, sched_impact, workload_change, burnout_change, impact_change)
-    analytics.save_activity(student, "Viewed", recommendation, why_summary, rec_impact, workload_change, burnout_change, impact_change)
+    return ScheduleStats(
+        student=student,
+        workload=workload,
+        burnout=burnout,
+        impact=impact,
+        burnout_explanation=burnout_explanation,
+        impact_explanation=impact_explanation,
+        recommendation=recommendation,
+        rec_type=rec_type,
+        bullet_summary=bullet_summary,
+        why_summary=why_summary,
+        table_summary=table_summary,
+        old_course=old_course,
+        new_course=new_course,
+        rec_impact=rec_impact,
+        workload_change=workload_change,
+        burnout_change=burnout_change,
+        impact_change=impact_change
+    )
 
 
-def get_schedule_stats(courses) -> tuple[int, int]:
+def add_new_schedule(student, courses):
+    schedule_stats = get_schedule_stats(student, courses)
+    num_courses, credits = get_schedule_hours_credits(courses)
+    details = f"{num_courses} courses, {credits} credits"
+    sched_impact = f"{schedule_stats.workload} hrs/wk, Burnout: {logic.estimate_burnout_risk(schedule_stats.burnout)}"
+    
+    analytics.save_metrics(student, schedule_stats.workload, schedule_stats.burnout, schedule_stats.burnout_explanation, schedule_stats.impact, schedule_stats.impact_explanation, schedule_stats.recommendation, schedule_stats.rec_type, schedule_stats.bullet_summary, schedule_stats.why_summary, schedule_stats.table_summary, schedule_stats.old_course, schedule_stats.new_course, "Viewed")
+    analytics.save_activity(student, "Evaluation", "Schedule Version ", details, sched_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
+    analytics.save_activity(student, "Viewed", schedule_stats.recommendation, schedule_stats.why_summary, schedule_stats.rec_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
+
+
+def update_recommendation_application(student, courses):
+    schedule_stats = get_schedule_stats(student, courses)
+    analytics.save_metrics(student, schedule_stats.workload, schedule_stats.burnout, schedule_stats.burnout_explanation, schedule_stats.impact, schedule_stats.impact_explanation, schedule_stats.recommendation, schedule_stats.rec_type, schedule_stats.bullet_summary, schedule_stats.why_summary, schedule_stats.table_summary, schedule_stats.old_course, schedule_stats.new_course, "Viewed")
+    analytics.save_activity(student, "Viewed", schedule_stats.recommendation, schedule_stats.why_summary, schedule_stats.rec_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
+
+
+def get_schedule_hours_credits(courses) -> tuple[int, int]:
     cursor = None
     try:
         db = get_db()
