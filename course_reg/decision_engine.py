@@ -101,7 +101,21 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[in
 
     try:
         db = get_db()
-        placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+        query = """
+            SELECT c.course_code
+            FROM course c
+            JOIN prev_enrollment p ON p.course_id = c.course_id
+            WHERE p.student_id = :student_id;
+        """
+        cursor = db.execute(query, {"student_id": user_id})
+        prev_courses_raw = cursor.fetchall()
+        prev_courses = []
+        for course in prev_courses_raw:
+            prev_courses.append(course["course_code"])
+        total_courses = courses + prev_courses
+
+
+        placeholders = ", ".join([f":code_{i}" for i in range(len(total_courses))])
         query = f"""
             SELECT c.course_id, d.abbreviation, c.course_number, c.difficulty_score, c.estimated_hours_per_week
             FROM course c
@@ -114,7 +128,7 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[in
             AND c.course_code NOT IN ({placeholders});
         """
 
-        values = {f"code_{i}": code for i, code in enumerate(courses)}
+        values = {f"code_{i}": code for i, code in enumerate(total_courses)}
         values["abbreviation"] = course_dep
         values["difficulty_score"] = old_course.difficulty
         values["estimated_hours_per_week"] = old_course.estimated_hours_per_week
@@ -148,7 +162,7 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[in
             else:
                 raise sqlite3.Error("Could not find school")
             
-            placeholders = ", ".join([f":code_{i}" for i in range(len(courses))])
+            placeholders = ", ".join([f":code_{i}" for i in range(len(total_courses))])
             query = f"""
                 SELECT c.course_id, d.abbreviation, c.course_number, c.difficulty_score, c.estimated_hours_per_week
                 FROM course c
@@ -162,7 +176,7 @@ def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[in
                 AND c.course_code NOT IN ({placeholders});
             """
 
-            values = {f"code_{i}": code for i, code in enumerate(courses)}
+            values = {f"code_{i}": code for i, code in enumerate(total_courses)}
             values["school_id"] = school_id
             values["difficulty_score"] = old_course.difficulty
             values["estimated_hours_per_week"] = old_course.estimated_hours_per_week

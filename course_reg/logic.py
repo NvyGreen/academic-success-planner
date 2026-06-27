@@ -58,17 +58,17 @@ def total_hours_per_week(courses: list[int]) -> float:
 
     total_hours = 0
     for datum in raw_hours:
-        difficulty_score = datum[0]
+        difficulty_score = datum["difficulty_score"]
         if difficulty_score == 1:
-            total_hours += EASY_MULTIPLIER * datum[1]
+            total_hours += EASY_MULTIPLIER * datum["estimated_hours_per_week"]
         elif difficulty_score == 2:
-            total_hours += MEDIUM_MULTIPLIER * datum[1]
+            total_hours += MEDIUM_MULTIPLIER * datum["estimated_hours_per_week"]
         elif difficulty_score == 3:
-            total_hours += datum[1]
+            total_hours += datum["estimated_hours_per_week"]
         elif difficulty_score == 4:
-            total_hours += HARD_MULTIPLIER * datum[1]
+            total_hours += HARD_MULTIPLIER * datum["estimated_hours_per_week"]
         else:
-            total_hours += VHARD_MULTIPLIER * datum[1]
+            total_hours += VHARD_MULTIPLIER * datum["estimated_hours_per_week"]
     
     return round(total_hours, 2)
 
@@ -128,6 +128,7 @@ def calculate_burnout_risk(courses: list[int]) -> tuple[int, dict]:
     factors["num_difficult"] = num_difficult
     
     return (burnout_score, factors)
+
 
 def estimate_burnout_risk(score: int) -> str:
     if score >= BURNOUT_HIGH_THRESHOLD:
