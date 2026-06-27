@@ -22,6 +22,11 @@ class ScheduleComparison(NamedTuple):
     impact: float
 
 
+DIFFICULTY_DENSITY_THRESHOLD = 0.6
+EXTREME_HOURS_THRESHOLD = 33
+SEVERE_BURNOUT_THRESHOLD = 6
+
+
 def find_highest_burnout(courses: list[int]) -> BurnoutComparison:
     if not courses:
         return
@@ -80,19 +85,26 @@ def find_highest_workload(courses: list[int]) -> WorkloadComparison:
 
 def choose_drop_or_swap(courses: list[int]) -> str:
     workload = logic.total_hours_per_week(courses)
-    burnout = logic.calculate_burnout_risk(courses)[0]
+    burnout, factors = logic.calculate_burnout_risk(courses)
+    n = factors.get("num_courses", 0)
+    density = (factors.get("num_difficult", 0) / n) if n else 0.0
 
-    if workload > logic.WORKLOAD_BALANCED_THRESHOLD and burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
-        if workload > (10 * burnout - 5):
-            return "Drop"
-        else:
-            return "Swap"
-    elif workload > logic.WORKLOAD_BALANCED_THRESHOLD:
+    overloaded = workload > logic.WORKLOAD_HEAVY_THRESHOLD
+    heavy = workload > logic.WORKLOAD_BALANCED_THRESHOLD
+    hard_mix = density >= DIFFICULTY_DENSITY_THRESHOLD
+
+    if burnout >= SEVERE_BURNOUT_THRESHOLD:
         return "Drop"
-    elif burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
+    if not heavy and not hard_mix:
+        return "Swap" if burnout > logic.BURNOUT_MEDIUM_THRESHOLD else "Balanced"
+    if overloaded and hard_mix:
+        return "Drop" if workload > EXTREME_HOURS_THRESHOLD else "Swap"
+    if heavy and not hard_mix:
+        return "Drop"
+    if hard_mix and not overloaded:
         return "Swap"
     
-    return "Balanced"
+    return "Drop" if overloaded else "Swap"
 
 
 def find_course_to_swap(user_id, old_course: BurnoutComparison, courses: list[int]) -> BurnoutComparison:
