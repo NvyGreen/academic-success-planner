@@ -52,7 +52,7 @@
         <div class="insight-card">
             <div class="insight-card__icon insight-card__icon--purple">◎</div>
             <div class="insight-card__label">Recommendation</div>
-            <div class="insight-card__value insight-card__value--purple">{{ recommendation }}</div>
+            <div class="insight-card__value insight-card__value--purple">{{ recommendation if metric_id != -1 else "No active recommendation" }}</div>
             {% if metric_id != -1 %}
             <div class="insight-card__actions">
                 <form method="post" action="{{ url_for('pages.apply_recommendation', metric_id=metric_id) }}">
@@ -71,6 +71,7 @@
 
     </div>
 
+    {% if metric_id != -1 %}
     <details class="panel panel--collapsible" open>
         <summary class="panel__summary">
             <span>Why This Recommendation?</span>
@@ -106,6 +107,7 @@
             </table>
         </div>
     </details>
+    {% endif %}
 
     <div class="panel">
         <h2>📦 Current Schedule Details</h2>

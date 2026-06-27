@@ -82,12 +82,12 @@ def choose_drop_or_swap(courses: list[int]) -> str:
     workload = logic.total_hours_per_week(courses)
     burnout = logic.calculate_burnout_risk(courses)[0]
 
-    if workload > logic.WORKLOAD_HEAVY_THRESHOLD and burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
+    if workload > logic.WORKLOAD_BALANCED_THRESHOLD and burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
         if workload > (10 * burnout - 5):
             return "Drop"
         else:
             return "Swap"
-    elif workload > logic.WORKLOAD_HEAVY_THRESHOLD:
+    elif workload > logic.WORKLOAD_BALANCED_THRESHOLD:
         return "Drop"
     elif burnout > logic.BURNOUT_MEDIUM_THRESHOLD:
         return "Swap"

@@ -517,26 +517,35 @@ def analytics_page():
 
             burnout_explanation = latest["burnout_explanation"]
             impact_explanation = latest["impact_explanation"]
-            recommendation = latest["recommendation"]
 
             past_recommendations = analytics.get_all_recommendations(session["user_id"])
             latest_timestamp = datetime.fromisoformat(latest["timestamp"])
             latest_activity = f"{latest_timestamp.strftime('%b')} {latest_timestamp.day}, {latest_timestamp.year}"
 
-            bullet_summary = utility.deserialize_list(latest["bullet_summary"] or "")
-            why_summary_raw = latest["why_summary"]
-            table_summary = utility.deserialize_matrix(latest["table_summary"] or "")
+            # Only surface the recommendation while it's still active. Once it's been
+            # applied or dismissed, keep showing the metrics but hide the recommendation.
+            if latest["status"] == "Viewed":
+                recommendation = latest["recommendation"]
+                bullet_summary = utility.deserialize_list(latest["bullet_summary"] or "")
+                why_summary_raw = latest["why_summary"]
+                table_summary = utility.deserialize_matrix(latest["table_summary"] or "")
 
-            why_summary = "Our engine analyzed your schedule and found that "
-            if latest["rec_type"] == "Balanced":
-                why_summary += why_summary_raw
-            else:
-                why_summary_raw = utility.deserialize_list(why_summary_raw)
-                if latest["rec_type"] == "Swap":
-                    why_summary += "this swap " + " and ".join(why_summary_raw)
+                why_summary = "Our engine analyzed your schedule and found that "
+                if latest["rec_type"] == "Balanced":
+                    why_summary += why_summary_raw
                 else:
-                    why_summary += "this drop " + " and ".join(why_summary_raw)
-            why_summary += "."
+                    why_summary_raw = utility.deserialize_list(why_summary_raw)
+                    if latest["rec_type"] == "Swap":
+                        why_summary += "this swap " + " and ".join(why_summary_raw)
+                    else:
+                        why_summary += "this drop " + " and ".join(why_summary_raw)
+                why_summary += "."
+            else:
+                metric_id = -1
+                recommendation = "-"
+                bullet_summary = []
+                why_summary = ""
+                table_summary = []
 
         # Current schedule details
         if isinstance(session.get("user_courses"), str) or not session.get("user_courses"):

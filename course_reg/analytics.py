@@ -57,7 +57,7 @@ def get_latest_metric(student_id: int) -> Optional[sqlite3.Row]:
     cursor = None
     try:
         db = get_db()
-        query = """SELECT metric_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 1;"""
+        query = """SELECT metric_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, status, timestamp FROM metric WHERE student_id = :student_id ORDER BY timestamp DESC LIMIT 1;"""
         cursor = db.execute(query, {"student_id": student_id})
         latest_activity = cursor.fetchone()
         return latest_activity
