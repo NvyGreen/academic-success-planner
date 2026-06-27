@@ -93,7 +93,7 @@ def choose_drop_or_swap(courses: list[int]) -> str:
     heavy = workload > logic.WORKLOAD_BALANCED_THRESHOLD
     hard_mix = density >= DIFFICULTY_DENSITY_THRESHOLD
 
-    if burnout >= SEVERE_BURNOUT_THRESHOLD:
+    if burnout >= SEVERE_BURNOUT_THRESHOLD and overloaded:
         return "Drop"
     if not heavy and not hard_mix:
         return "Swap" if burnout > logic.BURNOUT_MEDIUM_THRESHOLD else "Balanced"

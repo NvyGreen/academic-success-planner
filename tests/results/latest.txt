@@ -74,4 +74,4 @@ tests/test_logic_pure.py::test_deserialize_empty_matrix_is_empty PASSED  [ 97%]
 tests/test_swap_excludes_completed.py::test_swap_does_not_recommend_completed_course PASSED [ 98%]
 tests/test_swap_excludes_completed.py::test_swap_still_returns_a_valid_alternative PASSED [100%]
 
-============================= 72 passed in 1.25s ==============================
+============================= 72 passed in 1.53s ==============================
