@@ -181,7 +181,13 @@
                             <div class="recommendation-item__subtitle">{{ rec[2] }}</div>
                         </div>
                         <div class="recommendation-item__meta">
-                            <span class="badge badge--yellow">{{ rec[3] }}</span>
+                            {% if rec[3] == 'Applied' %}
+                                <span class="badge badge--green">{{ rec[3] }}</span>
+                            {% elif rec[3] == 'Dismissed' %}
+                                <span class="badge badge--gray">{{ rec[3] }}</span>
+                            {% else %}
+                                <span class="badge badge--yellow">{{ rec[3] }}</span>
+                            {% endif %}
                             <span class="recommendation-item__date">{{ rec[4] }}</span>
                         </div>
                     </li>
