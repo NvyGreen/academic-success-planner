@@ -104,10 +104,10 @@ Windows:
 4. Install the required dependencies by running `pip install -r requirements.txt` in your terminal.
 5. Create a .env file in the root directory by copying from .env.example and update the following values:  
    a. SQLITE3_DB = name of your local database file (e.g., academic_success_planner.db)  
-   b. SECRET_KEY = any random secure string
+   b. SECRET_KEY = a strong random key, at least 32 characters. Generate one with: `python -c "import secrets;print(secrets.token_hex(32))"`
 6. Create a .flaskenv file in the root directory by copying from .flaskenv.example and update the following values:  
    a. FLASK_APP = name of the app (e.g., course_reg)  
-   b. SECRET_KEY = any random secure string (e.g., development)  
+   b. (SECRET_KEY is set in .env — see step 5b; it is not needed in .flaskenv)  
 7. Create an empty SQLite database file in the project root using the name specified in .env.
 8. Start the Flask development server by running `flask run` in your terminal.
 9. Open the application in your browser at http://127.0.0.1:5000.

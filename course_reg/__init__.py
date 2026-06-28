@@ -13,7 +13,19 @@ csrf = CSRFProtect()
 def create_app():
     if os.environ.get("SECRET_KEY") is None or os.environ.get("SQLITE3_DB") is None or os.environ.get("SEED_EMAIL") is None or os.environ.get("SEED_PWD") is None:
         raise ValueError("Environment variables variables not configured")
-    
+
+    # Basic SECRET_KEY guardrail (not an entropy check): reject obviously-unsafe
+    # keys so a placeholder can't reach production. A 32-char run of one character
+    # still passes — this only catches the common mistakes. Runs before any DB work.
+    secret_key = os.environ.get("SECRET_KEY")
+    weak_secret_keys = {"development", "secret", "secret_key", "changeme", "password"}
+    if len(secret_key) < 32 or secret_key.strip().lower() in weak_secret_keys:
+        raise ValueError(
+            'SECRET_KEY is too weak: use at least 32 characters and not a common '
+            'placeholder. Generate one with: '
+            'python -c "import secrets;print(secrets.token_hex(32))"'
+        )
+
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
     app.config["SQLITE3_DB"] = os.environ.get("SQLITE3_DB")

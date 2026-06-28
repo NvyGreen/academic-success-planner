@@ -29,6 +29,8 @@ import os
 import shutil
 import pytest
 
+from tests import TEST_SECRET_KEY
+
 
 @pytest.fixture
 def app_ctx(tmp_path, monkeypatch):
@@ -36,7 +38,7 @@ def app_ctx(tmp_path, monkeypatch):
     test_db = tmp_path / "ds_db.db"
     shutil.copy(src, test_db)
     monkeypatch.setenv("SQLITE3_DB", str(test_db))
-    monkeypatch.setenv("SECRET_KEY", "test_secret")
+    monkeypatch.setenv("SECRET_KEY", TEST_SECRET_KEY)
     monkeypatch.setenv("SEED_EMAIL", "ds@uci.edu")
     monkeypatch.setenv("SEED_PWD", "unused")
     from course_reg import create_app

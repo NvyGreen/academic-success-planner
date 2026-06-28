@@ -1,0 +1,11 @@
+Scoring eval — eval/labeled_schedules.csv
+Seed DB: (built fresh from tests/fixtures/seed.sql)
+
+  workload band  : (no human labels)
+  burnout level  : (no human labels)
+  recommendation : 4/5 agree (80%)
+
+  OVERALL: 4/5 (80%) agreement
+
+DISAGREEMENTS (1) — human vs code:
+  STU10 [recommendation] you=Swap code=Drop

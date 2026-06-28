@@ -30,6 +30,8 @@ import tempfile
 
 import pytest
 
+from tests import TEST_SECRET_KEY
+
 # --- Concrete fixtures chosen from the real catalog -------------------------
 # OLD course to swap out: a hard COMPSCI course (difficulty 5).
 # COMPLETED course: an easier COMPSCI course (difficulty 4) that satisfies the
@@ -54,7 +56,7 @@ def app_with_db(tmp_path, monkeypatch):
     shutil.copy(src, test_db)
 
     monkeypatch.setenv("SQLITE3_DB", str(test_db))
-    monkeypatch.setenv("SECRET_KEY", "test_secret")
+    monkeypatch.setenv("SECRET_KEY", TEST_SECRET_KEY)
     monkeypatch.setenv("SEED_EMAIL", "swaptester@uci.edu")
     monkeypatch.setenv("SEED_PWD", "unused")
 
