@@ -18,7 +18,7 @@ import sqlite3
 
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "course_reg", ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "course_reg", ".env"))
 
 
 def main():

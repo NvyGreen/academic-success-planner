@@ -13,13 +13,19 @@ Then point Locust at http://127.0.0.1:8000:
 """
 
 import os
+import sys
 
 from dotenv import load_dotenv
 from waitress import serve
 
+# This script lives in loadtest/; put the repo root on sys.path so `course_reg`
+# imports, and resolve course_reg/.env relative to the repo root (one level up).
+_REPO_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, _REPO_ROOT)
+
 # Load app config (SECRET_KEY, SQLITE3_DB, ...) before importing the app factory,
 # since waitress doesn't do Flask's .flaskenv/.env loading for us.
-load_dotenv(os.path.join(os.path.dirname(__file__), "course_reg", ".env"))
+load_dotenv(os.path.join(_REPO_ROOT, "course_reg", ".env"))
 
 from course_reg import create_app  # noqa: E402  (must follow load_dotenv)
 

@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 from passlib.hash import pbkdf2_sha256
 
 # Pull SQLITE3_DB from course_reg/.env (same file the app uses).
-load_dotenv(os.path.join(os.path.dirname(__file__), "course_reg", ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "course_reg", ".env"))
 
 
 def main():
