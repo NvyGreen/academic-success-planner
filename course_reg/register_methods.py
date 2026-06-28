@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from flask import current_app
 from course_reg.db import get_db
 from course_reg import schedule_methods, logic, analytics, decision_engine, utility
@@ -60,6 +61,7 @@ def register_courses(user_id: int, course_codes: list[int]) -> dict:
     for course_id in course_ids:
         prereqs_check = check_prereqs(user_id, course_id)
         coreqs_check = check_coreqs(course_id, course_ids)
+        conflicts_check = check_conflicts(user_id, course_id)
 
         if len(prereqs_check) > 0:
             course_desc = get_course_description(course_id)
@@ -69,12 +71,13 @@ def register_courses(user_id: int, course_codes: list[int]) -> dict:
             course_desc = get_course_description(course_id)
             coreqs = "Following corequisites not satisfied: " + ", ".join(coreqs_check)
             unreged_courses[course_desc] = coreqs
+        elif len(conflicts_check) > 0:
+            course_desc = get_course_description(course_id)
+            conflicts = "Time conflict with: " + ", ".join(conflicts_check)
+            unreged_courses[course_desc] = conflicts
         else:
             try:
                 db = get_db()
-                # INSERT OR IGNORE makes re-registration idempotent: the UNIQUE
-                # index on (student_id, course_id) drops a duplicate, and we only
-                # bump num_enrolled when a row was actually inserted.
                 query = """INSERT OR IGNORE INTO enrollment (student_id, course_id) VALUES (:student_id, :course_id);"""
                 cursor = db.execute(query, {"student_id": user_id, "course_id": course_id})
                 inserted = cursor.rowcount
@@ -155,8 +158,86 @@ def check_prereqs(user_id: int, course_id: int) -> list[int]:
         if prereq["prereq_id"] not in prev_courses:
             course_desc = get_course_description(prereq[0])
             unfilled_prereqs.append(course_desc)
-    
+
     return unfilled_prereqs
+
+
+DAY_TWO_CHAR = ("Su", "Tu", "Th", "Sa")
+DAY_ONE_CHAR = ("M", "W", "F")
+
+
+def parse_meeting_days(days_str: str) -> set:
+    # Days are stored as concatenated tokens like "MWF" or "TuWTh"; split them into a
+    # set, matching the two-character tokens (Su/Tu/Th/Sa) before the single ones.
+    days = set()
+    if not days_str:
+        return days
+    i = 0
+    while i < len(days_str):
+        if days_str[i:i + 2] in DAY_TWO_CHAR:
+            days.add(days_str[i:i + 2])
+            i += 2
+        elif days_str[i] in DAY_ONE_CHAR:
+            days.add(days_str[i])
+            i += 1
+        else:
+            i += 1
+    return days
+
+
+def check_conflicts(user_id: int, course_id: int) -> list[str]:
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT days, start_time, end_time FROM course WHERE course_id = :course_id;"""
+        cursor = db.execute(query, {"course_id": course_id})
+        candidate = cursor.fetchone()
+        cursor.close()
+
+        # A course with no scheduled meeting time can't conflict with anything.
+        if candidate is None or candidate["days"] is None or candidate["start_time"] is None or candidate["end_time"] is None:
+            return []
+
+        # Compare against everything the student is already enrolled in. Because
+        # register_courses enrolls accepted courses as it goes, this also catches
+        # conflicts between two courses within the same registration batch.
+        query = """
+            SELECT c.course_id, c.days, c.start_time, c.end_time
+            FROM enrollment e
+            JOIN course c ON e.course_id = c.course_id
+            WHERE e.student_id = :student_id;
+        """
+        cursor = db.execute(query, {"student_id": user_id})
+        enrolled = cursor.fetchall()
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not register for courses")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+    cand_days = parse_meeting_days(candidate["days"])
+    cand_start = datetime.fromisoformat(candidate["start_time"]).time()
+    cand_end = datetime.fromisoformat(candidate["end_time"]).time()
+
+    conflicts = []
+    for course in enrolled:
+        # Skip the course itself (re-registration) and anything without a meeting time.
+        if course["course_id"] == course_id or course["days"] is None or course["start_time"] is None or course["end_time"] is None:
+            continue
+
+        # No shared meeting day means they can never overlap.
+        if not (cand_days & parse_meeting_days(course["days"])):
+            continue
+
+        other_start = datetime.fromisoformat(course["start_time"]).time()
+        other_end = datetime.fromisoformat(course["end_time"]).time()
+
+        # Half-open overlap: no clash if one ends at or before the other starts.
+        if cand_start < other_end and other_start < cand_end:
+            conflicts.append(get_course_description(course["course_id"]))
+
+    return conflicts
 
 
 def drop_course(user_id: int, course_code: int):
