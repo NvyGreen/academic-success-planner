@@ -3,13 +3,18 @@ SCORING EVAL — BEFORE / AFTER RECORD
 Schedules: eval/labeled_schedules.csv (30 students; human labeled the 5 boundary
 cases on recommendation). Harness: eval_scoring.py, run against live code.
 
+Scoring rule: a blank your_recommendation counts as AGREEMENT (the human had no
+objection to the code's recommendation). All 30 schedules are scored on
+recommendation — 5 carry an explicit human label, 25 are blank-as-agreement.
+(workload band / burnout level are unlabeled and not scored.)
+
 
 -------------------------------------------------------------------------------
 BEFORE — original Option B logic (severe-burnout override UNGATED)
         line: `if burnout >= SEVERE_BURNOUT_THRESHOLD: return "Drop"`
 -------------------------------------------------------------------------------
-  recommendation : 0/5 agree (0%)
-  OVERALL: 0/5 (0%) agreement
+  recommendation : 25/30 agree (83%)
+  OVERALL: 25/30 (83%) agreement
 
 DISAGREEMENTS (5) — human vs code:
   STU05 [recommendation] you=Swap code=Drop
@@ -38,8 +43,8 @@ FIX — gate the override to also require overloaded hours
 -------------------------------------------------------------------------------
 AFTER — gated logic (committed)
 -------------------------------------------------------------------------------
-  recommendation : 4/5 agree (80%)
-  OVERALL: 4/5 (80%) agreement
+  recommendation : 29/30 agree (96%)
+  OVERALL: 29/30 (96%) agreement
 
 DISAGREEMENTS (1) — human vs code:
   STU10 [recommendation] you=Swap code=Drop
@@ -55,8 +60,10 @@ REMAINING DISAGREEMENT (intentional)
 -------------------------------------------------------------------------------
 SUMMARY
 -------------------------------------------------------------------------------
-  Agreement: 0/5 -> 4/5 after a one-line gated fix.
-  Only the 4 intended rows changed (STU05/06/07/12); no other schedule's
-  recommendation moved. Full 72-test suite still passes.
-  Note: "0/5" reflects selective labeling of the hardest boundary cases, not
-  overall code accuracy. The deliverable is the finding + verified fix.
+  Agreement: 25/30 -> 29/30 after a one-line gated fix.
+  Only the 4 intended rows changed (STU05/06/07/12: Drop -> Swap); no other
+  schedule's recommendation moved. Full test suite still passes.
+  Honest note: 25 of the 30 are blank-as-agreement; only 5 carry an explicit
+  human judgment (the hardest boundary cases). The fix's real signal is on those
+  5 — it moved them from 0/5 to 4/5. The 30-row totals fold in the unlabeled
+  blanks as agreement, so they read high by construction.

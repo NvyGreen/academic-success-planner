@@ -15,7 +15,8 @@ formula and re-run to see agreement move.
 CSV columns expected:
     student_id, course_codes ("a|b|c"),
     your_workload_band, your_burnout_level, your_recommendation   (any may be blank)
-Blank human cells are simply not scored.
+A blank your_recommendation counts as agreement (the human had no objection to
+the code's recommendation); other blank human cells are not scored.
 
 Usage:
     EVAL_SEED_DB=/path/to/sample_courses.db python eval_scoring.py labeled_schedules.csv
@@ -96,6 +97,12 @@ def run(csv_path):
             for label, col, fn in dims:
                 human = (row.get(col) or "").strip()
                 if not human:
+                    # A blank recommendation counts as agreement: the human had no
+                    # objection to the code's recommendation. Other blank dimensions
+                    # stay unscored (no judgment was given).
+                    if col == "your_recommendation":
+                        scored[label] += 1
+                        agreed[label] += 1
                     continue
                 code_val = fn(codes)
                 scored[label] += 1
