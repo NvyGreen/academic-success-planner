@@ -94,15 +94,19 @@ def add_new_schedule(student, courses):
     details = f"{num_courses} courses, {credits} credits"
     sched_impact = f"{schedule_stats.workload} hrs/wk, Burnout: {logic.estimate_burnout_risk(schedule_stats.burnout)}"
     
-    analytics.save_metrics(student, schedule_stats.workload, schedule_stats.burnout, schedule_stats.burnout_explanation, schedule_stats.impact, schedule_stats.impact_explanation, schedule_stats.recommendation, schedule_stats.rec_type, schedule_stats.bullet_summary, schedule_stats.why_summary, schedule_stats.table_summary, schedule_stats.old_course, schedule_stats.new_course, "Viewed")
-    analytics.save_activity(student, "Evaluation", "Schedule Version ", details, sched_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
-    analytics.save_activity(student, "Viewed", schedule_stats.recommendation, schedule_stats.why_summary, schedule_stats.rec_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
+    metric_id = analytics.save_metrics(student, schedule_stats.workload, schedule_stats.burnout, schedule_stats.burnout_explanation, schedule_stats.impact, schedule_stats.impact_explanation, schedule_stats.recommendation, schedule_stats.rec_type, schedule_stats.bullet_summary, schedule_stats.why_summary, schedule_stats.table_summary, schedule_stats.old_course, schedule_stats.new_course, "Viewed")
+
+    analytics.save_activity(student, None, "Evaluation", "Schedule Version ", details, sched_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
+
+    analytics.save_activity(student, metric_id, "Viewed", schedule_stats.recommendation, schedule_stats.why_summary, schedule_stats.rec_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
 
 
 def update_recommendation_application(student, courses):
     schedule_stats = get_schedule_stats(student, courses)
-    analytics.save_metrics(student, schedule_stats.workload, schedule_stats.burnout, schedule_stats.burnout_explanation, schedule_stats.impact, schedule_stats.impact_explanation, schedule_stats.recommendation, schedule_stats.rec_type, schedule_stats.bullet_summary, schedule_stats.why_summary, schedule_stats.table_summary, schedule_stats.old_course, schedule_stats.new_course, "Viewed")
-    analytics.save_activity(student, "Viewed", schedule_stats.recommendation, schedule_stats.why_summary, schedule_stats.rec_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
+
+    metric_id = analytics.save_metrics(student, schedule_stats.workload, schedule_stats.burnout, schedule_stats.burnout_explanation, schedule_stats.impact, schedule_stats.impact_explanation, schedule_stats.recommendation, schedule_stats.rec_type, schedule_stats.bullet_summary, schedule_stats.why_summary, schedule_stats.table_summary, schedule_stats.old_course, schedule_stats.new_course, "Viewed")
+
+    analytics.save_activity(student, metric_id, "Viewed", schedule_stats.recommendation, schedule_stats.why_summary, schedule_stats.rec_impact, schedule_stats.workload_change, schedule_stats.burnout_change, schedule_stats.impact_change)
 
 
 def get_schedule_hours_credits(courses) -> tuple[int, int]:

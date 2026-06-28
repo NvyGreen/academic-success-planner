@@ -111,6 +111,7 @@ def init_db(db: sqlite3.Connection):
         CREATE TABLE IF NOT EXISTS "activity" (
             "activity_id" INTEGER,
             "student_id" INTEGER,
+            "metric_id" INTEGER,
             "timestamp" TEXT,
             "type" TEXT,
             "description" TEXT,
@@ -121,7 +122,8 @@ def init_db(db: sqlite3.Connection):
             "total_impact" TEXT,
             "version" INTEGER,
             PRIMARY KEY("activity_id"),
-            FOREIGN KEY("student_id") REFERENCES "student"("student_id")
+            FOREIGN KEY("student_id") REFERENCES "student"("student_id"),
+            FOREIGN KEY("metric_id") REFERENCES "metric"("metric_id")
         );
     """)
 

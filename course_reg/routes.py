@@ -488,7 +488,9 @@ def analytics_page():
             workload_hours = 0
             burnout_risk = 0
             academic_impact = 0
+
             recommendation_count = 0
+            recommendations_applied = 0
 
             workload_classification = "-"
             burnout_estimation = "-"
@@ -509,7 +511,9 @@ def analytics_page():
             workload_hours = round(latest["workload_score"], 2)
             burnout_risk = round(latest["burnout_score"], 2)
             academic_impact = round(latest["impact_score"], 2)
-            recommendation_count = num_schedules
+
+            recommendation_count = analytics.get_num_recommendations(session["user_id"])
+            recommendations_applied = analytics.get_num_recommendations_by_status(session["user_id"], "Applied")
 
             workload_classification = logic.classify_workload(workload_hours)
             burnout_estimation = logic.estimate_burnout_risk(burnout_risk)
@@ -577,7 +581,9 @@ def analytics_page():
         workload_hours = "-"
         burnout_risk = "-"
         academic_impact = "-"
+
         recommendation_count = "-"
+        recommendations_applied = "-"
 
         workload_classification = "Light"
         burnout_estimation = "Low"
@@ -616,6 +622,7 @@ def analytics_page():
         impact_classification=impact_classification,
         impact_explanation=impact_explanation,
         recommendation_count=recommendation_count,
+        recommendations_applied=recommendations_applied,
         recommendation=recommendation,
         past_recommendations=past_recommendations,
         latest_activity=latest_activity,
@@ -642,14 +649,19 @@ def analytics_page():
 def analytics_history():
     try:
         num_schedules = analytics.get_num_schedules(session["user_id"])
-        num_recommendations = num_schedules
+        num_recommendations = analytics.get_num_recommendations(session["user_id"])
+        applied_recommendations = analytics.get_num_recommendations_by_status(session["user_id"], "Applied")
+        dismissed_recommendations = analytics.get_num_recommendations_by_status(session["user_id"], "Dismissed")
+        viewed_recommendations = analytics.get_num_recommendations_by_status(session["user_id"], "Viewed")
+        total_activities = num_schedules + num_recommendations
+
         workloads = analytics.get_all_workloads(session["user_id"])
         burnout_scores = analytics.get_all_burnout_scores(session["user_id"])
         impact_scores = analytics.get_all_impact_scores(session["user_id"])
         dates = analytics.get_all_dates(session["user_id"])
 
         workload_change, burnout_change, impact_change = analytics.get_improvement_summary(session["user_id"])
-        activities = analytics.get_latest_activity(session["user_id"])
+        activities = analytics.get_latest_activities(session["user_id"])
 
         # "Needs Improvement" only when the current schedule's workload AND burnout
         # are both in the top tier (Overloaded / High) per logic.py thresholds.
@@ -662,8 +674,14 @@ def analytics_history():
         )
     except sqlite3.Error as e:
         flash(str(e), "error")
-        num_schedules = "-"
-        num_recommendations = "-"
+
+        num_schedules = 0
+        num_recommendations = 0
+        viewed_recommendations = 0
+        applied_recommendations = 0
+        dismissed_recommendations = 0
+        total_activities = 0
+
         workloads = []
         burnout_scores = []
         impact_scores = []
@@ -675,11 +693,47 @@ def analytics_history():
         activities = []
         needs_improvement = False
 
+    # --- Activity breakdown donut + percentages (runs for both success and error) ---
+    def _activity_pct(count):
+        return round(count / total_activities * 100, 1) if total_activities else 0.0
+
+    pct_schedules = _activity_pct(num_schedules)
+    pct_generated = _activity_pct(num_recommendations)
+    pct_applied = _activity_pct(applied_recommendations)
+    pct_viewed = _activity_pct(viewed_recommendations)
+    pct_dismissed = _activity_pct(dismissed_recommendations)
+
+    # Donut slices partition total_activities (= evaluations + recommendations).
+    # Applied/Viewed/Dismissed together equal num_recommendations, so with Schedule
+    # Evaluations they sum to total_activities. "Recommendations Generated" is the
+    # roll-up of those three statuses, so it's listed but not a separate slice.
+    donut_slices = [
+        ("var(--color-blue)", num_schedules),
+        ("var(--color-green)", applied_recommendations),
+        ("var(--color-orange)", viewed_recommendations),
+        ("#e0413f", dismissed_recommendations),
+    ]
+    if total_activities:
+        stops = []
+        cumulative = 0
+        for color, count in donut_slices:
+            start = cumulative / total_activities * 100
+            cumulative += count
+            end = cumulative / total_activities * 100
+            stops.append(f"{color} {start:.1f}% {end:.1f}%")
+        donut_gradient = "conic-gradient(" + ", ".join(stops) + ")"
+    else:
+        donut_gradient = "var(--color-border)"
+
     return render_template(
         "analytics_history.html",
         title="Activity History",
         num_schedules=num_schedules,
         num_recommendations=num_recommendations,
+        viewed_recommendations=viewed_recommendations,
+        applied_recommendations=applied_recommendations,
+        dismissed_recommendations = dismissed_recommendations,
+        total_activities=total_activities,
         workloads=json.dumps(workloads),
         burnout_scores=json.dumps(burnout_scores),
         impact_scores=json.dumps(impact_scores),
@@ -688,7 +742,13 @@ def analytics_history():
         burnout_change=burnout_change,
         impact_change=impact_change,
         activities=activities,
-        needs_improvement=needs_improvement
+        needs_improvement=needs_improvement,
+        donut_gradient=donut_gradient,
+        pct_schedules=pct_schedules,
+        pct_generated=pct_generated,
+        pct_applied=pct_applied,
+        pct_viewed=pct_viewed,
+        pct_dismissed=pct_dismissed
     )
 
 
@@ -806,9 +866,6 @@ def drop_wait(code):
 def apply_recommendation(metric_id):
     try:
         session["load_bearing"] = decision_engine.apply_rec(metric_id)
-        # The apply changed enrollment in the DB - re-sync the session that drives
-        # the UI. Deliberately do NOT mark metrics dirty: applying a recommendation
-        # must not start a new schedule version (only manual add/drop should).
         session["user_courses"] = schedule_methods.get_courses_from_list(session["user_id"], "enrollment")
         session.modified = True
     except sqlite3.Error as e:

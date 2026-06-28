@@ -41,21 +41,21 @@
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--purple">✓</div>
             <div>
-                <div class="summary-card__value">0</div>
+                <div class="summary-card__value">{{ applied_recommendations }}</div>
                 <div class="summary-card__label">Recommendations Applied</div>
             </div>
         </div>
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--orange">👁</div>
             <div>
-                <div class="summary-card__value">0</div>
+                <div class="summary-card__value">{{ viewed_recommendations }}</div>
                 <div class="summary-card__label">Recommendations Viewed</div>
             </div>
         </div>
         <div class="summary-card">
             <div class="summary-card__icon summary-card__icon--red">⊘</div>
             <div>
-                <div class="summary-card__value">0</div>
+                <div class="summary-card__value">{{ dismissed_recommendations }}</div>
                 <div class="summary-card__label">Recommendations Dismissed</div>
             </div>
         </div>
@@ -82,7 +82,6 @@
             <div class="improvement-row">
                 <div>
                     <div class="improvement-row__label">Workload Improvement</div>
-                    <!-- <div class="improvement-row__detail">37 → 26 hrs/week</div> -->
                 </div>
                 {% if workload_change is none %}
                     <div class="improvement-row__value">No changes made yet</div>
@@ -94,7 +93,6 @@
             <div class="improvement-row">
                 <div>
                     <div class="improvement-row__label">Burnout Risk Improvement</div>
-                    <!-- <div class="improvement-row__detail">0.78 → 0.18</div> -->
                 </div>
                 {% if burnout_change is none %}
                     <div class="improvement-row__value">No changes made yet</div>
@@ -106,7 +104,6 @@
             <div class="improvement-row">
                 <div>
                     <div class="improvement-row__label">Academic Impact Improvement</div>
-                    <!-- <div class="improvement-row__detail">-0.25 → 0.15</div> -->
                 </div>
                 {% if impact_change is none %}
                     <div class="improvement-row__value">No changes made yet</div>
@@ -140,19 +137,19 @@
         <div class="panel">
             <h2>Activity Breakdown</h2>
             <div class="donut-wrap">
-                <div class="donut" id="activity-donut">
+                <div class="donut" id="activity-donut" style="background: {{ donut_gradient }};">
                     <div class="donut__center">
-                        <div class="donut__value">42</div>
+                        <div class="donut__value">{{ total_activities }}</div>
                         <div class="donut__label">Total Activities</div>
                     </div>
                 </div>
             </div>
             <ul class="breakdown-list">
-                <li><span class="legend-dot legend-dot--blue"></span> Schedule Evaluations <span class="breakdown-value">{{ num_schedules }} (42.9%)</span></li>
-                <li><span class="legend-dot legend-dot--green"></span> Recommendations Generated <span class="breakdown-value">12 (28.6%)</span></li>
-                <li><span class="legend-dot legend-dot--purple"></span> Recommendations Applied <span class="breakdown-value">7 (16.7%)</span></li>
-                <li><span class="legend-dot legend-dot--orange"></span> Recommendations Viewed <span class="breakdown-value">3 (7.1%)</span></li>
-                <li><span class="legend-dot legend-dot--red"></span> Recommendations Dismissed <span class="breakdown-value">2 (4.8%)</span></li>
+                <li><span class="legend-dot legend-dot--blue"></span> Schedule Evaluations <span class="breakdown-value">{{ num_schedules }} ({{ pct_schedules }}%)</span></li>
+                <li><span class="legend-dot legend-dot--purple"></span> Recommendations Generated <span class="breakdown-value">{{ num_recommendations }} ({{ pct_generated }}%)</span></li>
+                <li><span class="legend-dot legend-dot--green"></span> Recommendations Applied <span class="breakdown-value">{{ applied_recommendations }} ({{ pct_applied }}%)</span></li>
+                <li><span class="legend-dot legend-dot--orange"></span> Recommendations Viewed <span class="breakdown-value">{{ viewed_recommendations }} ({{ pct_viewed }}%)</span></li>
+                <li><span class="legend-dot legend-dot--red"></span> Recommendations Dismissed <span class="breakdown-value">{{ dismissed_recommendations }} ({{ pct_dismissed }}%)</span></li>
             </ul>
         </div>
 

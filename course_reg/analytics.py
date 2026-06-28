@@ -5,13 +5,14 @@ from flask import current_app
 from course_reg.db import get_db
 
 
-def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str, rec_type: str, bullet_summary: str, why_summary: str, table_summary: str, old_course_id: int, new_course_id: int, status: str):
+def save_metrics(student_id: int, workload_score: float, burnout_score: float, burnout_explanation: str, impact_score: float, impact_explanation: str, recommendation: str, rec_type: str, bullet_summary: str, why_summary: str, table_summary: str, old_course_id: int, new_course_id: int, status: str) -> int:
     cursor = None
     try:
         db = get_db()
         query = """INSERT INTO metric (student_id, workload_score, burnout_score, burnout_explanation, impact_score, impact_explanation, recommendation, rec_type, bullet_summary, why_summary, table_summary, old_course_id, new_course_id, status, timestamp) VALUES (:student_id, :workload_score, :burnout_score, :burnout_explanation, :impact_score, :impact_explanation, :recommendation, :rec_type, :bullet_summary, :why_summary, :table_summary, :old_course_id, :new_course_id, :status, :timestamp);"""
         cursor = db.execute(query, {"student_id": student_id, "workload_score": workload_score, "burnout_score": burnout_score, "burnout_explanation": burnout_explanation, "impact_score": impact_score, "impact_explanation": impact_explanation, "recommendation": recommendation, "rec_type": rec_type, "bullet_summary": bullet_summary, "why_summary": why_summary, "table_summary": table_summary, "old_course_id": old_course_id, "new_course_id": new_course_id, "status": status, "timestamp": datetime.isoformat(datetime.now())})
         db.commit()
+        return cursor.lastrowid
     except sqlite3.Error as e:
         db.rollback()
         current_app.logger.error(f"Database error: {e}")
@@ -27,6 +28,9 @@ def edit_rec_status(metric_id: int, new_status: str):
         db = get_db()
         query = """UPDATE metric SET status = :new_status WHERE metric_id = :metric_id;"""
         cursor = db.execute(query, {"new_status": new_status, "metric_id": metric_id})
+
+        query = """UPDATE activity SET type = :new_status WHERE metric_id = :metric_id;"""
+        cursor = db.execute(query, {"new_status": new_status, "metric_id": metric_id})
         db.commit()
     except sqlite3.Error as e:
         db.rollback()
@@ -41,6 +45,22 @@ def get_num_schedules(student_id: int) -> int:
     cursor = None
     try:
         db = get_db()
+        query = """SELECT COUNT(*) FROM activity WHERE student_id = :student_id and type = :type;"""
+        cursor = db.execute(query, {"student_id": student_id, "type": "Evaluation"})
+        num_schedules = cursor.fetchone()
+        return num_schedules[0]
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch number of schedules")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def get_num_recommendations(student_id: int) -> int:
+    cursor = None
+    try:
+        db = get_db()
         query = """SELECT COUNT(*) FROM metric WHERE student_id = :student_id;"""
         cursor = db.execute(query, {"student_id": student_id})
         num_schedules = cursor.fetchone()
@@ -48,6 +68,22 @@ def get_num_schedules(student_id: int) -> int:
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error: {e}")
         raise sqlite3.Error("Error: Could not fetch number of schedules")
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+
+def get_num_recommendations_by_status(student_id: int, status: str) -> int:
+    cursor = None
+    try:
+        db = get_db()
+        query = """SELECT COUNT(*) FROM metric WHERE student_id = :student_id AND status = :status;"""
+        cursor = db.execute(query, {"student_id": student_id, "status": status})
+        num_schedules = cursor.fetchone()
+        return num_schedules[0]
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error: {e}")
+        raise sqlite3.Error("Error: Could not fetch number of recommendations")
     finally:
         if cursor is not None:
             cursor.close()
@@ -176,7 +212,7 @@ def get_all_recommendations(student_id: int) -> list[tuple[str, str, str, str, s
             cursor.close()
 
 
-def save_activity(student_id: int, activity_type: str, description: str, details: str, total_impact: str, workload_change=float('-inf'), burnout_change=float('-inf'), impact_change=float('-inf')):
+def save_activity(student_id: int, metric_id: int | None, activity_type: str, description: str, details: str, total_impact: str, workload_change=float('-inf'), burnout_change=float('-inf'), impact_change=float('-inf')):
     cursor = None
     try:
         db = get_db()
@@ -190,7 +226,7 @@ def save_activity(student_id: int, activity_type: str, description: str, details
             cursor.close()
     
     timestamp = datetime.isoformat(datetime.now())
-    values = {"student_id": student_id, "type": activity_type, "description": description, "details": details, "total_impact": total_impact, "timestamp": timestamp}
+    values = {"student_id": student_id, "metric_id": metric_id, "type": activity_type, "description": description, "details": details, "total_impact": total_impact, "timestamp": timestamp}
 
     values["workload_change"] = workload_change if workload_change != float('-inf') else None
     values["burnout_change"] = burnout_change if burnout_change != float('-inf') else None
@@ -206,7 +242,7 @@ def save_activity(student_id: int, activity_type: str, description: str, details
         values["version"] = latest_version["version"]
     
     try:
-        query = """INSERT INTO activity (student_id, timestamp, type, description, details, workload_change, burnout_change, impact_change, total_impact, version) VALUES (:student_id, :timestamp, :type, :description, :details, :workload_change, :burnout_change, :impact_change, :total_impact, :version)"""
+        query = """INSERT INTO activity (student_id, metric_id, timestamp, type, description, details, workload_change, burnout_change, impact_change, total_impact, version) VALUES (:student_id, :metric_id, :timestamp, :type, :description, :details, :workload_change, :burnout_change, :impact_change, :total_impact, :version)"""
         cursor = db.execute(query, values)
         db.commit()
     except sqlite3.Error as e:
@@ -239,7 +275,7 @@ def get_improvement_summary(student_id: int) -> sqlite3.Row:
             cursor.close()
 
 
-def get_latest_activity(student_id: int) -> list[list]:
+def get_latest_activities(student_id: int) -> list[list]:
     cursor = None
     try:
         db = get_db()
