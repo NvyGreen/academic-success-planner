@@ -1,0 +1,84 @@
+================================================================================
+ CourseReg load test — realistic profile, WAITRESS server (production-style)
+================================================================================
+ Date:            2026-06-27
+ Host:            http://127.0.0.1:8000  (waitress, 8 threads, WAL mode)
+ Profile:         locust_realistic.py  (same RegistrationSurge as the dev-server run)
+ Purpose:         confirm the dev server's ~19s /analytics spikes + connection
+                  resets vanish under a real WSGI server. Also has the new
+                  activity(student_id,*) indexes applied.
+ Baseline before run:
+   num_enrolled:  {22320: 171, 31310: 17, 33201: 4, 67170: 52}
+
+ Locust summary output follows:
+--------------------------------------------------------------------------------
+
+[2026-06-27 20:05:35,439] NivsLaptop/INFO/locust.main: Starting Locust 2.44.3
+[2026-06-27 20:05:35,440] NivsLaptop/INFO/locust.runners: Shape test starting.
+[2026-06-27 20:05:35,441] NivsLaptop/INFO/locust.runners: Shape worker starting
+[2026-06-27 20:05:35,441] NivsLaptop/INFO/locust.runners: Shape test updating to 50 users at 2.00 spawn rate
+[2026-06-27 20:05:35,441] NivsLaptop/INFO/locust.runners: Ramping to 50 users at a rate of 2.00 per second
+[2026-06-27 20:05:59,561] NivsLaptop/INFO/locust.runners: All users spawned: {"StudentUser": 50} (50 total users)
+[2026-06-27 20:10:35,684] NivsLaptop/INFO/locust.runners: Shape test updating to 15 users at 2.00 spawn rate
+[2026-06-27 20:10:35,684] NivsLaptop/INFO/locust.runners: Ramping to 15 users at a rate of 2.00 per second
+[2026-06-27 20:10:52,729] NivsLaptop/INFO/locust.runners: All users spawned: {"StudentUser": 15} (15 total users)
+[2026-06-27 20:11:36,112] NivsLaptop/INFO/locust.runners: Shape test stopping
+[2026-06-27 20:11:36,399] NivsLaptop/INFO/locust.main: Shape test completed, shutting down
+[2026-06-27 20:11:36,400] NivsLaptop/INFO/locust.main: Shutting down (exit code 0)
+Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+POST     /add-course/[code]                                                              1118     0(0.00%) |     72      20     716     47 |    3.10        0.00
+GET      /analytics                                                                       712     0(0.00%) |     65      15     928     38 |    1.97        0.00
+GET      /analytics/history                                                               711     0(0.00%) |     58      14    1047     35 |    1.97        0.00
+GET      /confirm-schedule                                                               1117     0(0.00%) |    161      40    1694    100 |    3.09        0.00
+GET      /courses                                                                        4121     0(0.00%) |     39      10     922     25 |   11.42        0.00
+POST     /drop-course/[code]                                                             1117     0(0.00%) |    133      37    1797     97 |    3.09        0.00
+GET      /filter-courses                                                                 1119     0(0.00%) |     57      15     923     33 |    3.10        0.00
+POST     /filter-courses [POST]                                                          1118     0(0.00%) |    100      24    1254     61 |    3.10        0.00
+GET      /finals                                                                          742     0(0.00%) |     43      10     624     24 |    2.06        0.00
+GET      /listings                                                                       1118     0(0.00%) |     32       8     684     20 |    3.10        0.00
+GET      /login                                                                            50     0(0.00%) |     36      15     167     28 |    0.14        0.00
+POST     /login [POST]                                                                     50     0(0.00%) |     97      56     212     94 |    0.14        0.00
+GET      /quarter                                                                         722     0(0.00%) |     39       9     655     20 |    2.00        0.00
+GET      /waitlists                                                                       705     0(0.00%) |     42       9     582     21 |    1.95        0.00
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated                                                                     14520     0(0.00%) |     66       8    1797     37 |   40.23        0.00
+
+Response time percentiles (approximated)
+Type     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+POST     /add-course/[code]                                                                     47     59     71     80    130    200    380    450    700    720    720   1118
+GET      /analytics                                                                             38     47     57     64    110    250    370    490    930    930    930    712
+GET      /analytics/history                                                                     35     43     51     62     89    180    330    590   1000   1000   1000    711
+GET      /confirm-schedule                                                                     100    130    160    180    360    510    690    810   1600   1700   1700   1117
+GET      /courses                                                                               25     31     37     43     64    100    200    310    590    920    920   4121
+POST     /drop-course/[code]                                                                    97    120    140    150    210    350    550    660   1600   1800   1800   1117
+GET      /filter-courses                                                                        33     42     52     58     92    170    350    510    690    920    920   1119
+POST     /filter-courses [POST]                                                                 61     77     94    110    190    350    550    670   1000   1300   1300   1118
+GET      /finals                                                                                24     30     40     46     76    150    250    330    620    620    620    742
+GET      /listings                                                                              20     26     31     35     57     87    160    200    650    680    680   1118
+GET      /login                                                                                 29     34     41     43     64     69    170    170    170    170    170     50
+POST     /login [POST]                                                                          94    100    110    120    150    150    210    210    210    210    210     50
+GET      /quarter                                                                               20     26     32     39     71    110    290    500    660    660    660    722
+GET      /waitlists                                                                             21     26     34     43     74    160    320    420    580    580    580    705
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                                                                             37     54     71     83    130    210    410    530    950   1700   1800  14520
+
+--------------------------------------------------------------------------------
+ COMPARISON — dev server (flask run) vs waitress, same realistic profile:
+
+                          dev server (:5000)      waitress (:8000)
+   total failures         8 (0.06%)               0 (0.00%)
+   connection resets      6 (WinError 10054)      0
+   GET /analytics  max    19,017 ms               928 ms
+   GET /analytics  p99    620 ms                  490 ms
+   aggregated      max    19,017 ms               1,797 ms
+
+ Conclusion: the ~19s /analytics spikes + connection resets were the werkzeug
+ development server dropping connections under concurrency -- NOT query cost.
+ Under waitress (a real WSGI server) the same load runs with zero failures and
+ the analytics tail drops from 19s to <1s. Query cost is separately addressed by
+ the new activity(student_id,*) indexes.
+
+ Post-run integrity: num_enrolled drift-free; loadtest data cleaned up after.
+================================================================================

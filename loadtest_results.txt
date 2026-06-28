@@ -1,0 +1,91 @@
+================================================================================
+ CourseReg load test — realistic registration-window profile
+================================================================================
+ Date:            2026-06-27
+ Host:            http://127.0.0.1:5000  (flask run, WAL mode)
+ Profile:         locust_realistic.py  (RegistrationSurge LoadTestShape)
+                    - ramp to 50 users over ~60s
+                    - 50-user plateau for ~4 min
+                    - taper to 15 users, ~6 min total
+ Accounts:        loadtest1..50@uci.edu (seeded), 1 per virtual user
+ Baseline before run:
+   num_enrolled:  {22320: 171, 31310: 17, 33201: 4, 67170: 52}
+   metric rows:   3 (real students; loadtest writes are cleaned up after)
+ Schema note:     run after the schema update adding the `activity` table
+                  + student/metric columns; tooling verified compatible.
+
+ Locust summary output follows:
+--------------------------------------------------------------------------------
+
+[2026-06-27 19:46:42,208] NivsLaptop/INFO/locust.main: Starting Locust 2.44.3
+[2026-06-27 19:46:42,209] NivsLaptop/INFO/locust.runners: Shape test starting.
+[2026-06-27 19:46:42,210] NivsLaptop/INFO/locust.runners: Shape worker starting
+[2026-06-27 19:46:42,210] NivsLaptop/INFO/locust.runners: Shape test updating to 50 users at 2.00 spawn rate
+[2026-06-27 19:46:42,211] NivsLaptop/INFO/locust.runners: Ramping to 50 users at a rate of 2.00 per second
+[2026-06-27 19:47:06,362] NivsLaptop/INFO/locust.runners: All users spawned: {"StudentUser": 50} (50 total users)
+[2026-06-27 19:51:42,271] NivsLaptop/INFO/locust.runners: Shape test updating to 15 users at 2.00 spawn rate
+[2026-06-27 19:51:42,273] NivsLaptop/INFO/locust.runners: Ramping to 15 users at a rate of 2.00 per second
+[2026-06-27 19:51:59,368] NivsLaptop/INFO/locust.runners: All users spawned: {"StudentUser": 15} (15 total users)
+[2026-06-27 19:52:42,690] NivsLaptop/INFO/locust.runners: Shape test stopping
+[2026-06-27 19:52:43,052] NivsLaptop/INFO/locust.main: Shape test completed, shutting down
+[2026-06-27 19:52:43,053] NivsLaptop/INFO/locust.main: Shutting down (exit code 1)
+Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+POST     /add-course/[code]                                                              1076     1(0.09%) |     84      21     940     64 |    2.99        0.00
+GET      /analytics                                                                       742     6(0.81%) |    218      19   19017     48 |    2.06        0.02
+GET      /analytics/history                                                               742     0(0.00%) |     58      19     877     45 |    2.06        0.00
+GET      /confirm-schedule                                                               1076     0(0.00%) |    186      54    1164    130 |    2.99        0.00
+GET      /courses                                                                        3885     1(0.03%) |     45       8     981     32 |   10.79        0.00
+POST     /drop-course/[code]                                                             1076     0(0.00%) |    150      59    1319    120 |    2.99        0.00
+GET      /filter-courses                                                                 1076     0(0.00%) |     62      18     785     43 |    2.99        0.00
+POST     /filter-courses [POST]                                                          1076     0(0.00%) |    104      37     926     79 |    2.99        0.00
+GET      /finals                                                                          754     0(0.00%) |     47      15     596     30 |    2.10        0.00
+GET      /listings                                                                       1076     0(0.00%) |     40      12     819     29 |    2.99        0.00
+GET      /login                                                                            50     0(0.00%) |     33      18      75     31 |    0.14        0.00
+POST     /login [POST]                                                                     50     0(0.00%) |    111      79     227    100 |    0.14        0.00
+GET      /quarter                                                                         726     0(0.00%) |     42      13     671     28 |    2.02        0.00
+GET      /waitlists                                                                       705     0(0.00%) |     48      12     734     27 |    1.96        0.00
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated                                                                     14110     8(0.06%) |     82       8   19017     46 |   39.21        0.02
+
+Response time percentiles (approximated)
+Type     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+POST     /add-course/[code]                                                                     64     75     82     88    120    180    370    590    900    940    940   1076
+GET      /analytics                                                                             48     59     68     74    110    160    450    620  19000  19000  19000    742
+GET      /analytics/history                                                                     45     52     60     64     89    110    240    340    880    880    880    742
+GET      /confirm-schedule                                                                     130    160    180    210    360    560    740    870   1100   1200   1200   1076
+GET      /courses                                                                               32     39     46     51     69     98    190    300    720    980    980   3885
+POST     /drop-course/[code]                                                                   120    140    160    170    230    350    610    760   1000   1300   1300   1076
+GET      /filter-courses                                                                        43     52     61     68     99    150    310    520    670    790    790   1076
+POST     /filter-courses [POST]                                                                 79     92    100    120    160    240    470    660    890    930    930   1076
+GET      /finals                                                                                30     36     44     50     80    130    240    340    600    600    600    754
+GET      /listings                                                                              29     34     39     44     65     90    150    240    680    820    820   1076
+GET      /login                                                                                 31     37     39     43     54     59     75     75     75     75     75     50
+POST     /login [POST]                                                                         100    110    120    130    160    180    230    230    230    230    230     50
+GET      /quarter                                                                               28     34     39     44     68    110    270    340    670    670    670    726
+GET      /waitlists                                                                             27     33     41     50     80    130    310    450    730    730    730    705
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                                                                             46     66     84     97    140    210    380    560    980  19000  19000  14110
+
+Error report
+# occurrences      Error                                                                                               
+------------------|---------------------------------------------------------------------------------------------------------------------------------------------
+1                  GET /courses: OSError(10048, '[WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted.')
+1                  POST /add-course/[code]: OSError(10048, '[WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted.')
+6                  GET /analytics: ChunkedEncodingError(ProtocolError("Connection broken: ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)", ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)))
+------------------|---------------------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+ Post-run integrity check:
+   num_enrolled:  22320 171->171, 31310 17->17, 33201 4->4, 67170 52->52  (DRIFT-FREE)
+   leftover loadtest enrollment rows: 0
+   write volume:  2150 metric rows + 4300 activity rows generated by the run
+ Result: enrollment-count fix holds under concurrency on the new schema.
+
+ Caveat: GET /analytics still spikes (max ~19s, 6 connection resets) under load.
+   The metric index is in place; the remaining cost appears tied to the new
+   applied/dismissed-recommendation analytics path -- worth profiling separately.
+
+ Loadtest data cleaned up after this run via cleanup_loadtest.py.
+================================================================================
