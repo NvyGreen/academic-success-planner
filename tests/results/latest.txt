@@ -80,4 +80,4 @@ tests/test_secret_key_guard.py::test_create_app_accepts_strong_secret_key_for_th
 tests/test_swap_excludes_completed.py::test_swap_does_not_recommend_completed_course PASSED [ 98%]
 tests/test_swap_excludes_completed.py::test_swap_still_returns_a_valid_alternative PASSED [100%]
 
-============================= 78 passed in 1.25s ==============================
+============================= 78 passed in 1.69s ==============================
