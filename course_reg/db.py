@@ -239,6 +239,18 @@ def init_db(db: sqlite3.Connection):
         ON "metric" ("student_id", "timestamp");
     """)
 
+    # /analytics counts activity rows per student by type and reads the latest few;
+    # these indexes keep those lookups O(log n) instead of scanning the whole table.
+    db.execute("""
+        CREATE INDEX IF NOT EXISTS "idx_activity_student_type"
+        ON "activity" ("student_id", "type");
+    """)
+
+    db.execute("""
+        CREATE INDEX IF NOT EXISTS "idx_activity_student_timestamp"
+        ON "activity" ("student_id", "timestamp");
+    """)
+
     db.commit()
 
 
