@@ -18,13 +18,13 @@ import sqlite3
 
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", "course_reg", ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 
 def main():
     db_path = os.environ.get("SQLITE3_DB")
     if not db_path:
-        raise SystemExit("No DB path. Set SQLITE3_DB in course_reg/.env.")
+        raise SystemExit("No DB path. Set SQLITE3_DB in .env.")
 
     db = sqlite3.connect(db_path)
     db.execute("PRAGMA foreign_keys = ON;")

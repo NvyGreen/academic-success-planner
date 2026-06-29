@@ -286,7 +286,8 @@ def get_latest_activities(student_id: int) -> list[list]:
         activities = []
         for raw_activity in activity_raw:
             dt = datetime.fromisoformat(raw_activity["timestamp"])
-            timestamp = dt.strftime("%b %#d, %Y %I:%M %p")
+            # Build the day with dt.day (portable) instead of %#d, which is Windows-only.
+            timestamp = f"{dt.strftime('%b')} {dt.day}, {dt.year} {dt.strftime('%I:%M %p')}"
             version = f"V{raw_activity["version"]}"
 
             activities.append([timestamp, raw_activity["type"], raw_activity["description"], raw_activity["details"], raw_activity["total_impact"], version])

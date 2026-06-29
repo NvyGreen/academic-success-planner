@@ -87,41 +87,46 @@ Concepts:
 
 ## ⚙️ Running Locally
 To run this project locally:
-1. Ensure Python (3.9+) and SQLite are installed on your machine.
+1. Ensure Python (3.13) and SQLite are installed on your machine.
 2. Clone the repository and navigate to the project directory.
 3. Create and activate a virtual environment.  
 Mac:
 ```
->>> python3 -m venv .venv
->>> source .venv/bin/activate
+python3 -m venv .venv
+```
+
+```
+source .venv/bin/activate
 ```
 
 Windows:
 ```
->>> python -m venv .venv
->>> .venv\Scripts\activate
+python -m venv .venv
+```
+
+```
+.venv\Scripts\activate
 ```
 4. Install the required dependencies by running `pip install -r requirements.txt` in your terminal.
-5. Create a .env file in the root directory by copying from .env.example and update the following values:  
-   a. SQLITE3_DB = name of your local database file (e.g., academic_success_planner.db)  
-   b. SECRET_KEY = a strong random key, at least 32 characters. Generate one with: `python -c "import secrets;print(secrets.token_hex(32))"`
-6. Create a .flaskenv file in the root directory by copying from .flaskenv.example and update the following values:  
-   a. FLASK_APP = name of the app (e.g., course_reg)  
-   b. (SECRET_KEY is set in .env — see step 5b; it is not needed in .flaskenv)  
-7. Create an empty SQLite database file in the project root using the name specified in .env.
-8. Start the Flask development server by running `flask run` in your terminal.
-9. Open the application in your browser at http://127.0.0.1:5000.
-10. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
+5. Create a `.env` file in the root directory by copying from `.env.example` (`cp .env.example .env`) and fill in the values:  
+   a. FLASK_APP = the app package: `course_reg`  
+   b. FLASK_DEBUG = `1` for local development  
+   c. SQLITE3_DB = name of your local database file (e.g., `dev.db`) — it is created and seeded automatically on first run  
+   d. SECRET_KEY = a strong random key, at least 32 characters. Generate one with: `python -c "import secrets;print(secrets.token_hex(32))"`  
+   e. SEED_EMAIL = the email for your initial login account  
+   f. SEED_PWD = a pbkdf2_sha256 hash of your password, not plaintext. Generate one with: `python -c "from passlib.hash import pbkdf2_sha256; print(pbkdf2_sha256.hash('your-password'))"`
+6. Start the Flask development server by running `flask run` in your terminal.
+7. Open the application in your browser at http://127.0.0.1:5000.
+8. Log in with your SEED_EMAIL and the password you hashed for SEED_PWD. You should now be able to use the dashboard locally to view, add, drop, and waitlist courses.
 
 ### 📊 Database Setup
 The application uses a relational SQLite database with tables for courses, departments, instructors, and student schedules.  
 The database file is defined using the SQLITE3_DB variable in .env.  
-On application startup, if the specified database file is empty, the system will automatically:
-- Initialize all required tables
-- Populate the database with mock data for testing
+On application startup, if the database at the SQLITE3_DB path doesn't exist yet (or has no tables), the system automatically:
+- Creates the database file and all required tables
+- Populates it with mock data for testing
 
-This ensures a fresh clone of the project can be set up and run without any manual database configuration.  
-Note: An empty SQLite database file must exist at the path specified in .env. The application will handle schema creation and data seeding automatically.
+This ensures a fresh clone of the project can be set up and run without any manual database configuration — you don't need to create the database file yourself (just make sure the parent directory exists).
 
 
 ## Data Architecture

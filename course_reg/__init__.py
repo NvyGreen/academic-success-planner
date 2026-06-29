@@ -7,7 +7,9 @@ from course_reg import db as database
 from course_reg.scheduler import start_scheduler
 
 
-load_dotenv()
+# Load the project-root .env explicitly so it's found regardless of the working
+# directory the app is launched from (this file lives in course_reg/, .env is one up).
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env"))
 csrf = CSRFProtect()
 
 def create_app():
