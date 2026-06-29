@@ -2,7 +2,7 @@
  
 A smart academic decision-support system for course scheduling and workload management — helping students plan schedules around *outcomes*, not just availability.
  
-**🔗 Live demo:** [add your PythonAnywhere URL] · **Demo login:** demo@example.com / 12345
+**[🔗 Live demo](https://nvygreen.pythonanywhere.com/)** · **Demo login:** demo@example.com / 12345
  
 ---
  
