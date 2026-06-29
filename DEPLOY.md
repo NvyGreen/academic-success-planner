@@ -58,7 +58,7 @@ Leave `SEED_EMAIL` / `SEED_PWD` for the next step.
 python build_prod_db.py
 ```
 
-This creates the schema, loads the full **219-course** catalog, and seeds a demo
+This creates the schema, loads the full **303-course** catalog, and seeds a demo
 login. It will **prompt you for a demo password** (never stored in `.env`, the
 command line, or shell history), then print two lines:
 
