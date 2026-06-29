@@ -1,6 +1,5 @@
 import functools
 from datetime import datetime
-import json
 from urllib.parse import urlparse, urljoin
 import sqlite3
 from passlib.hash import pbkdf2_sha256
@@ -734,10 +733,10 @@ def analytics_history():
         applied_recommendations=applied_recommendations,
         dismissed_recommendations = dismissed_recommendations,
         total_activities=total_activities,
-        workloads=json.dumps(workloads),
-        burnout_scores=json.dumps(burnout_scores),
-        impact_scores=json.dumps(impact_scores),
-        dates=json.dumps(dates),
+        workloads=workloads,
+        burnout_scores=burnout_scores,
+        impact_scores=impact_scores,
+        dates=dates,
         workload_change=workload_change,
         burnout_change=burnout_change,
         impact_change=impact_change,

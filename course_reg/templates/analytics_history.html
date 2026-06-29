@@ -202,11 +202,11 @@
 <script>
 // @ts-nocheck
 (function () {
-    const workloads     = {{ workloads | safe }};
-    const burnoutScores = {{ burnout_scores | safe }};
-    const impactScores  = {{ impact_scores | safe }};
+    const workloads     = {{ workloads | tojson }};
+    const burnoutScores = {{ burnout_scores | tojson }};
+    const impactScores  = {{ impact_scores | tojson }};
 
-    const labels = {{ dates | safe }};
+    const labels = {{ dates | tojson }};
 
     const ctx = document.getElementById('progress-chart').getContext('2d');
 
