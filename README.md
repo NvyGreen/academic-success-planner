@@ -73,8 +73,7 @@ The system models the academic cost of a schedule, not just its validity:
 The codebase separates concerns into focused modules — registration, recommendation, analytics, filtering, and the decision engine — over a normalized relational schema that keeps academic data and student-planning data distinct.
  
 ### Data Architecture
-<img src="screenshots/schema_1.png" alt="Schema part 1" width=500>
-<img src="screenshots/schema_2.png" alt="Schema part 2" width=500>
+<img src="screenshots/updated_schema.png" alt="Schema" width=500>
 
 Design highlights:
 - Core academic entities (courses, departments, instructors)
