@@ -577,12 +577,12 @@ def analytics_page():
         num_schedules = "-"
 
         metric_id = -1
-        workload_hours = "-"
-        burnout_risk = "-"
-        academic_impact = "-"
+        workload_hours = 0
+        burnout_risk = 0
+        academic_impact = 0
 
-        recommendation_count = "-"
-        recommendations_applied = "-"
+        recommendation_count = 0
+        recommendations_applied = 0
 
         workload_classification = "Light"
         burnout_estimation = "Low"
@@ -591,6 +591,10 @@ def analytics_page():
         burnout_explanation = "-"
         impact_explanation = "-"
         recommendation = "-"
+
+        bullet_summary = []
+        why_summary = ""
+        table_summary = []
 
         past_recommendations = []
         latest_activity = "-"
