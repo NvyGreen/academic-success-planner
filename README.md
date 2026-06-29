@@ -57,7 +57,7 @@ The system models the academic cost of a schedule, not just its validity:
  
 ## ✅ Engineering & Quality
  
-- **80 automated tests** (pure logic, database integration, and end-to-end registration flows), run on every push via **GitHub Actions CI**
+- **241 automated tests** spanning pure logic, database integration, and request-level route tests (HTTP routing, auth/session handling, and template rendering via Flask's `test_client`) — **86% line coverage** overall, run on every push via **GitHub Actions CI**
 - **Recommendation eval harness** — the drop/swap engine is scored against 30 schedule scenarios with boundary cases labeled by students. A gated fix to the burnout-override logic improved agreement on the labeled boundary cases from 0/5 to 4/5 (see `eval/results/latest.txt` for the full before/after write-up)
 - **Load tested** with Locust at 50 concurrent users (~40 req/s, 0% failures); a 19s tail-latency spike was traced to the Werkzeug dev server dropping connections under load — not query cost — and confirmed fixed under a production WSGI server (Waitress), dropping the tail from ~19s to <1s
 - **Security hardening:** parameterized SQL with allowlist-validated identifiers, CSRF protection, redirect-safety checks, `pbkdf2_sha256` password hashing, and startup rejection of weak `SECRET_KEY`s
